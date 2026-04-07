@@ -95,7 +95,10 @@ const ThreeDElement = ({ src, isVideo = false, className, floatDelay = "0s", siz
                 loop
                 playsInline
                 onLoadedMetadata={handleLoadedMetadata}
-                preload="metadata"
+                onLoadedData={(e) => {
+                   if (e.target.duration) setDuration(e.target.duration);
+                }}
+                preload="auto"
                 className="w-full h-full object-cover mix-blend-screen"
                 style={{
                   WebkitMaskImage: 'radial-gradient(circle at center, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 20%, rgba(0,0,0,0) 70%)',
@@ -130,10 +133,10 @@ const Hero = ({ active, onReady }) => {
   const [shouldLoadSecondary, setShouldLoadSecondary] = useState(false);
   const [bgVideoLoaded, setBgVideoLoaded] = useState(false);
 
-  // De-prioritize secondary tech video
+  // De-prioritize secondary tech video (reduced delay for faster feel)
   useEffect(() => {
     if (active) {
-      const timer = setTimeout(() => setShouldLoadSecondary(true), 1200);
+      const timer = setTimeout(() => setShouldLoadSecondary(true), 300);
       return () => clearTimeout(timer);
     }
   }, [active]);
