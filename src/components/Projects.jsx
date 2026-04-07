@@ -1,80 +1,232 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 const Projects = ({ active }) => {
-  const [bgVideoLoaded, setBgVideoLoaded] = useState(false);
+  const [bgVideoLoaded, setBgVideoLoaded] = useState(true);
+  const [isScrolling, setIsScrolling] = useState(false);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const scrollRef = useRef(null);
+  const scrollTimeout = useRef(null);
+  const videoRef = useRef(null);
 
   const projects = [
-    { title: 'Nexus UI Kit', desc: 'Modern design system for React app.', tags: ['React', 'CSS'] },
-    { title: 'Cyber Analytics', desc: 'Real-time monitoring dashboard.', tags: ['Vite', 'Edge'] },
-    { title: 'Vanguard Eco', desc: 'High-performance storefront.', tags: ['Next.js', 'Stripe'] },
+    {
+      title: 'Nexus',
+      subtitle: 'UI Kit v2.0',
+      image: 'https://images.unsplash.com/photo-1614850523296-d8c1c0ba0256?auto=format&fit=crop&q=80&w=1600',
+      tags: ['React', 'CSS']
+    },
+    {
+      title: 'Cyber',
+      subtitle: 'Analytics',
+      image: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80&w=1600',
+      tags: ['Vite', 'Edge']
+    },
+    {
+      title: 'Vanguard',
+      subtitle: 'Eco Store',
+      image: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=1600',
+      tags: ['Next.js', 'Stripe']
+    },
+    {
+      title: 'Aether',
+      subtitle: 'Mobile App',
+      image: 'https://images.unsplash.com/photo-1618761760534-33c15fe7c909?auto=format&fit=crop&q=80&w=1600',
+      tags: ['Flutter', 'Firebase']
+    },
+    {
+      title: 'Horizon',
+      subtitle: 'AI Platform',
+      image: 'https://images.unsplash.com/photo-1677442136019-21780ecad995?auto=format&fit=crop&q=80&w=1600',
+      tags: ['Python', 'Cloud']
+    },
   ];
 
+  // Ensure video plays
+  useEffect(() => {
+    if (active && videoRef.current) {
+      videoRef.current.play().catch(err => console.error("Video play failed:", err));
+    }
+  }, [active]);
+
+  // Zero-Gravity Controlled Carousel Logic (Keyboard Only)
+  useEffect(() => {
+    if (!active) return;
+    
+    let animationTimeout = null;
+
+    const handleAnimationState = () => {
+      setIsScrolling(true);
+      if (animationTimeout) clearTimeout(animationTimeout);
+      animationTimeout = setTimeout(() => {
+        setIsScrolling(false);
+      }, 850);
+    };
+
+    const handleKeyDown = (e) => {
+      if (e.key === 'ArrowRight' && activeIndex < projects.length - 1) {
+        setActiveIndex(prev => prev + 1);
+        handleAnimationState();
+      } else if (e.key === 'ArrowLeft' && activeIndex > 0) {
+        setActiveIndex(prev => prev - 1);
+        handleAnimationState();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      if (animationTimeout) clearTimeout(animationTimeout);
+    };
+  }, [active, activeIndex, projects.length]);
+
+  const handleWheel = (e) => {
+    // Sensitivity threshold to prevent accidental triggers
+    if (Math.abs(e.deltaY) < 30) return;
+
+    if (e.deltaY > 0 && activeIndex < projects.length - 1) {
+      setActiveIndex(prev => prev + 1);
+      setIsScrolling(true);
+      if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
+      scrollTimeout.current = setTimeout(() => setIsScrolling(false), 850);
+    } else if (e.deltaY < 0 && activeIndex > 0) {
+      setActiveIndex(prev => prev - 1);
+      setIsScrolling(true);
+      if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
+      scrollTimeout.current = setTimeout(() => setIsScrolling(false), 850);
+    }
+
+    // Stop propagation to prevent page scrolling while navigating projects
+    e.stopPropagation();
+  };
+
   return (
-    <div className="w-screen h-screen flex items-center relative overflow-hidden bg-black flex-shrink-0">
+    <div
+      onWheel={handleWheel}
+      className="w-screen h-screen flex items-center relative overflow-hidden flex-shrink-0"
+    >
       {/* Cinematic Background Video Layer */}
       <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
-        {/* Instant Visual Placeholder: Cinematic Skeleton Shimmer */}
-        <div 
+        <div
           className={`absolute inset-0 bg-[#0a0a0c] transition-opacity duration-1000 z-10 ${bgVideoLoaded ? 'opacity-0' : 'opacity-100'}`}
-          style={{ 
-            backgroundImage: 'radial-gradient(circle at 30% 70%, rgba(129, 140, 248, 0.08) 0%, transparent 60%)',
-          }}
         >
-          {!bgVideoLoaded && (
-            <div className="absolute inset-0 overflow-hidden">
-               <div className="absolute inset-0 bg-transparent animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-white/5 to-transparent skew-x-[-20deg]"></div>
-            </div>
-          )}
           <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-10"></div>
         </div>
 
         <video
+          ref={videoRef}
           autoPlay
-          muted={true}
-          defaultMuted
+          muted
           loop
           playsInline
-          preload="auto"
-          onLoadedData={() => setBgVideoLoaded(true)}
-          className={`w-full h-full object-cover transition-all duration-1000 scale-105 brightness-75 ${bgVideoLoaded ? 'opacity-50 blur-0' : 'opacity-0 blur-xl'}`}
+          className={`w-full h-full object-cover transition-all duration-1000 scale-105 brightness-[0.40] ${bgVideoLoaded ? 'opacity-100' : 'opacity-0'}`}
+          onCanPlay={() => setBgVideoLoaded(true)}
         >
           <source src="/home1.mp4" type="video/mp4" />
         </video>
 
-        {/* Cinematic Aesthetic Layers */}
         <div className="absolute inset-0 pointer-events-none z-[5] opacity-20 mix-blend-overlay grain-overlay"></div>
         <div className="absolute inset-0 pointer-events-none z-[6] opacity-10 scanlines"></div>
-
-        {/* High-Tech Vignette & Mesh Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-l from-black via-black/20 to-transparent z-[7]"></div>
+        <div className="absolute inset-0 bg-gradient-to-l from-black via-black/60 to-transparent z-[7]"></div>
         <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent z-[8]"></div>
-        <div className="absolute inset-0 bg-radial-vignette opacity-50 z-[9]"></div>
+        <div className="absolute inset-0 bg-radial-vignette opacity-70 z-[9]"></div>
       </div>
 
-      <div className="container mx-auto px-6 relative z-20">
-        <div className="mb-12 text-left">
-          <h2 className="text-4xl font-display font-bold mb-4 text-white uppercase italic tracking-tighter">Selected <span className="text-primary text-glow">Works</span></h2>
-          <p className="text-slate-400 font-light tracking-widest uppercase text-xs">A refined collection of digital items.</p>
+      <div className="w-full h-full relative z-20 flex flex-col justify-center">
+        {/* Horizontal Navigation Info */}
+        <div className="absolute top-28 left-6 md:left-24 pointer-events-none">
+          <h2 className="text-primary font-bold tracking-[0.5em] uppercase text-[10px] animate-pulse">Projects Ecosystem</h2>
+          <p className="text-slate-500 font-mono text-[9px] mt-1">Scroll to navigate nodes</p>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+
+        {/* Artistic Horizontal Stage */}
+        <div
+          ref={scrollRef}
+          className="flex flex-row items-center transition-transform duration-[800ms] cubic-bezier(0.23, 1, 0.32, 1) gap-[2vw] h-[60vh]"
+          style={{
+            transform: `translateX(calc(75vw - (${activeIndex} * (42vw + 2vw)) - 21vw))`
+          }}
+        >
           {projects.map((p, i) => (
-            <div key={i} className="group glass rounded-3xl p-8 hover:bg-slate-900/40 transition-all duration-500 border-white/5 hover:border-primary/30 text-left relative overflow-hidden">
-              <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-100 transition-opacity">
-                <div className="text-[10px] font-mono text-primary">PROJECT_ID: 00{i+1}</div>
-              </div>
-              <div className="h-40 bg-slate-800/20 rounded-2xl mb-6 flex items-center justify-center border border-white/5 group-hover:border-primary/20 transition-colors">
-                <span className="text-slate-600 font-display font-medium text-sm tracking-[0.3em] uppercase group-hover:text-primary/60 transition-colors">Visual Preview</span>
-              </div>
-              <h3 className="text-2xl font-bold mb-2 group-hover:text-primary transition-colors text-white italic">{p.title}</h3>
-              <p className="text-sm text-slate-400 leading-relaxed font-light">{p.desc}</p>
-              <div className="mt-6 flex gap-2">
-                {p.tags.map(tag => (
-                  <span key={tag} className="text-[9px] px-2 py-1 rounded bg-white/5 text-slate-500 border border-white/5 uppercase tracking-tighter">{tag}</span>
-                ))}
+            <div
+              key={i}
+              className={`project-node flex-shrink-0 w-[68vw] md:w-[42vw] h-full flex items-center justify-center group select-none pointer-events-auto transition-all duration-700
+                ${activeIndex === i ? 'opacity-100 scale-110' : 'opacity-70 scale-80'}
+              `}
+              style={{
+                filter: isScrolling
+                  ? (activeIndex === i ? 'none' : 'blur(5px) brightness(0.8)')
+                  : (activeIndex === i ? 'none' : 'blur(3.5px) brightness(0.9)'),
+                transition: 'filter 0.3s ease-out, transform 0.4s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.4s ease'
+              }}
+            >
+              <div className="relative w-full flex items-center justify-center">
+
+                {/* Skewed Stage (Artistic Parallelogram) */}
+                <div className={`relative z-20 w-[48vw] md:w-[32vw] aspect-[16/10] overflow-hidden skew-x-[-15deg] transition-all duration-700 group-hover:skew-x-[-12deg] group-hover:scale-105 border-2 shadow-[0_0_50px_rgba(0,0,0,0.8)] bg-[#151518]
+                  ${activeIndex === i ? 'border-primary/80 shadow-primary/20' : 'border-primary/20 shadow-primary/5'}
+                `}>
+
+                  {/* Inner Image (Inverse Skew to display content correctly) */}
+                  <div className="absolute inset-[-15%] skew-x-[15deg] group-hover:skew-x-[12deg] transition-transform duration-700">
+                    <img
+                      src={p.image}
+                      alt={p.title}
+                      className="w-full h-full object-cover grayscale-[0.5] group-hover:grayscale-0 transition-all duration-700 scale-110 group-hover:scale-125"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent group-hover:via-transparent transition-all"></div>
+                  </div>
+
+                  {/* PROJECT TEXT INSIDE FRAME - SKEWED INVERSE TO MATCH IMAGE */}
+                  <div className="absolute bottom-8 left-12 z-30 skew-x-[15deg] group-hover:skew-x-[12deg] transition-all pointer-events-none">
+                    <h3 className="text-3xl md:text-5xl font-display font-black text-white italic leading-tight uppercase tracking-tight drop-shadow-2xl">
+                      {p.title}
+                    </h3>
+                    <h4 className="text-xl md:text-2xl font-display font-light text-primary/90 italic uppercase tracking-widest -mt-1">
+                      {p.subtitle}
+                    </h4>
+                    <div className="flex gap-2 mt-4 opacity-60 group-hover:opacity-100 transition-opacity">
+                      {p.tags.map(tag => (
+                        <span key={tag} className="text-[9px] font-mono border border-primary/20 px-2 py-0.5 rounded text-primary/80 uppercase">[{tag}]</span>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Corner Accents */}
+                  <div className="absolute top-4 left-4 w-4 h-4 border-t border-l border-white/40 group-hover:border-primary transition-colors"></div>
+                  <div className="absolute bottom-4 right-4 w-4 h-4 border-b border-r border-white/40 group-hover:border-primary transition-colors"></div>
+                </div>
+
+                {/* HUD Navigation Number */}
+                <div className="absolute -bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center transition-opacity duration-500"
+                  style={{
+                    opacity: activeIndex === i ? 0.8 : 0.2
+                  }}
+                >
+                  <div className="w-px h-6 bg-white/20 mb-2"></div>
+                  <div className="text-[10px] font-mono text-white tracking-widest uppercase">NODE_00{i + 1}</div>
+                </div>
+
               </div>
             </div>
           ))}
         </div>
+
+        {/* Global Footer Controls (Similar to reference) */}
+        <div className="absolute bottom-12 left-0 right-0 px-6 md:px-24 flex justify-between items-end pointer-events-none">
+          <div className="pointer-events-auto">
+            <div className="text-[10px] font-mono text-slate-700 tracking-[0.4em] mb-2 uppercase">Collections</div>
+            {/*<div className="flex gap-4">
+              <button className="glass px-4 py-1.5 rounded-full text-[10px] font-bold text-white/50 border-white/5 hover:border-primary/40 hover:text-white transition-all uppercase">All Works =</button>
+              <button className="bg-primary/20 backdrop-blur-md px-4 py-1.5 rounded-full text-[10px] font-bold text-primary border border-primary/40 hover:bg-primary/30 transition-all uppercase italic">Selected Projects *</button>
+            </div>*/}
+          </div>
+          <div className="text-right pointer-events-none opacity-10">
+            <div className="text-4xl font-display font-black uppercase italic italic tracking-tighter">Faiq_a.m</div>
+            <div className="text-[8px] font-mono uppercase tracking-[0.5em]">Creative Developer Exhibit</div>
+          </div>
+        </div>
+
       </div>
     </div>
   );

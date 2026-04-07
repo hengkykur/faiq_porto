@@ -1,16 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense, lazy } from 'react';
 import Navbar from './components/Navbar';
-import Hero from './components/Hero';
-import Projects from './components/Projects';
-import About from './components/About';
-import Contact from './components/Contact';
 import DotPagination from './components/DotPagination';
+
+// Dynamic imports for code-splitting (chunking)
+const Hero = lazy(() => import('./components/Hero'));
+const Projects = lazy(() => import('./components/Projects'));
+const About = lazy(() => import('./components/About'));
+const Contact = lazy(() => import('./components/Contact'));
 
 function App() {
   const [ready, setReady] = useState(false);
   const [currentPage, setCurrentPage] = useState(0);
   const [isHeroReady, setIsHeroReady] = useState(false);
-
   useEffect(() => {
     // Only lift the preloader when Hero video is buffered
     if (isHeroReady) {
@@ -28,15 +29,22 @@ function App() {
       <Navbar currentPage={currentPage} setCurrentPage={setCurrentPage} />
       <DotPagination currentPage={currentPage} setCurrentPage={setCurrentPage} />
       
-      {/* Main Horizontal Slider Wrapper */}
       <div 
         className="flex transition-transform duration-1000 ease-[cubic-bezier(0.77,0,0.175,1)] h-full w-full"
         style={{ transform: `translateX(-${currentPage * 100}%)` }}
       >
-        <Hero active={currentPage === 0} onReady={() => setIsHeroReady(true)} />
-        <Projects active={currentPage === 1} />
-        <About active={currentPage === 2} prewarm={currentPage === 1 || ready} />
-        <Contact active={currentPage === 3} />
+        <Suspense fallback={null}>
+          <Hero active={currentPage === 0} onReady={() => setIsHeroReady(true)} />
+        </Suspense>
+        <Suspense fallback={null}>
+          <Projects active={currentPage === 1} />
+        </Suspense>
+        <Suspense fallback={null}>
+          <About active={currentPage === 2} prewarm={currentPage === 1 || ready} />
+        </Suspense>
+        <Suspense fallback={null}>
+          <Contact active={currentPage === 3} />
+        </Suspense>
       </div>
 
       {/* Decorative Background Glow */}
