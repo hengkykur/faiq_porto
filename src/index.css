@@ -43,9 +43,44 @@
   }
 
   @keyframes shimmer {
-  0% { transform: translateX(-100%) skewX(-20deg); }
-  100% { transform: translateX(200%) skewX(-20deg); }
-}
+    0% { transform: translateX(-100%) skewX(-20deg); }
+    100% { transform: translateX(200%) skewX(-20deg); }
+  }
+
+  @keyframes grain {
+    0%, 100% { transform: translate(0, 0); }
+    10% { transform: translate(-5%, -10%); }
+    20% { transform: translate(-15%, 5%); }
+    30% { transform: translate(7%, -25%); }
+    40% { transform: translate(-5%, 25%); }
+    50% { transform: translate(-15%, 10%); }
+    60% { transform: translate(15%, 0%); }
+    70% { transform: translate(0%, 15%); }
+    80% { transform: translate(3%, 35%); }
+    90% { transform: translate(-10%, 10%); }
+  }
+
+  .grain-overlay {
+    background-image: url("https://www.transparenttextures.com/patterns/black-linen.png");
+    opacity: 0.15;
+    animation: grain 8s steps(10) infinite;
+    pointer-events: none;
+  }
+
+  .scanlines {
+    background: linear-gradient(
+      rgba(18, 16, 16, 0) 50%,
+      rgba(0, 0, 0, 0.25) 50%
+    ),
+    linear-gradient(
+      90deg,
+      rgba(255, 0, 0, 0.06),
+      rgba(0, 255, 0, 0.02),
+      rgba(0, 0, 255, 0.06)
+    );
+    background-size: 100% 4px, 3px 100%;
+    pointer-events: none;
+  }
 
   .text-gradient {
     background: linear-gradient(135deg, var(--color-primary), var(--color-glow));

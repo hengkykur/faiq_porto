@@ -9,51 +9,21 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="preload" href="/home1.mp4" as="video" type="video/mp4">
     <link rel="preload" href="/vidiohomebulet.mp4" as="video" type="video/mp4">
+    <link rel="preload" href="/skillvid.mp4" as="video" type="video/mp4">
     <title>Faiq | Portfolio</title>
   </head>
   <body>
-    <style>
-      #preloader {
-        position: fixed;
-        inset: 0;
-        background: #0a0a0c;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 9999;
-        transition: opacity 0.8s ease-out, visibility 0.8s;
-      }
-      .loader-content {
-        text-align: center;
-      }
-      .loader-logo {
-        font-family: 'Outfit', sans-serif;
-        font-size: 2.5rem;
-        font-weight: 700;
-        color: white;
-        letter-spacing: -2px;
-        opacity: 0;
-        animation: fadeIn 0.5s ease forwards;
-      }
-      .loader-bar {
-        width: 120px;
-        height: 2px;
-        background: oklch(65% 0.25 260 / 20%);
-        margin: 1.5rem auto 0;
-        position: relative;
-        overflow: hidden;
-        border-radius: 4px;
-      }
-      .loader-progress {
-        width: 40%;
-        height: 100%;
-        background: oklch(65% 0.25 260);
-        position: absolute;
-        animation: progress 1.5s infinite ease-in-out;
-      }
-      @keyframes fadeIn {
-        to { opacity: 1; transform: translateY(0); }
-        from { opacity: 0; transform: translateY(20px); }
+    <div id="root"></div>
+    <!-- Preloader -->
+    <div id="preloader" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.8s ease-out; pointer-events: none;">
+      <div style="font-family: 'Outfit', sans-serif; color: #fff; font-size: 24px; font-weight: 700; letter-spacing: 0.3em; margin-bottom: 20px; animation: pulse 2s infinite;">FAIQ_A.M</div>
+      <div style="width: 200px; height: 2px; background: rgba(255,255,255,0.1); position: relative; overflow: hidden;">
+        <div id="preloader-bar" style="position: absolute; top: 0; left: 0; height: 100%; width: 40%; background: #818cf8; animation: progress 1.5s infinite ease-in-out;"></div>
+      </div>
+      <style>
+      @keyframes pulse {
+        0%, 100% { opacity: 0.5; filter: blur(2px); }
+        50% { opacity: 1; filter: blur(0px); }
       }
       @keyframes progress {
         0% { left: -40%; }
@@ -61,16 +31,9 @@
       }
       .loaded #preloader {
         opacity: 0;
-        visibility: hidden;
       }
-    </style>
-    <div id="preloader">
-      <div class="loader-content">
-        <div class="loader-logo">Faiq<span style="color: oklch(65% 0.25 260); font-style: italic;">_a.m</span></div>
-        <div class="loader-bar"><div class="loader-progress"></div></div>
-      </div>
+      </style>
     </div>
-    <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

@@ -97,6 +97,10 @@ const ThreeDElement = ({ src, isVideo = false, className, floatDelay = "0s", siz
                 onLoadedMetadata={handleLoadedMetadata}
                 onLoadedData={(e) => {
                    if (e.target.duration) setDuration(e.target.duration);
+                   // Instant reveal once data is ready
+                   setOpacity(0.6);
+                   setBlur(0);
+                   setScale(1);
                 }}
                 preload="auto"
                 className="w-full h-full object-cover mix-blend-screen"
@@ -133,11 +137,10 @@ const Hero = ({ active, onReady }) => {
   const [shouldLoadSecondary, setShouldLoadSecondary] = useState(false);
   const [bgVideoLoaded, setBgVideoLoaded] = useState(false);
 
-  // De-prioritize secondary tech video (reduced delay for faster feel)
+  // Instant mount for secondary tech video to maximize speed
   useEffect(() => {
     if (active) {
-      const timer = setTimeout(() => setShouldLoadSecondary(true), 300);
-      return () => clearTimeout(timer);
+      setShouldLoadSecondary(true);
     }
   }, [active]);
 
@@ -207,10 +210,15 @@ const Hero = ({ active, onReady }) => {
         >
           <source src="/home1.mp4" type="video/mp4" />
         </video>
-        {/* High-Tech Vignette & Mesh Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-r from-black via-black/30 to-transparent"></div>
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/90"></div>
-        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-15 mix-blend-overlay"></div>
+
+        {/* Cinematic Aesthetic Layers: Noise & Scanlines */}
+        <div className="absolute inset-0 pointer-events-none z-[5] opacity-30 mix-blend-overlay grain-overlay"></div>
+        <div className="absolute inset-0 pointer-events-none z-[6] opacity-20 scanlines"></div>
+
+        {/* High-Tech Vignette & Mesh Overlay - Strengthened */}
+        <div className="absolute inset-0 bg-gradient-to-r from-black via-black/20 to-transparent z-[7]"></div>
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black z-[8]"></div>
+        <div className="absolute inset-0 bg-radial-vignette opacity-40 z-[9]"></div>
       </div>
 
       {/* Background 3D Elements Container - Forced to Right Half */}

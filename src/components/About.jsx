@@ -72,7 +72,7 @@ const About = ({ active, prewarm }) => {
       const runRoulette = async () => {
         setIsSpinning(true);
         setIsFastSpin(true);
-        const sequence = [1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0];
+        const sequence = [1, 2, 0, 1, 2]; // Shortened for faster intro
         for (let i = 0; i < sequence.length; i++) {
           setExpIndex(sequence[i]);
           await new Promise(r => setTimeout(r, 150));
@@ -225,7 +225,11 @@ const About = ({ active, prewarm }) => {
             style={{ opacity: videoLoaded ? (videoOpacity * 0.7) : 0 }}
           />
         )}
-        <div className="absolute inset-0 bg-black/30"></div>
+        <div className="absolute inset-0 bg-black/30 z-10"></div>
+        
+        {/* Aesthetic Camouflage Layers */}
+        <div className="absolute inset-0 pointer-events-none z-[11] opacity-20 mix-blend-overlay grain-overlay"></div>
+        <div className="absolute inset-0 pointer-events-none z-[12] opacity-10 scanlines"></div>
       </div>
 
       <div className="absolute top-0 left-0 z-10 w-full" style={{ height: '700vh' }}>
@@ -245,8 +249,8 @@ const About = ({ active, prewarm }) => {
               <h2 className="text-primary font-semibold mb-8 tracking-[0.5em] uppercase text-xs transition-all duration-1000" style={{ opacity: isZone2Active ? 1 : 0, transform: `translateY(${isZone2Active ? 0 : 20}px)`, filter: `blur(${isZone2Active ? 0 : 10}px)` }}>Mastering the Craft</h2>
               <svg viewBox="0 0 1000 300" className="w-full h-auto drop-shadow-[0_0_30px_rgba(255,255,255,0.05)] transition-all duration-1000 ease-out" style={{ opacity: isZone2Active ? 1 : 0, transform: `scale(${isZone2Active ? 1 : 0.95}) translateY(${isZone2Active ? 0 : -20}px)`, filter: `blur(${isZone2Active ? 0 : 20}px)` }}>
                 <defs><linearGradient id="textGradient" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stopColor="var(--color-primary)" /><stop offset="100%" stopColor="#818cf8" /></linearGradient></defs>
-                <text x="50%" y="35%" textAnchor="middle" className="font-display font-black italic tracking-tighter" style={{ fontSize: '120px', fill: 'white', fillOpacity: isZone2Active ? 1 : 0, stroke: 'white', strokeWidth: '1.2', strokeDasharray: '1000', strokeDashoffset: isZone2Active ? 0 : 1000, transition: isZone2Active ? 'stroke-dashoffset 2.5s cubic-bezier(0.4, 0, 0.2, 1), fill-opacity 1s ease-out 1.5s' : 'stroke-dashoffset 1.2s ease-in, fill-opacity 0.5s ease-in' }}>CINEMATIC</text>
-                <text x="50%" y="75%" textAnchor="middle" className="font-display font-black italic tracking-tighter" style={{ fontSize: '120px', fill: 'url(#textGradient)', fillOpacity: isZone2Active ? 1 : 0, stroke: 'url(#textGradient)', strokeWidth: '1.2', strokeDasharray: '1000', strokeDashoffset: isZone2Active ? 0 : 1000, transition: isZone2Active ? 'stroke-dashoffset 2.5s cubic-bezier(0.4, 0, 0.2, 1) 0.5s, fill-opacity 1s ease-out 1.8s' : 'stroke-dashoffset 1.2s ease-in, fill-opacity 0.5s ease-in' }}>STORY</text>
+                <text x="50%" y="35%" textAnchor="middle" className="font-display font-black italic tracking-tighter" style={{ fontSize: '120px', fill: 'white', fillOpacity: isZone2Active ? 1 : 0, stroke: 'white', strokeWidth: '1.2', strokeDasharray: '1000', strokeDashoffset: isZone2Active ? 0 : 1000, transition: isZone2Active ? 'stroke-dashoffset 2.5s cubic-bezier(0.4, 0, 0.2, 1), fill-opacity 1s ease-out 1.5s' : 'stroke-dashoffset 1.2s ease-in, fill-opacity 0.5s ease-in' }}>FAIQ</text>
+                <text x="50%" y="75%" textAnchor="middle" className="font-display font-black italic tracking-tighter" style={{ fontSize: '120px', fill: 'url(#textGradient)', fillOpacity: isZone2Active ? 1 : 0, stroke: 'url(#textGradient)', strokeWidth: '1.2', strokeDasharray: '1000', strokeDashoffset: isZone2Active ? 0 : 1000, transition: isZone2Active ? 'stroke-dashoffset 2.5s cubic-bezier(0.4, 0, 0.2, 1) 0.5s, fill-opacity 1s ease-out 1.8s' : 'stroke-dashoffset 1.2s ease-in, fill-opacity 0.5s ease-in' }}>ADIMULYO</text>
               </svg>
             </div>
           </div>
