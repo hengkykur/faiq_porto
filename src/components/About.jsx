@@ -5,7 +5,7 @@ import kayabaLogo from '../assets/kayaba.webp';
 import himasisLogo from '../assets/himasis.png';
 import academicTech from '../assets/academic_tech.png';
 
-const About = ({ active }) => {
+const About = ({ active, prewarm }) => {
   const containerRef = useRef(null);
   const videoRef = useRef(null);
   const [scrollProgress, setScrollProgress] = useState(0);
@@ -18,12 +18,12 @@ const About = ({ active }) => {
   const [hasStartedLoading, setHasStartedLoading] = useState(false);
   const [videoLoaded, setVideoLoaded] = useState(false);
 
-  // Lazy load video when component becomes active
+  // Lazy load video when component becomes active or prewarmed
   useEffect(() => {
-    if (active && !hasStartedLoading) {
+    if ((active || prewarm) && !hasStartedLoading) {
       setHasStartedLoading(true);
     }
-  }, [active, hasStartedLoading]);
+  }, [active, prewarm, hasStartedLoading]);
 
   // Carousel State
   const [expIndex, setExpIndex] = useState(0);
@@ -194,6 +194,14 @@ const About = ({ active }) => {
             scrollProgress > 0.62 ? 0.4 : 1
         }}
       >
+        {/* Visual Placeholder for About Video */}
+        <div 
+          className={`absolute inset-0 bg-[#0a0a0c] transition-opacity duration-1000 ${videoLoaded ? 'opacity-0' : 'opacity-100'}`}
+          style={{ 
+            backgroundImage: 'radial-gradient(circle at 30% 70%, rgba(129, 140, 248, 0.05) 0%, transparent 50%)',
+          }}
+        ></div>
+
         {hasStartedLoading && (
           <video
             ref={videoRef}
@@ -203,10 +211,10 @@ const About = ({ active }) => {
             defaultMuted
             loop
             playsInline
-            preload="metadata"
+            preload="auto"
             onTimeUpdate={handleTimeUpdate}
-            onLoadedData={() => setVideoLoaded(true)}
-            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${videoLoaded ? 'opacity-100' : 'opacity-0'}`}
+            onCanPlayThrough={() => setVideoLoaded(true)}
+            className={`absolute inset-0 w-full h-full object-cover transition-all duration-1000 ${videoLoaded ? 'opacity-100 blur-0' : 'opacity-0 blur-lg'}`}
             style={{ opacity: videoLoaded ? (videoOpacity * 0.7) : 0 }}
           />
         )}

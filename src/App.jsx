@@ -32,7 +32,7 @@ function App() {
       >
         <Hero active={currentPage === 0} />
         <Projects active={currentPage === 1} />
-        <About active={currentPage === 2} />
+        <About active={currentPage === 2} prewarm={currentPage === 1} />
         <Contact active={currentPage === 3} />
       </div>
 

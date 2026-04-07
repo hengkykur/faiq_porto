@@ -128,6 +128,7 @@ const Hero = ({ active }) => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [typeSpeed, setTypeSpeed] = useState(150);
   const [shouldLoadSecondary, setShouldLoadSecondary] = useState(false);
+  const [bgVideoLoaded, setBgVideoLoaded] = useState(false);
 
   // De-prioritize secondary tech video
   useEffect(() => {
@@ -172,6 +173,16 @@ const Hero = ({ active }) => {
     <div className="w-screen h-screen flex items-center relative overflow-hidden bg-black flex-shrink-0">
       {/* Cinematic Background Video Layer */}
       <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+        {/* Instant Visual Placeholder: Subtle Glow/Gradient */}
+        <div 
+          className={`absolute inset-0 bg-[#0a0a0c] transition-opacity duration-1000 z-10 ${bgVideoLoaded ? 'opacity-0' : 'opacity-100'}`}
+          style={{ 
+            backgroundImage: 'radial-gradient(circle at 70% 30%, rgba(129, 140, 248, 0.08) 0%, transparent 60%)',
+          }}
+        >
+           <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-10"></div>
+        </div>
+
         <video
           autoPlay
           muted={true}
@@ -179,7 +190,8 @@ const Hero = ({ active }) => {
           loop
           playsInline
           preload="auto"
-          className="w-full h-full object-cover opacity-65 scale-105 brightness-90"
+          onCanPlayThrough={() => setBgVideoLoaded(true)}
+          className={`w-full h-full object-cover transition-all duration-1000 scale-105 brightness-90 ${bgVideoLoaded ? 'opacity-65 blur-0' : 'opacity-0 blur-xl'}`}
         >
           <source src={homeVideo} type="video/mp4" />
         </video>
