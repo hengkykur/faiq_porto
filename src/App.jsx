@@ -30,10 +30,10 @@ function App() {
         className="flex transition-transform duration-1000 ease-[cubic-bezier(0.77,0,0.175,1)] h-full w-full"
         style={{ transform: `translateX(-${currentPage * 100}%)` }}
       >
-        <Hero />
-        <Projects />
-        <About />
-        <Contact />
+        <Hero active={currentPage === 0} />
+        <Projects active={currentPage === 1} />
+        <About active={currentPage === 2} />
+        <Contact active={currentPage === 3} />
       </div>
 
       {/* Decorative Background Glow */}

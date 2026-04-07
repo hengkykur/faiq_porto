@@ -1,6 +1,6 @@
 import React from 'react';
 
-const Projects = () => {
+const Projects = ({ active }) => {
   const projects = [
     { title: 'Nexus UI Kit', desc: 'Modern design system for React app.', tags: ['React', 'CSS'] },
     { title: 'Cyber Analytics', desc: 'Real-time monitoring dashboard.', tags: ['Vite', 'Edge'] },

@@ -95,6 +95,7 @@ const ThreeDElement = ({ src, isVideo = false, className, floatDelay = "0s", siz
                 loop
                 playsInline
                 onLoadedMetadata={handleLoadedMetadata}
+                preload="metadata"
                 className="w-full h-full object-cover mix-blend-screen"
                 style={{
                   WebkitMaskImage: 'radial-gradient(circle at center, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 20%, rgba(0,0,0,0) 70%)',
@@ -121,11 +122,20 @@ const ThreeDElement = ({ src, isVideo = false, className, floatDelay = "0s", siz
   );
 };
 
-const Hero = () => {
+const Hero = ({ active }) => {
   const [wordIndex, setWordIndex] = useState(0);
   const [currentText, setCurrentText] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
   const [typeSpeed, setTypeSpeed] = useState(150);
+  const [shouldLoadSecondary, setShouldLoadSecondary] = useState(false);
+
+  // De-prioritize secondary tech video
+  useEffect(() => {
+    if (active) {
+      const timer = setTimeout(() => setShouldLoadSecondary(true), 1200);
+      return () => clearTimeout(timer);
+    }
+  }, [active]);
 
   const words = ['Elegance', 'Precision', 'Innovation', 'Simplicity'];
 
@@ -168,6 +178,7 @@ const Hero = () => {
           defaultMuted
           loop
           playsInline
+          preload="auto"
           className="w-full h-full object-cover opacity-65 scale-105 brightness-90"
         >
           <source src={homeVideo} type="video/mp4" />
@@ -181,15 +192,17 @@ const Hero = () => {
       {/* Background 3D Elements Container - Forced to Right Half */}
       <div className="absolute top-0 right-0 w-full md:w-1/2 h-full z-10 pointer-events-none overflow-visible flex items-center justify-center">
         {/* Replaced 3 images with 1 Circular Tech Video */}
-        <div className="pointer-events-auto scale-125 md:scale-[1.8] translate-y-10">
-          <ThreeDElement
-            src={homeVideoCircle}
-            isVideo={true}
-            size="w-64 h-64 md:w-[350px] md:h-[350px]"
-            tiltFactor={40}
-            floatDelay="0s"
-            playbackRate={1.0}
-          />
+        <div className="pointer-events-auto scale-125 md:scale-[1.8] translate-y-10 transition-opacity duration-1000" style={{ opacity: shouldLoadSecondary ? 1 : 0 }}>
+          {shouldLoadSecondary && (
+            <ThreeDElement
+              src={homeVideoCircle}
+              isVideo={true}
+              size="w-64 h-64 md:w-[350px] md:h-[350px]"
+              tiltFactor={40}
+              floatDelay="0s"
+              playbackRate={1.0}
+            />
+          )}
         </div>
       </div>
 

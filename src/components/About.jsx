@@ -5,7 +5,7 @@ import kayabaLogo from '../assets/kayaba.webp';
 import himasisLogo from '../assets/himasis.png';
 import academicTech from '../assets/academic_tech.png';
 
-const About = () => {
+const About = ({ active }) => {
   const containerRef = useRef(null);
   const videoRef = useRef(null);
   const [scrollProgress, setScrollProgress] = useState(0);
@@ -15,6 +15,15 @@ const About = () => {
   const [isZone4Active, setIsZone4Active] = useState(false);
   const [isZone5Active, setIsZone5Active] = useState(false);
   const [isZone6Active, setIsZone6Active] = useState(false);
+  const [hasStartedLoading, setHasStartedLoading] = useState(false);
+  const [videoLoaded, setVideoLoaded] = useState(false);
+
+  // Lazy load video when component becomes active
+  useEffect(() => {
+    if (active && !hasStartedLoading) {
+      setHasStartedLoading(true);
+    }
+  }, [active, hasStartedLoading]);
 
   // Carousel State
   const [expIndex, setExpIndex] = useState(0);
@@ -185,11 +194,22 @@ const About = () => {
             scrollProgress > 0.62 ? 0.4 : 1
         }}
       >
-        <video
-          ref={videoRef} src={skillVid} autoPlay muted={true} defaultMuted loop playsInline onTimeUpdate={handleTimeUpdate}
-          className="absolute inset-0 w-full h-full object-cover transition-opacity duration-1000"
-          style={{ opacity: videoOpacity * 0.7 }}
-        />
+        {hasStartedLoading && (
+          <video
+            ref={videoRef}
+            src={skillVid}
+            autoPlay
+            muted={true}
+            defaultMuted
+            loop
+            playsInline
+            preload="metadata"
+            onTimeUpdate={handleTimeUpdate}
+            onLoadedData={() => setVideoLoaded(true)}
+            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${videoLoaded ? 'opacity-100' : 'opacity-0'}`}
+            style={{ opacity: videoLoaded ? (videoOpacity * 0.7) : 0 }}
+          />
+        )}
         <div className="absolute inset-0 bg-black/30"></div>
       </div>
 
