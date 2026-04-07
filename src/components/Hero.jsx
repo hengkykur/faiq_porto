@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 // import homeVideo from '../assets/home.mp4';
 // import homeVideoCircle from '../assets/vidiohomebulet.mp4'; 
 
-const ThreeDElement = ({ src, isVideo = false, className, floatDelay = "0s", size = "w-64 h-64", playbackRate = 1.0 }) => {
+const ThreeDElement = ({ src, isVideo = false, className, floatDelay = "0s", size = "w-64 h-64", playbackRate = 1.0, ...props }) => {
   const [duration, setDuration] = useState(0);
   const [opacity, setOpacity] = useState(0);
   const [blur, setBlur] = useState(30);
@@ -101,6 +101,7 @@ const ThreeDElement = ({ src, isVideo = false, className, floatDelay = "0s", siz
                    setOpacity(0.6);
                    setBlur(0);
                    setScale(1);
+                   if (src === "/vidiohomebulet.mp4" && props.onReady) props.onReady();
                 }}
                 preload="auto"
                 className="w-full h-full object-cover mix-blend-screen"
@@ -120,6 +121,9 @@ const ThreeDElement = ({ src, isVideo = false, className, floatDelay = "0s", siz
               style={{
                 WebkitMaskImage: 'radial-gradient(circle, rgba(0,0,0,1) 55%, rgba(0,0,0,0) 95%)',
                 maskImage: 'radial-gradient(circle, rgba(0,0,0,1) 55%, rgba(0,0,0,0) 95%)'
+              }}
+              onLoad={() => {
+                if (props.onReady) props.onReady();
               }}
             />
           )}
@@ -142,6 +146,9 @@ const Hero = ({ active, onReady }) => {
     if (active) {
       setShouldLoadSecondary(true);
     }
+    
+    // Fallback for preloader if no 3D video exists, 
+    // though here we trigger it via 3D video load
   }, [active]);
 
   const words = ['Elegance', 'Precision', 'Innovation', 'Simplicity'];
@@ -177,11 +184,10 @@ const Hero = ({ active, onReady }) => {
 
   return (
     <div className="w-screen h-screen flex items-center relative overflow-hidden bg-black flex-shrink-0">
-      {/* Cinematic Background Video Layer */}
+      {/* Cinematic Background Layer - Simplified after video removal */}
       <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
-        {/* Instant Visual Placeholder: Cinematic Skeleton Shimmer */}
         <div 
-          className={`absolute inset-0 bg-[#0a0a0c] transition-opacity duration-1000 z-10 ${bgVideoLoaded ? 'opacity-0' : 'opacity-100'}`}
+          className="absolute inset-0 bg-[#0a0a0c] z-10"
           style={{ 
             backgroundImage: 'radial-gradient(circle at 70% 30%, rgba(129, 140, 248, 0.08) 0%, transparent 60%)',
           }}
@@ -194,22 +200,6 @@ const Hero = ({ active, onReady }) => {
           )}
           <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-10"></div>
         </div>
-
-        <video
-          autoPlay
-          muted={true}
-          defaultMuted
-          loop
-          playsInline
-          preload="auto"
-          onLoadedData={() => {
-            setBgVideoLoaded(true);
-            if (onReady) onReady();
-          }}
-          className={`w-full h-full object-cover transition-all duration-1000 scale-105 brightness-90 ${bgVideoLoaded ? 'opacity-65 blur-0' : 'opacity-0 blur-xl'}`}
-        >
-          <source src="/home1.mp4" type="video/mp4" />
-        </video>
 
         {/* Cinematic Aesthetic Layers: Noise & Scanlines */}
         <div className="absolute inset-0 pointer-events-none z-[5] opacity-30 mix-blend-overlay grain-overlay"></div>
@@ -233,6 +223,10 @@ const Hero = ({ active, onReady }) => {
               tiltFactor={40}
               floatDelay="0s"
               playbackRate={1.0}
+              onReady={() => {
+                 setBgVideoLoaded(true);
+                 if (onReady) onReady();
+              }}
             />
           )}
         </div>
