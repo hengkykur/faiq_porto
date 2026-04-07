@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import skillVid from '../assets/skillvid.mp4';
+// import skillVid from '../assets/skillvid.mp4';
 import academic3d from '../assets/academic_3d.png';
 import kayabaLogo from '../assets/kayaba.webp';
 import himasisLogo from '../assets/himasis.png';
@@ -47,7 +47,7 @@ const About = ({ active, prewarm }) => {
       achievements: []
     },
     {
-      date: "August 2024 — December 2025",
+      date: "August 2025 — December 2025",
       title: "HEAD OF HRD UNIT",
       company: "HIMASIS STMI JAKARTA",
       logo: himasisLogo,
@@ -57,7 +57,7 @@ const About = ({ active, prewarm }) => {
       ]
     },
     {
-      date: "August 2024 — Present",
+      date: "August 2023 — 2024",
       title: "BUSINESS DEVELOPMENT ASSOCIATE",
       company: "HIMASIS STMI JAKARTA",
       logo: himasisLogo,
@@ -194,18 +194,25 @@ const About = ({ active, prewarm }) => {
             scrollProgress > 0.62 ? 0.4 : 1
         }}
       >
-        {/* Visual Placeholder for About Video */}
-        <div 
+        {/* Visual Placeholder for About Video with Cinematic Shimmer */}
+        <div
           className={`absolute inset-0 bg-[#0a0a0c] transition-opacity duration-1000 ${videoLoaded ? 'opacity-0' : 'opacity-100'}`}
-          style={{ 
+          style={{
             backgroundImage: 'radial-gradient(circle at 30% 70%, rgba(129, 140, 248, 0.05) 0%, transparent 50%)',
           }}
-        ></div>
+        >
+          {/* Shimmer Effect */}
+          {!videoLoaded && (
+            <div className="absolute inset-0 overflow-hidden opacity-50">
+              <div className="absolute inset-0 bg-transparent animate-[shimmer_3s_infinite] bg-gradient-to-r from-transparent via-white/5 to-transparent skew-x-[-20deg]"></div>
+            </div>
+          )}
+        </div>
 
         {hasStartedLoading && (
           <video
             ref={videoRef}
-            src={skillVid}
+            src="/skillvid.mp4"
             autoPlay
             muted={true}
             defaultMuted
@@ -213,7 +220,7 @@ const About = ({ active, prewarm }) => {
             playsInline
             preload="auto"
             onTimeUpdate={handleTimeUpdate}
-            onCanPlayThrough={() => setVideoLoaded(true)}
+            onLoadedData={() => setVideoLoaded(true)}
             className={`absolute inset-0 w-full h-full object-cover transition-all duration-1000 ${videoLoaded ? 'opacity-100 blur-0' : 'opacity-0 blur-lg'}`}
             style={{ opacity: videoLoaded ? (videoOpacity * 0.7) : 0 }}
           />

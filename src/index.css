@@ -42,6 +42,11 @@
     border: 1px solid rgba(255, 255, 255, 0.08);
   }
 
+  @keyframes shimmer {
+  0% { transform: translateX(-100%) skewX(-20deg); }
+  100% { transform: translateX(200%) skewX(-20deg); }
+}
+
   .text-gradient {
     background: linear-gradient(135deg, var(--color-primary), var(--color-glow));
     -webkit-background-clip: text;

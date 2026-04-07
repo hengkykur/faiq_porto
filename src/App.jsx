@@ -9,15 +9,18 @@ import DotPagination from './components/DotPagination';
 function App() {
   const [ready, setReady] = useState(false);
   const [currentPage, setCurrentPage] = useState(0);
+  const [isHeroReady, setIsHeroReady] = useState(false);
 
   useEffect(() => {
-    // Handling the preloader transition
-    const timer = setTimeout(() => {
-      setReady(true);
-      document.body.classList.add('loaded');
-    }, 1500);
-    return () => clearTimeout(timer);
-  }, []);
+    // Only lift the preloader when Hero video is buffered
+    if (isHeroReady) {
+      const timer = setTimeout(() => {
+        setReady(true);
+        document.body.classList.add('loaded');
+      }, 500); // Small buffer for branding
+      return () => clearTimeout(timer);
+    }
+  }, [isHeroReady]);
 
   return (
     <div className={`h-screen w-screen bg-black overflow-hidden relative ${ready ? 'opacity-100' : 'opacity-0'} transition-opacity duration-1000`}>
@@ -30,7 +33,7 @@ function App() {
         className="flex transition-transform duration-1000 ease-[cubic-bezier(0.77,0,0.175,1)] h-full w-full"
         style={{ transform: `translateX(-${currentPage * 100}%)` }}
       >
-        <Hero active={currentPage === 0} />
+        <Hero active={currentPage === 0} onReady={() => setIsHeroReady(true)} />
         <Projects active={currentPage === 1} />
         <About active={currentPage === 2} prewarm={currentPage === 1} />
         <Contact active={currentPage === 3} />

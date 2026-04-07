@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
-import homeVideo from '../assets/home.mp4';
-import homeVideoCircle from '../assets/vidiohomebulet.mp4';
+// import homeVideo from '../assets/home.mp4';
+// import homeVideoCircle from '../assets/vidiohomebulet.mp4'; 
 
 const ThreeDElement = ({ src, isVideo = false, className, floatDelay = "0s", size = "w-64 h-64", playbackRate = 1.0 }) => {
   const [duration, setDuration] = useState(0);
@@ -122,7 +122,7 @@ const ThreeDElement = ({ src, isVideo = false, className, floatDelay = "0s", siz
   );
 };
 
-const Hero = ({ active }) => {
+const Hero = ({ active, onReady }) => {
   const [wordIndex, setWordIndex] = useState(0);
   const [currentText, setCurrentText] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
@@ -173,14 +173,20 @@ const Hero = ({ active }) => {
     <div className="w-screen h-screen flex items-center relative overflow-hidden bg-black flex-shrink-0">
       {/* Cinematic Background Video Layer */}
       <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
-        {/* Instant Visual Placeholder: Subtle Glow/Gradient */}
+        {/* Instant Visual Placeholder: Cinematic Skeleton Shimmer */}
         <div 
           className={`absolute inset-0 bg-[#0a0a0c] transition-opacity duration-1000 z-10 ${bgVideoLoaded ? 'opacity-0' : 'opacity-100'}`}
           style={{ 
             backgroundImage: 'radial-gradient(circle at 70% 30%, rgba(129, 140, 248, 0.08) 0%, transparent 60%)',
           }}
         >
-           <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-10"></div>
+          {/* Shimmer Effect */}
+          {!bgVideoLoaded && (
+            <div className="absolute inset-0 overflow-hidden">
+               <div className="absolute inset-0 bg-transparent animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-white/5 to-transparent skew-x-[-20deg]"></div>
+            </div>
+          )}
+          <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-10"></div>
         </div>
 
         <video
@@ -190,10 +196,13 @@ const Hero = ({ active }) => {
           loop
           playsInline
           preload="auto"
-          onCanPlayThrough={() => setBgVideoLoaded(true)}
+          onLoadedData={() => {
+            setBgVideoLoaded(true);
+            if (onReady) onReady();
+          }}
           className={`w-full h-full object-cover transition-all duration-1000 scale-105 brightness-90 ${bgVideoLoaded ? 'opacity-65 blur-0' : 'opacity-0 blur-xl'}`}
         >
-          <source src={homeVideo} type="video/mp4" />
+          <source src="/home1.mp4" type="video/mp4" />
         </video>
         {/* High-Tech Vignette & Mesh Overlay */}
         <div className="absolute inset-0 bg-gradient-to-r from-black via-black/30 to-transparent"></div>
@@ -207,7 +216,7 @@ const Hero = ({ active }) => {
         <div className="pointer-events-auto scale-125 md:scale-[1.8] translate-y-10 transition-opacity duration-1000" style={{ opacity: shouldLoadSecondary ? 1 : 0 }}>
           {shouldLoadSecondary && (
             <ThreeDElement
-              src={homeVideoCircle}
+              src="/vidiohomebulet.mp4"
               isVideo={true}
               size="w-64 h-64 md:w-[350px] md:h-[350px]"
               tiltFactor={40}
