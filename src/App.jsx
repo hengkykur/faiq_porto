@@ -35,7 +35,7 @@ function App() {
       >
         <Hero active={currentPage === 0} onReady={() => setIsHeroReady(true)} />
         <Projects active={currentPage === 1} />
-        <About active={currentPage === 2} prewarm={currentPage === 1} />
+        <About active={currentPage === 2} prewarm={currentPage === 1 || ready} />
         <Contact active={currentPage === 3} />
       </div>
 
