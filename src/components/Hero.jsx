@@ -242,13 +242,13 @@ const Hero = ({ active, onReady }) => {
       <div className="container mx-auto px-6 relative z-20 pointer-events-none pt-12">
         <div className="max-w-4xl text-left pointer-events-auto">
           <h2 className="text-primary font-semibold mb-4 tracking-widest uppercase text-sm animate-glitch-heavy inline-block">Welcome to my space</h2>
-          <h1 className="text-6xl md:text-8xl font-display font-bold leading-tight mb-6 text-white text-left italic">
+          <h1 className="text-5xl md:text-7xl font-display font-bold leading-tight mb-6 text-white text-left italic">
             Building <span className="text-gradient hover:animate-glitch-heavy cursor-default inline-block pr-4">Digital</span> Experiences <br />
             with <span className="italic font-light text-glow min-w-[200px] inline-block">
               {currentText}<span className="animate-pulse border-r-4 border-primary ml-1">&nbsp;</span>
             </span>.
           </h1>
-          <p className="text-xl text-slate-400 max-w-2xl mb-10 leading-relaxed text-left font-light">
+          <p className="text-lg text-slate-400 max-w-2xl mb-10 leading-relaxed text-left font-light">
             I’m a Software Developer building seamless digital ecosystems.
             Bridging the gap between <span className="text-white font-medium">Web, Android, and AI</span> through high-performance, intelligent solutions.
           </p>
