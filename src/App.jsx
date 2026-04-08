@@ -2,8 +2,9 @@ import React, { useState, useEffect, Suspense, lazy } from 'react';
 import Navbar from './components/Navbar';
 import DotPagination from './components/DotPagination';
 
-// Dynamic imports for code-splitting (chunking)
-const Hero = lazy(() => import('./components/Hero'));
+import Hero from './components/Hero';
+
+// Dynamic imports for code-splitting (chunking) for non-immediate sections
 const Projects = lazy(() => import('./components/Projects'));
 const About = lazy(() => import('./components/About'));
 const Contact = lazy(() => import('./components/Contact'));

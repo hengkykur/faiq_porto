@@ -1,95 +1,99 @@
-import React, { useState, useRef, useEffect } from 'react';
-// import homeVideo from '../assets/home.mp4';
-// import homeVideoCircle from '../assets/vidiohomebulet.mp4'; 
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 
-const ThreeDElement = ({ src, isVideo = false, className, floatDelay = "0s", size = "w-64 h-64", playbackRate = 1.0, ...props }) => {
-  const [duration, setDuration] = useState(0);
-  const videoRef = useRef(null);
-  const [videoLoaded, setVideoLoaded] = useState(false);
+/**
+ * Dual-video crossfade component for seamless looping.
+ * Two video elements crossfade at the loop boundary to eliminate "patah".
+ */
+const SeamlessVideo = ({ src, className, style, onReady }) => {
+  const vidA = useRef(null);
+  const vidB = useRef(null);
+  const [activeVid, setActiveVid] = useState('A'); // which is "primary"
+  const [ready, setReady] = useState(false);
+  const crossfadeRef = useRef(null);
+  const durationRef = useRef(0);
+
+  // Setup once video metadata known
+  const handleCanPlay = useCallback(() => {
+    if (!ready) {
+      setReady(true);
+      if (onReady) onReady();
+      // Start both, stagger B to begin near the loop boundary
+      if (vidA.current) {
+        vidA.current.play().catch(() => {});
+      }
+    }
+  }, [ready, onReady]);
+
+  const handleMeta = useCallback((e) => {
+    durationRef.current = e.target.duration;
+  }, []);
 
   useEffect(() => {
-    if (videoRef.current && isVideo) {
-      videoRef.current.playbackRate = playbackRate;
-    }
-  }, [playbackRate, isVideo]);
+    if (!ready) return;
 
-  const handleLoadedMetadata = (e) => {
-    if (isVideo && e.target.duration) {
-      setDuration(e.target.duration);
-    }
-  };
+    const CROSSFADE_DURATION = 0.8; // seconds of overlap
+
+    const checkLoop = () => {
+      const vid = activeVid === 'A' ? vidA.current : vidB.current;
+      const next = activeVid === 'A' ? vidB.current : vidA.current;
+      if (!vid || !next || !durationRef.current) return;
+
+      const timeLeft = durationRef.current - vid.currentTime;
+
+      if (timeLeft <= CROSSFADE_DURATION && timeLeft >= 0 && !crossfadeRef.current) {
+        crossfadeRef.current = true;
+        // Prepare and start next video from beginning
+        next.currentTime = 0;
+        next.play().catch(() => {});
+        // Swap active after crossfade duration
+        setTimeout(() => {
+          setActiveVid(prev => prev === 'A' ? 'B' : 'A');
+          crossfadeRef.current = false;
+        }, CROSSFADE_DURATION * 1000);
+      }
+    };
+
+    const interval = setInterval(checkLoop, 100);
+    return () => clearInterval(interval);
+  }, [ready, activeVid]);
+
+  const vidAOpacity = ready ? (activeVid === 'A' ? 0.75 : 0) : 0;
+  const vidBOpacity = ready ? (activeVid === 'B' ? 0.75 : 0) : 0;
 
   return (
-    <div
-      className={`relative ${size} transition-all duration-500 ease-out animate-float pointer-events-auto ${className}`}
-      style={{
-        perspective: '1500px',
-        animationDelay: floatDelay,
-      }}
-    >
-      <div className="relative w-full h-full transition-transform duration-300 ease-out pointer-events-none">
-        {/* Layer 0: Very Subtle Glow - Pure CSS */}
-        <div className="absolute -inset-20 bg-primary/5 blur-[120px] opacity-20"
-          style={{ transform: 'translate3d(0, 0, -40px)', opacity: videoLoaded ? 0.2 : 0 }}></div>
-
-        {/* Layer 2: Main Content - Hardware Accelerated + Loop Masking */}
-        <div className="absolute inset-0 transition-opacity duration-1000 ease-out"
-          style={{
-            transform: `translate3d(0, 0, 50px) scale(${videoLoaded ? 1 : 0.9})`,
-            opacity: videoLoaded ? 0.6 : 0,
-            animation: videoLoaded && duration > 0 ? `loop-mask ${duration}s linear infinite` : 'none',
-            willChange: 'transform, opacity, filter'
-          }}>
-          {isVideo ? (
-            <div className="w-full h-full relative">
-              {/* Cinematic Fallback Gradient - ONLY visible until data is buffered */}
-              {!videoLoaded && (
-                <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-indigo-500/10 to-transparent animate-pulse z-0 rounded-full"></div>
-              )}
-              
-              <video
-                ref={videoRef}
-                autoPlay
-                muted={true}
-                defaultMuted
-                loop
-                playsInline
-                onLoadedMetadata={handleLoadedMetadata}
-                onCanPlayThrough={(e) => {
-                   if (e.target.duration) setDuration(e.target.duration);
-                   setVideoLoaded(true);
-                   // Ensure video starts playing immediately
-                   e.target.play().catch(err => console.log("Autoplay blocked:", err));
-                   if (src === "/vidiohomebulet.mp4" && props.onReady) props.onReady();
-                }}
-                preload="auto"
-                className={`w-full h-full object-cover mix-blend-screen relative z-10 transition-opacity duration-700 ${videoLoaded ? 'opacity-100' : 'opacity-0'}`}
-                style={{
-                  WebkitMaskImage: 'radial-gradient(circle at center, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 40%, rgba(0,0,0,0) 75%)',
-                  maskImage: 'radial-gradient(circle at center, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 40%, rgba(0,0,0,0) 75%)',
-                  willChange: 'opacity'
-                }}
-              >
-                <source src={src} type="video/mp4" />
-              </video>
-            </div>
-          ) : (
-            <img
-              src={src}
-              alt="3D Tech Model"
-              className="w-full h-full object-contain mix-blend-screen opacity-80 filter contrast-[1.5] brightness-[1.1]"
-              style={{
-                WebkitMaskImage: 'radial-gradient(circle, rgba(0,0,0,1) 55%, rgba(0,0,0,0) 95%)',
-                maskImage: 'radial-gradient(circle, rgba(0,0,0,1) 55%, rgba(0,0,0,0) 95%)'
-              }}
-              onLoad={() => {
-                setVideoLoaded(true); // Reuse state for image
-                if (props.onReady) props.onReady();
-              }}
-            />
-          )}
-        </div>
-      </div>
+    <div className={className} style={style}>
+      <video
+        ref={vidA}
+        muted
+        playsInline
+        preload="auto"
+        crossOrigin="anonymous"
+        onLoadedMetadata={handleMeta}
+        onCanPlayThrough={handleCanPlay}
+        className="absolute inset-0 w-full h-full object-cover mix-blend-screen"
+        style={{
+          opacity: vidAOpacity,
+          transition: 'opacity 0.8s ease-in-out',
+          willChange: 'opacity',
+        }}
+      >
+        <source src={src} type="video/mp4" />
+      </video>
+      <video
+        ref={vidB}
+        muted
+        playsInline
+        preload="auto"
+        crossOrigin="anonymous"
+        className="absolute inset-0 w-full h-full object-cover mix-blend-screen"
+        style={{
+          opacity: vidBOpacity,
+          transition: 'opacity 0.8s ease-in-out',
+          willChange: 'opacity',
+        }}
+      >
+        <source src={src} type="video/mp4" />
+      </video>
     </div>
   );
 };
@@ -99,45 +103,29 @@ const Hero = ({ active, onReady }) => {
   const [currentText, setCurrentText] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
   const [typeSpeed, setTypeSpeed] = useState(150);
-  const [shouldLoadSecondary, setShouldLoadSecondary] = useState(false);
-  const [bgVideoLoaded, setBgVideoLoaded] = useState(false);
-
-  // Instant mount for secondary tech video to maximize speed
-  useEffect(() => {
-    if (active) {
-      setShouldLoadSecondary(true);
-    }
-    
-    // Fallback for preloader if no 3D video exists, 
-    // though here we trigger it via 3D video load
-  }, [active]);
+  const [videoReady, setVideoReady] = useState(false);
 
   const wordConfigs = [
-    { text: 'Digital Art', font: "'Cormorant Garamond', serif", italic: true },
-    { text: 'Sleek Code', font: "'Space Grotesk', sans-serif", italic: false },
-    { text: 'Architecture', font: "'Outfit', sans-serif", italic: true },
-    { text: 'Simplicity', font: "'Plus Jakarta Sans', sans-serif", italic: false }
+    { text: 'Digital Art',   font: "'Cormorant Garamond', serif",    italic: true,  weight: 300 },
+    { text: 'Sleek Code',    font: "'Space Grotesk', sans-serif",     italic: false, weight: 400 },
+    { text: 'Architecture',  font: "'Outfit', sans-serif",            italic: true,  weight: 600 },
+    { text: 'Simplicity',    font: "'Plus Jakarta Sans', sans-serif", italic: false, weight: 300 },
   ];
 
   useEffect(() => {
-    const handleTyping = () => {
-      const currentConfig = wordConfigs[wordIndex];
-      const fullWord = currentConfig.text;
+    const config = wordConfigs[wordIndex];
+    const fullWord = config.text;
 
+    const handleTyping = () => {
       if (!isDeleting) {
-        // Typing
         setCurrentText(fullWord.substring(0, currentText.length + 1));
         setTypeSpeed(150);
-
         if (currentText === fullWord) {
-          // Pause at end
           setTimeout(() => setIsDeleting(true), 2000);
         }
       } else {
-        // Deleting
         setCurrentText(fullWord.substring(0, currentText.length - 1));
         setTypeSpeed(75);
-
         if (currentText === '') {
           setIsDeleting(false);
           setWordIndex((prev) => (prev + 1) % wordConfigs.length);
@@ -149,82 +137,99 @@ const Hero = ({ active, onReady }) => {
     return () => clearTimeout(timer);
   }, [currentText, isDeleting, wordIndex, typeSpeed]);
 
+  const config = wordConfigs[wordIndex];
+
   return (
     <div className="w-screen h-screen flex items-center relative overflow-hidden bg-black flex-shrink-0">
-      {/* Cinematic Background Layer - Simplified after video removal */}
-      <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
-        <div 
-          className="absolute inset-0 bg-[#0a0a0c] z-10"
-          style={{ 
-            backgroundImage: 'radial-gradient(circle at 70% 30%, rgba(129, 140, 248, 0.08) 0%, transparent 60%)',
-          }}
-        >
-          {/* Shimmer Effect */}
-          {!bgVideoLoaded && (
-            <div className="absolute inset-0 overflow-hidden">
-               <div className="absolute inset-0 bg-transparent animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-white/5 to-transparent skew-x-[-20deg]"></div>
-            </div>
-          )}
-          <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-10"></div>
-        </div>
 
-        {/* Cinematic Aesthetic Layers: Noise & Scanlines */}
-        <div className="absolute inset-0 pointer-events-none z-[5] opacity-30 mix-blend-overlay grain-overlay"></div>
-        <div className="absolute inset-0 pointer-events-none z-[6] opacity-20 scanlines"></div>
-
-        {/* High-Tech Vignette & Mesh Overlay - Strengthened */}
-        <div className="absolute inset-0 bg-gradient-to-r from-black via-black/20 to-transparent z-[7]"></div>
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black z-[8]"></div>
-        <div className="absolute inset-0 bg-radial-vignette opacity-40 z-[9]"></div>
+      {/* ── Background ── */}
+      <div className="absolute inset-0 z-0 pointer-events-none">
+        {/* Base dark gradient */}
+        <div className="absolute inset-0 bg-[#060608]"
+          style={{ backgroundImage: 'radial-gradient(ellipse at 75% 40%, rgba(99,102,241,0.12) 0%, transparent 65%)' }}
+        />
+        {/* Subtle carbon texture */}
+        <div className="absolute inset-0 opacity-[0.06]"
+          style={{ backgroundImage: "url('https://www.transparenttextures.com/patterns/carbon-fibre.png')" }}
+        />
+        {/* Grain overlay */}
+        <div className="absolute inset-0 pointer-events-none opacity-20 mix-blend-overlay grain-overlay" />
+        {/* Scanlines */}
+        <div className="absolute inset-0 pointer-events-none opacity-10 scanlines" />
+        {/* Left vignette */}
+        <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-transparent to-transparent" />
+        {/* Bottom vignette */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
       </div>
 
-      {/* Background 3D Elements Container - Forced to Right Half */}
-      <div className="absolute top-0 right-0 w-full md:w-1/2 h-full z-10 pointer-events-none overflow-visible flex items-center justify-center">
-        {/* Replaced 3 images with 1 Circular Tech Video */}
-        <div className="pointer-events-auto scale-125 md:scale-[1.8] translate-y-10 transition-opacity duration-1000" style={{ opacity: shouldLoadSecondary ? 1 : 0 }}>
-          {shouldLoadSecondary && (
-            <ThreeDElement
+      {/* ── Seamless Looping Video (right half) ── */}
+      <div className="absolute top-0 right-0 w-full md:w-[55%] h-full z-10 pointer-events-none flex items-center justify-center overflow-hidden">
+        <div
+          className="relative w-[380px] h-[380px] md:w-[480px] md:h-[480px] transition-opacity duration-1000"
+          style={{ opacity: videoReady ? 1 : 0 }}
+        >
+          {/* Circular mask wrapper */}
+          <div
+            className="absolute inset-0 rounded-full overflow-hidden"
+            style={{
+              WebkitMaskImage: 'radial-gradient(circle at center, black 45%, transparent 75%)',
+              maskImage: 'radial-gradient(circle at center, black 45%, transparent 75%)',
+            }}
+          >
+            <SeamlessVideo
               src="/vidiohomebulet.mp4"
-              isVideo={true}
-              size="w-64 h-64 md:w-[350px] md:h-[350px]"
-              tiltFactor={40}
-              floatDelay="0s"
-              playbackRate={1.0}
+              className="relative w-full h-full"
+              style={{ backgroundColor: 'transparent' }}
               onReady={() => {
-                 setBgVideoLoaded(true);
-                 if (onReady) onReady();
+                setVideoReady(true);
+                if (onReady) onReady();
               }}
             />
-          )}
+          </div>
+          {/* Glow ring behind video */}
+          <div className="absolute inset-[-20px] rounded-full bg-primary/10 blur-3xl -z-10" />
         </div>
       </div>
 
+      {/* ── Hero Text ── */}
+      <div className="container mx-auto px-6 relative z-20 pointer-events-none">
+        <div className="max-w-2xl text-left pointer-events-auto">
 
-      <div className="container mx-auto px-6 relative z-20 pointer-events-none pt-12">
-        <div className="max-w-4xl text-left pointer-events-auto">
-          <h2 className="text-primary font-semibold mb-3 tracking-[0.2em] uppercase text-[10px] animate-glitch-heavy inline-block">Creative Technical Craft</h2>
-          <h1 className="text-4xl md:text-6xl font-display font-bold leading-tight mb-4 text-white text-left italic tracking-tight">
-            Engineering <span className="text-gradient hover:animate-glitch-heavy cursor-default inline-block pr-4">Sleek</span> Digital <br />
-            <span 
-              className="text-glow min-w-[150px] inline-block transition-all duration-300"
-              style={{ 
-                fontFamily: wordConfigs[wordIndex].font,
-                fontStyle: wordConfigs[wordIndex].italic ? 'italic' : 'normal',
-                fontWeight: wordConfigs[wordIndex].font.includes('Cormorant') ? 300 : 400
+          <p className="text-primary font-semibold mb-4 tracking-[0.25em] uppercase text-[10px] animate-glitch-heavy inline-block">
+            Creative Technical Craft
+          </p>
+
+          <h1 className="text-4xl md:text-6xl font-display font-bold leading-[1.1] mb-5 text-white tracking-tight">
+            <span className="italic">Engineering </span>
+            <span className="text-white italic">Sleek</span>
+            <span className="italic"> Digital</span>
+            <br />
+            <span
+              className="text-glow transition-all duration-500 ease-in-out inline-block min-w-[200px] pr-6"
+              style={{
+                fontFamily: config.font,
+                fontStyle: config.italic ? 'italic' : 'normal',
+                fontWeight: config.weight,
               }}
             >
-              {currentText}<span className="animate-pulse border-r-4 border-primary ml-1">&nbsp;</span>
-            </span>.
+              {currentText}<span className="animate-pulse border-r-[3px] border-primary ml-0.5 inline-block h-[0.85em] align-middle" />
+            </span>
+            <span className="text-white font-light">.</span>
           </h1>
-          <p className="text-sm md:text-base text-slate-400 max-w-lg mb-8 leading-relaxed text-left font-light font-body">
-            I craft high-performance code and intelligent digital architecture.
-            Connecting <span className="text-white font-medium border-b border-primary/30">Web, Mobile, and Intelligence</span> through creative technical craft.
+
+          <p className="text-sm md:text-[15px] text-slate-400 max-w-md mb-8 leading-relaxed font-light font-body">
+            I craft high-performance code and intelligent digital architecture.{' '}
+            Connecting{' '}
+            <span className="text-white font-medium border-b border-primary/40">
+              Web, Mobile, and Intelligence
+            </span>{' '}
+            through creative technical craft.
           </p>
         </div>
       </div>
 
-      {/* Background Decorative Gradient Overlay */}
-      <div className="absolute bottom-0 right-0 w-[40vw] h-[40vw] bg-indigo-500/10 blur-[150px] rounded-full pointer-events-none z-10"></div>
+      {/* Decorative corner glow */}
+      <div className="absolute bottom-0 right-0 w-[35vw] h-[35vw] bg-indigo-600/10 blur-[120px] rounded-full pointer-events-none z-10" />
     </div>
   );
 };
