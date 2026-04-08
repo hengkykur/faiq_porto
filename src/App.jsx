@@ -13,15 +13,28 @@ function App() {
   const [currentPage, setCurrentPage] = useState(0);
   const [isHeroReady, setIsHeroReady] = useState(false);
   useEffect(() => {
+    // Add a safety fallback: Reveal site after 3.5s regardless of video state
+    const fallbackTimer = setTimeout(() => {
+      if (!ready) {
+        setReady(true);
+        document.body.classList.add('loaded');
+      }
+    }, 3500);
+
     // Only lift the preloader when Hero video is buffered
     if (isHeroReady) {
       const timer = setTimeout(() => {
         setReady(true);
         document.body.classList.add('loaded');
-      }, 500); // Small buffer for branding
-      return () => clearTimeout(timer);
+      }, 500);
+      return () => {
+        clearTimeout(timer);
+        clearTimeout(fallbackTimer);
+      };
     }
-  }, [isHeroReady]);
+    
+    return () => clearTimeout(fallbackTimer);
+  }, [isHeroReady, ready]);
 
   return (
     <div className={`h-screen w-screen bg-black overflow-hidden relative ${ready ? 'opacity-100' : 'opacity-0'} transition-opacity duration-1000`}>

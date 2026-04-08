@@ -12,31 +12,31 @@ const Projects = ({ active }) => {
     {
       title: 'Nexus',
       subtitle: 'UI Kit v2.0',
-      image: 'https://images.unsplash.com/photo-1614850523296-d8c1c0ba0256?auto=format&fit=crop&q=80&w=1600',
+      image: 'https://images.unsplash.com/photo-1614850523296-d8c1c0ba0256?auto=format&fit=crop&q=60&w=1200',
       tags: ['React', 'CSS']
     },
     {
       title: 'Cyber',
       subtitle: 'Analytics',
-      image: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80&w=1600',
+      image: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=60&w=1200',
       tags: ['Vite', 'Edge']
     },
     {
       title: 'Vanguard',
       subtitle: 'Eco Store',
-      image: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=1600',
+      image: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=60&w=1200',
       tags: ['Next.js', 'Stripe']
     },
     {
       title: 'Aether',
       subtitle: 'Mobile App',
-      image: 'https://images.unsplash.com/photo-1618761760534-33c15fe7c909?auto=format&fit=crop&q=80&w=1600',
+      image: 'https://images.unsplash.com/photo-1618761760534-33c15fe7c909?auto=format&fit=crop&q=60&w=1200',
       tags: ['Flutter', 'Firebase']
     },
     {
       title: 'Horizon',
       subtitle: 'AI Platform',
-      image: 'https://images.unsplash.com/photo-1677442136019-21780ecad995?auto=format&fit=crop&q=80&w=1600',
+      image: 'https://images.unsplash.com/photo-1677442136019-21780ecad995?auto=format&fit=crop&q=60&w=1200',
       tags: ['Python', 'Cloud']
     },
   ];
@@ -119,6 +119,7 @@ const Projects = ({ active }) => {
           muted
           loop
           playsInline
+          preload="metadata"
           className={`w-full h-full object-cover transition-all duration-1000 scale-105 brightness-[0.40] ${bgVideoLoaded ? 'opacity-100' : 'opacity-0'}`}
           onCanPlay={() => setBgVideoLoaded(true)}
         >
@@ -172,6 +173,7 @@ const Projects = ({ active }) => {
                     <img
                       src={p.image}
                       alt={p.title}
+                      loading="lazy"
                       className="w-full h-full object-cover grayscale-[0.5] group-hover:grayscale-0 transition-all duration-700 scale-110 group-hover:scale-125"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent group-hover:via-transparent transition-all"></div>

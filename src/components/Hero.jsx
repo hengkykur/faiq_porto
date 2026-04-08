@@ -10,6 +10,8 @@ const ThreeDElement = ({ src, isVideo = false, className, floatDelay = "0s", siz
   const videoRef = useRef(null);
   const requestRef = useRef(null);
 
+  const [videoLoaded, setVideoLoaded] = useState(false);
+
   const animate = () => {
     if (videoRef.current) {
       const vid = videoRef.current;
@@ -86,7 +88,12 @@ const ThreeDElement = ({ src, isVideo = false, className, floatDelay = "0s", siz
             filter: `blur(${blur}px)`
           }}>
           {isVideo ? (
-            <div className="w-full h-full rounded-full overflow-hidden">
+            <div className="w-full h-full relative">
+              {/* Cinematic Fallback Gradient - ONLY visible until data is buffered */}
+              {!videoLoaded && (
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-indigo-500/10 to-transparent animate-pulse z-0 rounded-full"></div>
+              )}
+              
               <video
                 ref={videoRef}
                 autoPlay
@@ -97,6 +104,7 @@ const ThreeDElement = ({ src, isVideo = false, className, floatDelay = "0s", siz
                 onLoadedMetadata={handleLoadedMetadata}
                 onLoadedData={(e) => {
                    if (e.target.duration) setDuration(e.target.duration);
+                   setVideoLoaded(true);
                    // Instant reveal once data is ready
                    setOpacity(0.6);
                    setBlur(0);
@@ -104,10 +112,10 @@ const ThreeDElement = ({ src, isVideo = false, className, floatDelay = "0s", siz
                    if (src === "/vidiohomebulet.mp4" && props.onReady) props.onReady();
                 }}
                 preload="auto"
-                className="w-full h-full object-cover mix-blend-screen"
+                className={`w-full h-full object-cover mix-blend-screen relative z-10 transition-opacity duration-700 ${videoLoaded ? 'opacity-100' : 'opacity-0'}`}
                 style={{
-                  WebkitMaskImage: 'radial-gradient(circle at center, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 20%, rgba(0,0,0,0) 70%)',
-                  maskImage: 'radial-gradient(circle at center, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 20%, rgba(0,0,0,0) 70%)'
+                  WebkitMaskImage: 'radial-gradient(circle at center, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 40%, rgba(0,0,0,0) 75%)',
+                  maskImage: 'radial-gradient(circle at center, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 40%, rgba(0,0,0,0) 75%)'
                 }}
               >
                 <source src={src} type="video/mp4" />
