@@ -1,100 +1,113 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 
 /**
- * Dual-video crossfade component for seamless looping.
- * Two video elements crossfade at the loop boundary to eliminate "patah".
+ * Dual-video crossfade using direct DOM manipulation — no React re-renders
+ * during the crossfade so no risk of video elements unmounting.
+ * Video A and B are always mounted; we only toggle style.opacity directly.
  */
-const SeamlessVideo = ({ src, className, style, onReady }) => {
-  const vidA = useRef(null);
-  const vidB = useRef(null);
-  const [activeVid, setActiveVid] = useState('A'); // which is "primary"
+const HeroVideo = ({ src, onReady }) => {
+  const vidARef = useRef(null);
+  const vidBRef = useRef(null);
   const [ready, setReady] = useState(false);
-  const crossfadeRef = useRef(null);
-  const durationRef = useRef(0);
+  const activeRef = useRef('A');     // tracks which video is "live"
+  const swappingRef = useRef(false); // lock to prevent double-trigger
+  const intervalRef = useRef(null);
 
-  // Setup once video metadata known
-  const handleCanPlay = useCallback(() => {
-    if (!ready) {
-      setReady(true);
-      if (onReady) onReady();
-      // Start both, stagger B to begin near the loop boundary
-      if (vidA.current) {
-        vidA.current.play().catch(() => {});
-      }
-    }
-  }, [ready, onReady]);
+  const CROSSFADE = 0.8; // seconds before loop end to start crossfade
 
-  const handleMeta = useCallback((e) => {
-    durationRef.current = e.target.duration;
+  const doFade = useCallback((outEl, inEl) => {
+    if (!outEl || !inEl) return;
+    // Fade in B
+    inEl.style.transition = `opacity ${CROSSFADE}s ease-in-out`;
+    inEl.style.opacity = '0.75';
+    // Fade out A
+    outEl.style.transition = `opacity ${CROSSFADE}s ease-in-out`;
+    outEl.style.opacity = '0';
   }, []);
 
+  // Called once video A has loaded enough to play
+  const handleCanPlay = useCallback(() => {
+    if (ready) return;
+    const vid = vidARef.current;
+    if (!vid) return;
+    vid.play().catch(() => {});
+    // Set initial opacity directly
+    vid.style.opacity = '0.75';
+    setReady(true);
+    if (onReady) onReady();
+  }, [ready, onReady]);
+
+  // Crossfade loop checker — runs via setInterval (lightweight, not RAF)
   useEffect(() => {
     if (!ready) return;
 
-    const CROSSFADE_DURATION = 0.8; // seconds of overlap
+    intervalRef.current = setInterval(() => {
+      const a = vidARef.current;
+      const b = vidBRef.current;
+      if (!a || !b || swappingRef.current) return;
 
-    const checkLoop = () => {
-      const vid = activeVid === 'A' ? vidA.current : vidB.current;
-      const next = activeVid === 'A' ? vidB.current : vidA.current;
-      if (!vid || !next || !durationRef.current) return;
+      const active = activeRef.current === 'A' ? a : b;
+      const next   = activeRef.current === 'A' ? b : a;
 
-      const timeLeft = durationRef.current - vid.currentTime;
+      if (!active.duration) return;
+      const timeLeft = active.duration - active.currentTime;
 
-      if (timeLeft <= CROSSFADE_DURATION && timeLeft >= 0 && !crossfadeRef.current) {
-        crossfadeRef.current = true;
-        // Prepare and start next video from beginning
+      if (timeLeft <= CROSSFADE && timeLeft > 0) {
+        swappingRef.current = true;
+        // Prepare next video
         next.currentTime = 0;
         next.play().catch(() => {});
-        // Swap active after crossfade duration
+        doFade(active, next);
+
+        // After crossfade completes, swap references and unlock
         setTimeout(() => {
-          setActiveVid(prev => prev === 'A' ? 'B' : 'A');
-          crossfadeRef.current = false;
-        }, CROSSFADE_DURATION * 1000);
+          activeRef.current = activeRef.current === 'A' ? 'B' : 'A';
+          swappingRef.current = false;
+          // Reset the old one so it's ready for next crossfade
+          active.currentTime = 0;
+          active.pause();
+        }, CROSSFADE * 1000 + 50);
       }
+    }, 100);
+
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
     };
+  }, [ready, doFade]);
 
-    const interval = setInterval(checkLoop, 100);
-    return () => clearInterval(interval);
-  }, [ready, activeVid]);
-
-  const vidAOpacity = ready ? (activeVid === 'A' ? 0.75 : 0) : 0;
-  const vidBOpacity = ready ? (activeVid === 'B' ? 0.75 : 0) : 0;
+  const vidStyle = {
+    position: 'absolute',
+    inset: 0,
+    width: '100%',
+    height: '100%',
+    objectFit: 'cover',
+    mixBlendMode: 'screen',
+    opacity: 0,
+    willChange: 'opacity',
+  };
 
   return (
-    <div className={className} style={style}>
+    <>
       <video
-        ref={vidA}
+        ref={vidARef}
         muted
         playsInline
         preload="auto"
-        crossOrigin="anonymous"
-        onLoadedMetadata={handleMeta}
         onCanPlayThrough={handleCanPlay}
-        className="absolute inset-0 w-full h-full object-cover mix-blend-screen"
-        style={{
-          opacity: vidAOpacity,
-          transition: 'opacity 0.8s ease-in-out',
-          willChange: 'opacity',
-        }}
+        style={vidStyle}
       >
         <source src={src} type="video/mp4" />
       </video>
       <video
-        ref={vidB}
+        ref={vidBRef}
         muted
         playsInline
         preload="auto"
-        crossOrigin="anonymous"
-        className="absolute inset-0 w-full h-full object-cover mix-blend-screen"
-        style={{
-          opacity: vidBOpacity,
-          transition: 'opacity 0.8s ease-in-out',
-          willChange: 'opacity',
-        }}
+        style={{ ...vidStyle, opacity: 0 }}
       >
         <source src={src} type="video/mp4" />
       </video>
-    </div>
+    </>
   );
 };
 
@@ -148,10 +161,6 @@ const Hero = ({ active, onReady }) => {
         <div className="absolute inset-0 bg-[#060608]"
           style={{ backgroundImage: 'radial-gradient(ellipse at 75% 40%, rgba(99,102,241,0.12) 0%, transparent 65%)' }}
         />
-        {/* Subtle carbon texture */}
-        <div className="absolute inset-0 opacity-[0.06]"
-          style={{ backgroundImage: "url('https://www.transparenttextures.com/patterns/carbon-fibre.png')" }}
-        />
         {/* Grain overlay */}
         <div className="absolute inset-0 pointer-events-none opacity-20 mix-blend-overlay grain-overlay" />
         {/* Scanlines */}
@@ -165,8 +174,11 @@ const Hero = ({ active, onReady }) => {
       {/* ── Seamless Looping Video (right half) ── */}
       <div className="absolute top-0 right-0 w-full md:w-[55%] h-full z-10 pointer-events-none flex items-center justify-center overflow-hidden">
         <div
-          className="relative w-[380px] h-[380px] md:w-[480px] md:h-[480px] transition-opacity duration-1000"
-          style={{ opacity: videoReady ? 1 : 0 }}
+          className="relative w-[380px] h-[380px] md:w-[480px] md:h-[480px]"
+          style={{
+            opacity: videoReady ? 1 : 0,
+            transition: 'opacity 0.8s ease-out',
+          }}
         >
           {/* Circular mask wrapper */}
           <div
@@ -176,10 +188,8 @@ const Hero = ({ active, onReady }) => {
               maskImage: 'radial-gradient(circle at center, black 45%, transparent 75%)',
             }}
           >
-            <SeamlessVideo
+            <HeroVideo
               src="/vidiohomebulet.mp4"
-              className="relative w-full h-full"
-              style={{ backgroundColor: 'transparent' }}
               onReady={() => {
                 setVideoReady(true);
                 if (onReady) onReady();
@@ -205,11 +215,12 @@ const Hero = ({ active, onReady }) => {
             <span className="italic"> Digital</span>
             <br />
             <span
-              className="text-glow transition-all duration-500 ease-in-out inline-block min-w-[200px] pr-6"
+              className="text-glow inline-block min-w-[200px] pr-6"
               style={{
                 fontFamily: config.font,
                 fontStyle: config.italic ? 'italic' : 'normal',
                 fontWeight: config.weight,
+                transition: 'font-family 0.4s, font-style 0.4s, font-weight 0.4s',
               }}
             >
               {currentText}<span className="animate-pulse border-r-[3px] border-primary ml-0.5 inline-block h-[0.85em] align-middle" />

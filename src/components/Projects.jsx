@@ -112,9 +112,9 @@ const Projects = ({ active }) => {
     >
       {/* Cinematic Background Video Layer */}
       <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
-        <div
-          className={`absolute inset-0 bg-[#0a0a0c] transition-opacity duration-1000 z-10 ${bgVideoLoaded ? 'opacity-0' : 'opacity-100'}`}
-        >
+          <div className="absolute inset-0 bg-[#0a0a0c] z-10"
+            style={{ opacity: bgVideoLoaded ? 0 : 1, transition: 'opacity 0.8s ease' }}
+          >
           <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-10"></div>
         </div>
 
@@ -125,7 +125,11 @@ const Projects = ({ active }) => {
           loop
           playsInline
           preload="metadata"
-          className={`w-full h-full object-cover transition-all duration-1000 scale-105 brightness-[0.40] ${bgVideoLoaded ? 'opacity-100' : 'opacity-0'}`}
+          className="w-full h-full object-cover scale-105 brightness-[0.40]"
+          style={{
+            opacity: bgVideoLoaded ? 1 : 0,
+            transition: 'opacity 0.8s ease',
+          }}
           onCanPlay={() => setBgVideoLoaded(true)}
         >
           <source src="/home1.mp4" type="video/mp4" />
@@ -160,7 +164,7 @@ const Projects = ({ active }) => {
 
             <div className="flex flex-wrap gap-2">
               {projects[activeIndex].tags.map(tag => (
-                <span key={tag} className="text-[9px] font-mono border border-primary/30 px-3 py-1 rounded-sm text-primary/90 bg-primary/5 uppercase tracking-wider backdrop-blur-sm">
+                <span key={tag} className="text-[9px] font-mono border border-primary/30 px-3 py-1 rounded-sm text-primary/90 bg-primary/5 uppercase tracking-wider">
                   {tag}
                 </span>
               ))}
@@ -186,30 +190,36 @@ const Projects = ({ active }) => {
         {/* Artistic Horizontal Stage */}
         <div
           ref={scrollRef}
-          className="flex flex-row items-center transition-transform duration-[800ms] cubic-bezier(0.23, 1, 0.32, 1) gap-[2vw] h-[60vh]"
+          className="flex flex-row items-center gap-[2vw] h-[60vh]"
           style={{
-            transform: `translateX(calc(75vw - (${activeIndex} * (42vw + 2vw)) - 21vw))`
+            transform: `translate3d(calc(75vw - (${activeIndex} * (42vw + 2vw)) - 21vw), 0, 0)`,
+            transition: 'transform 0.7s cubic-bezier(0.23, 1, 0.32, 1)',
+            willChange: 'transform',
           }}
         >
           {projects.map((p, i) => (
             <div
               key={i}
-              className={`project-node flex-shrink-0 w-[68vw] md:w-[42vw] h-full flex items-center justify-center group select-none pointer-events-auto transition-all duration-700
-                ${activeIndex === i ? 'opacity-100 scale-110' : 'opacity-70 scale-80'}
+              className={`project-node flex-shrink-0 w-[68vw] md:w-[42vw] h-full flex items-center justify-center group select-none pointer-events-auto
+                ${activeIndex === i ? 'opacity-100' : 'opacity-70'}
               `}
               style={{
+                transform: activeIndex === i ? 'scale(1.1)' : 'scale(0.8)',
                 filter: isScrolling
                   ? (activeIndex === i ? 'none' : 'blur(5px) brightness(0.8)')
                   : (activeIndex === i ? 'none' : 'blur(3.5px) brightness(0.9)'),
-                transition: 'filter 0.3s ease-out, transform 0.4s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.4s ease'
+                transition: 'filter 0.3s ease-out, transform 0.4s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.4s ease',
               }}
             >
               <div className="relative w-full flex items-center justify-center">
 
                 {/* Skewed Stage (Artistic Parallelogram) */}
-                <div className={`relative z-20 w-[48vw] md:w-[32vw] aspect-[16/10] overflow-hidden skew-x-[-15deg] transition-all duration-700 group-hover:skew-x-[-12deg] group-hover:scale-105 border-2 shadow-[0_0_50px_rgba(0,0,0,0.8)] bg-[#151518]
+                <div className={`relative z-20 w-[48vw] md:w-[32vw] aspect-[16/10] overflow-hidden skew-x-[-15deg] border-2 shadow-[0_0_50px_rgba(0,0,0,0.8)] bg-[#151518]
                   ${activeIndex === i ? 'border-primary/80 shadow-primary/20' : 'border-primary/20 shadow-primary/5'}
-                `}>
+                `}
+                style={{
+                  transition: 'transform 0.5s ease, border-color 0.5s ease, box-shadow 0.5s ease',
+                }}>
 
                   {/* Inner Image (Inverse Skew to display content correctly) */}
                   <div className="absolute inset-[-15%] skew-x-[15deg] group-hover:skew-x-[12deg] transition-transform duration-700">
@@ -217,16 +227,18 @@ const Projects = ({ active }) => {
                       src={p.image}
                       alt={p.title}
                       loading="lazy"
-                      className="w-full h-full object-cover grayscale-[0.5] group-hover:grayscale-0 transition-all duration-700 scale-110 group-hover:scale-125"
+                      className="w-full h-full object-cover grayscale-[0.5] group-hover:grayscale-0 scale-110 group-hover:scale-125"
+                      style={{ transition: 'filter 0.5s ease, transform 0.5s ease' }}
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent group-hover:via-transparent transition-all"></div>
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent"></div>
                   </div>
 
                   {/* PROJECT TEXT INSIDE FRAME - REDUCED TO GHOST STATE WHEN ACTIVE */}
                   <div 
-                    className={`absolute bottom-8 left-12 z-30 skew-x-[15deg] group-hover:skew-x-[12deg] transition-all duration-700 pointer-events-none
-                      ${activeIndex === i ? 'opacity-0 -translate-x-12' : 'opacity-40'}
+                    className={`absolute bottom-8 left-12 z-30 skew-x-[15deg] group-hover:skew-x-[12deg] pointer-events-none
+                      ${activeIndex === i ? 'opacity-0' : 'opacity-40'}
                     `}
+                    style={{ transition: 'opacity 0.5s ease, transform 0.5s ease' }}
                   >
                     <h3 className="text-3xl md:text-4xl font-display font-black text-white italic leading-tight uppercase tracking-tight drop-shadow-2xl">
                       {p.title}

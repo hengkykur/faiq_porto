@@ -14,20 +14,20 @@ function App() {
   const [currentPage, setCurrentPage] = useState(0);
   const [isHeroReady, setIsHeroReady] = useState(false);
   useEffect(() => {
-    // Safety fallback: Reveal site after 6s as a last resort
+    // Safety fallback: Reveal site after 3s as a last resort
     const fallbackTimer = setTimeout(() => {
       if (!ready) {
         setReady(true);
         document.body.classList.add('loaded');
       }
-    }, 6000);
+    }, 3000);
 
-    // Only lift the preloader when Hero video confirms it can play through
+    // Lift preloader as soon as Hero video has first frames
     if (isHeroReady) {
       const timer = setTimeout(() => {
         setReady(true);
         document.body.classList.add('loaded');
-      }, 800); // 800ms offset for ultra-smooth crossfade
+      }, 200); // Minimal crossfade delay
       return () => {
         clearTimeout(timer);
         clearTimeout(fallbackTimer);
@@ -44,12 +44,14 @@ function App() {
       <DotPagination currentPage={currentPage} setCurrentPage={setCurrentPage} />
       
       <div 
-        className="flex transition-transform duration-1000 ease-[cubic-bezier(0.77,0,0.175,1)] h-full w-full"
-        style={{ transform: `translateX(-${currentPage * 100}%)` }}
+        className="flex h-full w-full"
+        style={{
+          transform: `translate3d(-${currentPage * 100}%, 0, 0)`,
+          transition: 'transform 0.8s cubic-bezier(0.77, 0, 0.175, 1)',
+          willChange: 'transform',
+        }}
       >
-        <Suspense fallback={null}>
-          <Hero active={currentPage === 0} onReady={() => setIsHeroReady(true)} />
-        </Suspense>
+        <Hero active={currentPage === 0} onReady={() => setIsHeroReady(true)} />
         <Suspense fallback={null}>
           <Projects active={currentPage === 1} />
         </Suspense>
