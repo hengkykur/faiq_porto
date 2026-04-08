@@ -13,20 +13,20 @@ function App() {
   const [currentPage, setCurrentPage] = useState(0);
   const [isHeroReady, setIsHeroReady] = useState(false);
   useEffect(() => {
-    // Add a safety fallback: Reveal site after 3.5s regardless of video state
+    // Safety fallback: Reveal site after 6s as a last resort
     const fallbackTimer = setTimeout(() => {
       if (!ready) {
         setReady(true);
         document.body.classList.add('loaded');
       }
-    }, 3500);
+    }, 6000);
 
-    // Only lift the preloader when Hero video is buffered
+    // Only lift the preloader when Hero video confirms it can play through
     if (isHeroReady) {
       const timer = setTimeout(() => {
         setReady(true);
         document.body.classList.add('loaded');
-      }, 500);
+      }, 800); // 800ms offset for ultra-smooth crossfade
       return () => {
         clearTimeout(timer);
         clearTimeout(fallbackTimer);

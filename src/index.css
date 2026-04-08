@@ -7,7 +7,7 @@
   --color-glow: oklch(70% 0.3 300);       /* Purple Glow */
   
   --font-display: 'Outfit', sans-serif;
-  --font-body: 'Inter', sans-serif;
+  --font-body: 'Plus Jakarta Sans', sans-serif;
 }
 
 @layer base {
@@ -31,6 +31,7 @@
   h1, h2, h3, h4 {
     font-family: var(--font-display);
     font-weight: 700;
+    letter-spacing: -0.02em;
   }
 }
 
@@ -218,4 +219,10 @@
   0% { transform: translateY(-100%); opacity: 0; }
   50% { opacity: 1; }
   100% { transform: translateY(100vh); opacity: 0; }
+}
+
+@keyframes loop-mask {
+  0% { opacity: 0; filter: blur(15px); }
+  8%, 92% { opacity: 0.6; filter: blur(0px); }
+  100% { opacity: 0; filter: blur(15px); }
 }

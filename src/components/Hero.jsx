@@ -4,56 +4,8 @@ import React, { useState, useRef, useEffect } from 'react';
 
 const ThreeDElement = ({ src, isVideo = false, className, floatDelay = "0s", size = "w-64 h-64", playbackRate = 1.0, ...props }) => {
   const [duration, setDuration] = useState(0);
-  const [opacity, setOpacity] = useState(0);
-  const [blur, setBlur] = useState(30);
-  const [scale, setScale] = useState(0.8);
   const videoRef = useRef(null);
-  const requestRef = useRef(null);
-
   const [videoLoaded, setVideoLoaded] = useState(false);
-
-  const animate = () => {
-    if (videoRef.current) {
-      const vid = videoRef.current;
-      const current = vid.currentTime;
-      const dur = vid.duration;
-
-      if (dur > 0) {
-        const fadeTime = 1.5; // Seconds for fade-in/out
-        let alpha = 1;
-        let vBlur = 0;
-        let vScale = 1;
-
-        if (current < fadeTime) {
-          // Fade In Phase
-          const p = current / fadeTime;
-          alpha = p * 0.4;
-          vBlur = 30 * (1 - p);
-          vScale = 0.8 + (0.2 * p);
-        } else if (current > dur - fadeTime) {
-          // Fade Out Phase
-          const p = (dur - current) / fadeTime;
-          alpha = p * 0.4;
-          vBlur = 35 * (1 - p);
-          vScale = 1 + (0.15 * (1 - p));
-        } else {
-          alpha = 0.6;
-        }
-
-        setOpacity(alpha);
-        setBlur(vBlur);
-        setScale(vScale);
-      }
-    }
-    requestRef.current = requestAnimationFrame(animate);
-  };
-
-  useEffect(() => {
-    if (isVideo) {
-      requestRef.current = requestAnimationFrame(animate);
-    }
-    return () => cancelAnimationFrame(requestRef.current);
-  }, [isVideo]);
 
   useEffect(() => {
     if (videoRef.current && isVideo) {
@@ -76,16 +28,17 @@ const ThreeDElement = ({ src, isVideo = false, className, floatDelay = "0s", siz
       }}
     >
       <div className="relative w-full h-full transition-transform duration-300 ease-out pointer-events-none">
-        {/* Layer 0: Very Subtle Glow */}
+        {/* Layer 0: Very Subtle Glow - Pure CSS */}
         <div className="absolute -inset-20 bg-primary/5 blur-[120px] opacity-20"
-          style={{ transform: 'translateZ(-40px)', opacity: opacity * 0.2 }}></div>
+          style={{ transform: 'translate3d(0, 0, -40px)', opacity: videoLoaded ? 0.2 : 0 }}></div>
 
-        {/* Layer 2: Main Content */}
-        <div className="absolute inset-0"
+        {/* Layer 2: Main Content - Hardware Accelerated + Loop Masking */}
+        <div className="absolute inset-0 transition-opacity duration-1000 ease-out"
           style={{
-            transform: `translateZ(50px) scale(${scale})`,
-            opacity: opacity,
-            filter: `blur(${blur}px)`
+            transform: `translate3d(0, 0, 50px) scale(${videoLoaded ? 1 : 0.9})`,
+            opacity: videoLoaded ? 0.6 : 0,
+            animation: videoLoaded && duration > 0 ? `loop-mask ${duration}s linear infinite` : 'none',
+            willChange: 'transform, opacity, filter'
           }}>
           {isVideo ? (
             <div className="w-full h-full relative">
@@ -102,20 +55,19 @@ const ThreeDElement = ({ src, isVideo = false, className, floatDelay = "0s", siz
                 loop
                 playsInline
                 onLoadedMetadata={handleLoadedMetadata}
-                onLoadedData={(e) => {
+                onCanPlayThrough={(e) => {
                    if (e.target.duration) setDuration(e.target.duration);
                    setVideoLoaded(true);
-                   // Instant reveal once data is ready
-                   setOpacity(0.6);
-                   setBlur(0);
-                   setScale(1);
+                   // Ensure video starts playing immediately
+                   e.target.play().catch(err => console.log("Autoplay blocked:", err));
                    if (src === "/vidiohomebulet.mp4" && props.onReady) props.onReady();
                 }}
                 preload="auto"
                 className={`w-full h-full object-cover mix-blend-screen relative z-10 transition-opacity duration-700 ${videoLoaded ? 'opacity-100' : 'opacity-0'}`}
                 style={{
                   WebkitMaskImage: 'radial-gradient(circle at center, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 40%, rgba(0,0,0,0) 75%)',
-                  maskImage: 'radial-gradient(circle at center, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 40%, rgba(0,0,0,0) 75%)'
+                  maskImage: 'radial-gradient(circle at center, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 40%, rgba(0,0,0,0) 75%)',
+                  willChange: 'opacity'
                 }}
               >
                 <source src={src} type="video/mp4" />
@@ -131,6 +83,7 @@ const ThreeDElement = ({ src, isVideo = false, className, floatDelay = "0s", siz
                 maskImage: 'radial-gradient(circle, rgba(0,0,0,1) 55%, rgba(0,0,0,0) 95%)'
               }}
               onLoad={() => {
+                setVideoLoaded(true); // Reuse state for image
                 if (props.onReady) props.onReady();
               }}
             />
@@ -159,11 +112,17 @@ const Hero = ({ active, onReady }) => {
     // though here we trigger it via 3D video load
   }, [active]);
 
-  const words = ['Elegance', 'Precision', 'Innovation', 'Simplicity'];
+  const wordConfigs = [
+    { text: 'Digital Art', font: "'Cormorant Garamond', serif", italic: true },
+    { text: 'Sleek Code', font: "'Space Grotesk', sans-serif", italic: false },
+    { text: 'Architecture', font: "'Outfit', sans-serif", italic: true },
+    { text: 'Simplicity', font: "'Plus Jakarta Sans', sans-serif", italic: false }
+  ];
 
   useEffect(() => {
     const handleTyping = () => {
-      const fullWord = words[wordIndex];
+      const currentConfig = wordConfigs[wordIndex];
+      const fullWord = currentConfig.text;
 
       if (!isDeleting) {
         // Typing
@@ -181,7 +140,7 @@ const Hero = ({ active, onReady }) => {
 
         if (currentText === '') {
           setIsDeleting(false);
-          setWordIndex((prev) => (prev + 1) % words.length);
+          setWordIndex((prev) => (prev + 1) % wordConfigs.length);
         }
       }
     };
@@ -243,16 +202,23 @@ const Hero = ({ active, onReady }) => {
 
       <div className="container mx-auto px-6 relative z-20 pointer-events-none pt-12">
         <div className="max-w-4xl text-left pointer-events-auto">
-          <h2 className="text-primary font-semibold mb-4 tracking-widest uppercase text-sm animate-glitch-heavy inline-block">Welcome to my space</h2>
-          <h1 className="text-5xl md:text-7xl font-display font-bold leading-tight mb-6 text-white text-left italic">
-            Building <span className="text-gradient hover:animate-glitch-heavy cursor-default inline-block pr-4">Digital</span> Experiences <br />
-            with <span className="italic font-light text-glow min-w-[200px] inline-block">
+          <h2 className="text-primary font-semibold mb-3 tracking-[0.2em] uppercase text-[10px] animate-glitch-heavy inline-block">Creative Technical Craft</h2>
+          <h1 className="text-4xl md:text-6xl font-display font-bold leading-tight mb-4 text-white text-left italic tracking-tight">
+            Engineering <span className="text-gradient hover:animate-glitch-heavy cursor-default inline-block pr-4">Sleek</span> Digital <br />
+            <span 
+              className="text-glow min-w-[150px] inline-block transition-all duration-300"
+              style={{ 
+                fontFamily: wordConfigs[wordIndex].font,
+                fontStyle: wordConfigs[wordIndex].italic ? 'italic' : 'normal',
+                fontWeight: wordConfigs[wordIndex].font.includes('Cormorant') ? 300 : 400
+              }}
+            >
               {currentText}<span className="animate-pulse border-r-4 border-primary ml-1">&nbsp;</span>
             </span>.
           </h1>
-          <p className="text-lg text-slate-400 max-w-2xl mb-10 leading-relaxed text-left font-light">
-            I’m a Software Developer building seamless digital ecosystems.
-            Bridging the gap between <span className="text-white font-medium">Web, Android, and AI</span> through high-performance, intelligent solutions.
+          <p className="text-sm md:text-base text-slate-400 max-w-lg mb-8 leading-relaxed text-left font-light font-body">
+            I craft high-performance code and intelligent digital architecture.
+            Connecting <span className="text-white font-medium border-b border-primary/30">Web, Mobile, and Intelligence</span> through creative technical craft.
           </p>
         </div>
       </div>

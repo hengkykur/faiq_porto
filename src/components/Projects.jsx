@@ -181,6 +181,7 @@ const Projects = ({ active }) => {
 
                   {/* PROJECT TEXT INSIDE FRAME - SKEWED INVERSE TO MATCH IMAGE */}
                   <div className="absolute bottom-8 left-12 z-30 skew-x-[15deg] group-hover:skew-x-[12deg] transition-all pointer-events-none">
+                    <h2 className="text-3xl md:text-5xl font-display font-bold mb-6 drop-shadow-2xl text-white text-left italic">About <span className="text-glow">Me</span></h2>
                     <h3 className="text-3xl md:text-5xl font-display font-black text-white italic leading-tight uppercase tracking-tight drop-shadow-2xl">
                       {p.title}
                     </h3>
