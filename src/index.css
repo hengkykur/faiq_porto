@@ -238,3 +238,12 @@
   80% { transform: translate(-15%, 0); }
   90% { transform: translate(10%, 5%); }
 }
+
+@keyframes hud-enter {
+  0% { opacity: 0; transform: translateX(30px); filter: blur(10px); }
+  100% { opacity: 1; transform: translateX(0); filter: blur(0px); }
+}
+
+.animate-hud-enter {
+  animation: hud-enter 0.8s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+}

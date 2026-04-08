@@ -12,32 +12,37 @@ const Projects = ({ active }) => {
     {
       title: 'Nexus',
       subtitle: 'UI Kit v2.0',
+      description: 'A comprehensive high-performance design system built for scalable enterprise applications.',
       image: 'https://images.unsplash.com/photo-1614850523296-d8c1c0ba0256?auto=format&fit=crop&q=60&w=1200',
-      tags: ['React', 'CSS']
+      tags: ['React', 'CSS', 'System']
     },
     {
       title: 'Cyber',
       subtitle: 'Analytics',
+      description: 'Real-time data visualization engine for monitoring high-traffic network protocols and security.',
       image: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=60&w=1200',
-      tags: ['Vite', 'Edge']
+      tags: ['Vite', 'Edge', 'D3.js']
     },
     {
       title: 'Vanguard',
       subtitle: 'Eco Store',
+      description: 'Zero-latency e-commerce experience optimized for sustainable product distribution.',
       image: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=60&w=1200',
-      tags: ['Next.js', 'Stripe']
+      tags: ['Next.js', 'Stripe', 'Node']
     },
     {
       title: 'Aether',
       subtitle: 'Mobile App',
+      description: 'Cross-platform mobile solution bringing intelligent workflow management to your fingertips.',
       image: 'https://images.unsplash.com/photo-1618761760534-33c15fe7c909?auto=format&fit=crop&q=60&w=1200',
-      tags: ['Flutter', 'Firebase']
+      tags: ['Flutter', 'Firebase', 'Clean']
     },
     {
       title: 'Horizon',
       subtitle: 'AI Platform',
+      description: 'Advanced neural network interface designed for collaborative artificial intelligence training.',
       image: 'https://images.unsplash.com/photo-1677442136019-21780ecad995?auto=format&fit=crop&q=60&w=1200',
-      tags: ['Python', 'Cloud']
+      tags: ['Python', 'Cloud', 'PyTorch']
     },
   ];
 
@@ -134,10 +139,48 @@ const Projects = ({ active }) => {
       </div>
 
       <div className="w-full h-full relative z-20 flex flex-col justify-center">
-        {/* Horizontal Navigation Info */}
-        <div className="absolute top-28 left-6 md:left-24 pointer-events-none">
-          <h2 className="text-primary font-bold tracking-[0.5em] uppercase text-[10px] animate-pulse">Projects Ecosystem</h2>
-          <p className="text-slate-500 font-mono text-[9px] mt-1">Scroll to navigate nodes</p>
+        {/* Dynamic Project Metadata HUD (Left Side) - Only active project */}
+        <div className="absolute top-[25%] left-6 md:left-24 z-30 max-w-sm pointer-events-none">
+          <div key={activeIndex} className="animate-hud-enter">
+            <div className="flex items-center gap-3 mb-4">
+              <span className="text-[10px] font-mono text-primary border-l-2 border-primary pl-2 uppercase tracking-[0.2em]">Project Detail</span>
+              <div className="h-px flex-1 bg-gradient-to-r from-primary/20 to-transparent"></div>
+            </div>
+            
+            <h2 className="text-4xl md:text-6xl font-display font-black text-white italic leading-none uppercase tracking-tight mb-2">
+              {projects[activeIndex].title}
+            </h2>
+            <h3 className="text-xl md:text-2xl font-display font-light text-primary/80 italic uppercase tracking-[0.15em] mb-6">
+              {projects[activeIndex].subtitle}
+            </h3>
+            
+            <p className="text-sm md:text-base text-slate-400 font-body font-light leading-relaxed mb-8 pr-4">
+              {projects[activeIndex].description}
+            </p>
+
+            <div className="flex flex-wrap gap-2">
+              {projects[activeIndex].tags.map(tag => (
+                <span key={tag} className="text-[9px] font-mono border border-primary/30 px-3 py-1 rounded-sm text-primary/90 bg-primary/5 uppercase tracking-wider backdrop-blur-sm">
+                  {tag}
+                </span>
+              ))}
+            </div>
+
+            <div className="mt-12 flex items-center gap-4 text-white/20">
+              <div className="text-[9px] font-mono">0{activeIndex + 1} / 0{projects.length}</div>
+              <div className="h-[2px] w-24 bg-white/5 relative overflow-hidden">
+                <div 
+                  className="absolute inset-0 bg-primary transition-transform duration-700 ease-out origin-left"
+                  style={{ transform: `scaleX(${(activeIndex + 1) / projects.length})` }}
+                ></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Global Context Info */}
+        <div className="absolute top-12 left-6 md:left-24 pointer-events-none">
+          <h2 className="text-primary/50 font-bold tracking-[0.5em] uppercase text-[9px]">Projects Ecosystem</h2>
         </div>
 
         {/* Artistic Horizontal Stage */}
@@ -179,20 +222,15 @@ const Projects = ({ active }) => {
                     <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent group-hover:via-transparent transition-all"></div>
                   </div>
 
-                  {/* PROJECT TEXT INSIDE FRAME - SKEWED INVERSE TO MATCH IMAGE */}
-                  <div className="absolute bottom-8 left-12 z-30 skew-x-[15deg] group-hover:skew-x-[12deg] transition-all pointer-events-none">
-                    <h2 className="text-3xl md:text-5xl font-display font-bold mb-6 drop-shadow-2xl text-white text-left italic">About <span className="text-glow">Me</span></h2>
-                    <h3 className="text-3xl md:text-5xl font-display font-black text-white italic leading-tight uppercase tracking-tight drop-shadow-2xl">
+                  {/* PROJECT TEXT INSIDE FRAME - REDUCED TO GHOST STATE WHEN ACTIVE */}
+                  <div 
+                    className={`absolute bottom-8 left-12 z-30 skew-x-[15deg] group-hover:skew-x-[12deg] transition-all duration-700 pointer-events-none
+                      ${activeIndex === i ? 'opacity-0 -translate-x-12' : 'opacity-40'}
+                    `}
+                  >
+                    <h3 className="text-3xl md:text-4xl font-display font-black text-white italic leading-tight uppercase tracking-tight drop-shadow-2xl">
                       {p.title}
                     </h3>
-                    <h4 className="text-xl md:text-2xl font-display font-light text-primary/90 italic uppercase tracking-widest -mt-1">
-                      {p.subtitle}
-                    </h4>
-                    <div className="flex gap-2 mt-4 opacity-60 group-hover:opacity-100 transition-opacity">
-                      {p.tags.map(tag => (
-                        <span key={tag} className="text-[9px] font-mono border border-primary/20 px-2 py-0.5 rounded text-primary/80 uppercase">[{tag}]</span>
-                      ))}
-                    </div>
                   </div>
 
                   {/* Corner Accents */}
