@@ -1,7 +1,49 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 
 const Contact = () => {
   const currentYear = new Date().getFullYear();
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
+  }, []);
+
+  const robotStyle = isMobile
+    ? {
+        // Mobile: di belakang konten (zIndex 5 < z-10 konten), pojok kanan bawah
+        position: 'absolute',
+        bottom: '0px',
+        right: '0px',
+        width: '180px',
+        height: '290px',
+        zIndex: 5,
+        overflow: 'hidden',
+        mixBlendMode: 'screen',
+        filter: 'contrast(1.1) brightness(1.05) drop-shadow(0 0 16px rgba(99,179,237,0.3))',
+        animation: 'robotFloat 6s ease-in-out infinite',
+        pointerEvents: 'none',
+        WebkitMaskImage: 'radial-gradient(ellipse at center, black 45%, transparent 85%)',
+        maskImage: 'radial-gradient(ellipse at center, black 45%, transparent 85%)',
+      }
+    : {
+        // Desktop: ukuran normal
+        position: 'absolute',
+        bottom: '10px',
+        right: '24px',
+        width: '240px',
+        height: '385px',
+        zIndex: 20,
+        overflow: 'hidden',
+        mixBlendMode: 'screen',
+        filter: 'contrast(1.1) brightness(1.1) drop-shadow(0 0 30px rgba(99,179,237,0.4))',
+        animation: 'robotFloat 6s ease-in-out infinite',
+        pointerEvents: 'none',
+        WebkitMaskImage: 'radial-gradient(ellipse at center, black 50%, transparent 90%)',
+        maskImage: 'radial-gradient(ellipse at center, black 50%, transparent 90%)',
+      };
 
   return (
     <div className="w-screen h-screen flex items-center justify-center flex-shrink-0 relative overflow-hidden bg-black select-none">
@@ -26,7 +68,7 @@ const Contact = () => {
             ADIMULYO2005@GMAIL.COM
           </a>
 
-          <div className="flex gap-12">
+          <div className="flex flex-wrap justify-center gap-4 md:gap-12">
             {[
               { name: 'GitHub', url: 'https://github.com/hengkykur' },
               { name: 'LinkedIn', url: '#' },
@@ -51,38 +93,22 @@ const Contact = () => {
         </div>
       </div>
 
-      {/* Robot Video — Invisible Frame Polish (Final Tiny Size) */}
-      <div
-        style={{
-          position: 'absolute',
-          bottom: '10px',
-          right: '24px',
-          width: '240px',
-          height: '385px',
-          zIndex: 20,
-          overflow: 'hidden',
-          mixBlendMode: 'screen',
-          filter: 'contrast(1.1) brightness(1.1) drop-shadow(0 0 30px rgba(99,179,237,0.4))',
-          animation: 'robotFloat 6s ease-in-out infinite',
-          pointerEvents: 'none',
-          WebkitMaskImage: 'radial-gradient(ellipse at center, black 50%, transparent 90%)',
-          maskImage: 'radial-gradient(ellipse at center, black 50%, transparent 90%)',
-        }}
-      >
-        <video
-          src="/Robot.mp4"
-          autoPlay
-          loop
-          muted
-          playsInline
-          style={{
-            width: '115%', 
-            height: '115%', 
-            objectFit: 'cover',
-            objectPosition: 'center 5%', 
-            opacity: 0.95,
-          }}
-        />
+      {/* Robot Video — Always visible, mobile: behind content (z:5), desktop: foreground (z:20) */}
+      <div style={robotStyle}>
+          <video
+            src="/Robot.mp4"
+            autoPlay
+            loop
+            muted
+            playsInline
+            style={{
+              width: '115%',
+              height: '115%',
+              objectFit: 'cover',
+              objectPosition: 'center 5%',
+              opacity: 0.95,
+            }}
+          />
       </div>
 
       <style>{`
