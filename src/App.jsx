@@ -1,6 +1,8 @@
 import React, { useState, useEffect, Suspense, lazy } from 'react';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
+import { Analytics } from "@vercel/analytics/react"
+import { SpeedInsights } from "@vercel/speed-insights/react"
 
 // Dynamic imports for code-splitting (chunking) for non-immediate sections
 const Projects = lazy(() => import('./components/Projects'));
@@ -79,6 +81,9 @@ function App() {
           <Contact active={currentPage === 3} />
         </Suspense>
       </div>
+
+      <Analytics />
+      <SpeedInsights />
 
       {/* Decorative Background Glow */}
       <div className="fixed -bottom-32 -left-32 w-[500px] h-[500px] bg-primary/5 blur-[150px] -z-1 pointer-events-none"></div>
