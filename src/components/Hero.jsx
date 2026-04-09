@@ -30,7 +30,7 @@ const HeroVideo = ({ src, onReady }) => {
     if (ready) return;
     const vid = vidARef.current;
     if (!vid) return;
-    vid.play().catch(() => {});
+    vid.play().catch(() => { });
     // Set initial opacity directly
     vid.style.opacity = '0.75';
     setReady(true);
@@ -47,7 +47,7 @@ const HeroVideo = ({ src, onReady }) => {
       if (!a || !b || swappingRef.current) return;
 
       const active = activeRef.current === 'A' ? a : b;
-      const next   = activeRef.current === 'A' ? b : a;
+      const next = activeRef.current === 'A' ? b : a;
 
       if (!active.duration) return;
       const timeLeft = active.duration - active.currentTime;
@@ -56,7 +56,7 @@ const HeroVideo = ({ src, onReady }) => {
         swappingRef.current = true;
         // Prepare next video
         next.currentTime = 0;
-        next.play().catch(() => {});
+        next.play().catch(() => { });
         doFade(active, next);
 
         // After crossfade completes, swap references and unlock
@@ -119,10 +119,10 @@ const Hero = ({ active, onReady }) => {
   const [videoReady, setVideoReady] = useState(false);
 
   const wordConfigs = [
-    { text: 'Digital Art',   font: "'Cormorant Garamond', serif",    italic: true,  weight: 300 },
-    { text: 'Sleek Code',    font: "'Space Grotesk', sans-serif",     italic: false, weight: 400 },
-    { text: 'Architecture',  font: "'Outfit', sans-serif",            italic: true,  weight: 600 },
-    { text: 'Simplicity',    font: "'Plus Jakarta Sans', sans-serif", italic: false, weight: 300 },
+    { text: 'Digital Art', font: "'Cormorant Garamond', serif", italic: true, weight: 300 },
+    { text: 'Sleek Code', font: "'Space Grotesk', sans-serif", italic: false, weight: 400 },
+    { text: 'Architecture', font: "'Outfit', sans-serif", italic: true, weight: 600 },
+    { text: 'Simplicity', font: "'Plus Jakarta Sans', sans-serif", italic: false, weight: 300 },
   ];
 
   useEffect(() => {
@@ -174,8 +174,10 @@ const Hero = ({ active, onReady }) => {
       {/* ── Seamless Looping Video (right half) ── */}
       <div className="absolute top-0 right-0 w-full md:w-[55%] h-full z-10 pointer-events-none flex items-center justify-center overflow-hidden">
         <div
-          className="relative w-[380px] h-[380px] md:w-[480px] md:h-[480px]"
+          className="relative"
           style={{
+            width: 'min(75vw, 480px)',
+            height: 'min(75vw, 480px)',
             opacity: videoReady ? 1 : 0,
             transition: 'opacity 0.8s ease-out',
           }}
@@ -209,13 +211,13 @@ const Hero = ({ active, onReady }) => {
             Creative Technical Craft
           </p>
 
-          <h1 className="text-4xl md:text-6xl font-display font-bold leading-[1.1] mb-5 text-white tracking-tight">
+          <h1 className="text-3xl sm:text-4xl md:text-6xl font-display font-bold leading-[1.1] mb-5 text-white tracking-tight">
             <span className="italic">Engineering </span>
             <span className="text-white italic">Sleek</span>
             <span className="italic"> Digital</span>
             <br />
             <span
-              className="text-glow inline-block min-w-[200px] pr-6"
+              className="text-glow inline-block min-w-[120px] sm:min-w-[200px] pr-4 sm:pr-6"
               style={{
                 fontFamily: config.font,
                 fontStyle: config.italic ? 'italic' : 'normal',

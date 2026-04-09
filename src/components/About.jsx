@@ -226,13 +226,13 @@ const About = ({ active, prewarm }) => {
           />
         )}
         <div className="absolute inset-0 bg-black/30 z-10"></div>
-        
+
         {/* Aesthetic Camouflage Layers */}
         <div className="absolute inset-0 pointer-events-none z-[11] opacity-20 mix-blend-overlay grain-overlay"></div>
         <div className="absolute inset-0 pointer-events-none z-[12] opacity-10 scanlines"></div>
       </div>
 
-      <div className="absolute top-0 left-0 z-10 w-full" style={{ height: '700vh' }}>
+      <div className="absolute top-0 left-0 z-10 w-full" style={{ minHeight: '700vh' }}>
 
         {/* Zone 1: Intro */}
         <div className="h-screen w-full flex items-center justify-center relative snap-start">
@@ -257,8 +257,8 @@ const About = ({ active, prewarm }) => {
         </div>
 
         {/* Zone 3: About Me */}
-        <div className="h-screen w-full flex items-center pt-24 pb-20 px-6 md:px-24 bg-transparent snap-start overflow-hidden">
-          <div className="w-full max-w-7xl mx-auto transition-all duration-1000 ease-out grid grid-cols-1 lg:grid-cols-2 gap-16 items-center" style={{ opacity: isZone3Active ? 1 : 0, transform: `translateY(${isZone3Active ? 0 : 60}px) scale(${isZone3Active ? 1 : 0.98})`, filter: `blur(${isZone3Active ? 0 : 10}px)` }}>
+        <div className="min-h-screen w-full flex items-center py-24 px-6 md:px-24 bg-transparent snap-start">
+          <div className="w-full max-w-7xl mx-auto transition-all duration-1000 ease-out grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center" style={{ opacity: isZone3Active ? 1 : 0, transform: `translateY(${isZone3Active ? 0 : 60}px) scale(${isZone3Active ? 1 : 0.98})`, filter: `blur(${isZone3Active ? 0 : 10}px)` }}>
             <div>
               <h2 className="text-3xl md:text-5xl font-display font-bold mb-6 drop-shadow-2xl text-white text-left italic">About <span className="text-glow">Me</span></h2>
               <p className="text-slate-300 mb-8 leading-relaxed text-base md:text-lg font-light drop-shadow-lg max-w-2xl whitespace-pre-wrap text-left">
@@ -351,7 +351,7 @@ const About = ({ active, prewarm }) => {
         </div>
 
         {/* Zone 4: Academic Background */}
-        <div className="h-screen w-full flex items-center px-6 md:px-24 bg-transparent snap-start overflow-hidden">
+        <div className="min-h-screen w-full flex items-center py-24 px-6 md:px-24 bg-transparent snap-start">
           <div className="w-full max-w-7xl mx-auto transition-all duration-1000 ease-out grid grid-cols-1 lg:grid-cols-[1.2fr_0.8fr] gap-12 lg:gap-20 items-center" style={{ opacity: isZone4Active ? 1 : 0, transform: `translateY(${isZone4Active ? 0 : 80}px) scale(${isZone4Active ? 1 : 0.95})`, filter: `blur(${isZone4Active ? 0 : 15}px)` }}>
             <div>
               <div className="flex items-center gap-3 mb-6"><Icons.Ribbon /><span className="text-primary font-bold tracking-[0.4em] uppercase text-xs">Academic Background</span></div>
@@ -361,8 +361,8 @@ const About = ({ active, prewarm }) => {
                 <div className="flex gap-8 text-slate-400 font-medium text-sm md:text-base uppercase tracking-[0.2em]"><div>GPA: <span className="text-white">- / 4.00</span></div><div>Class of <span className="text-white">2023</span></div></div>
               </div>
             </div>
-            <div className="flex justify-center">
-              <div className="relative w-64 h-64 md:w-96 md:h-96 group animate-float">
+            <div className="flex justify-center mt-8 lg:mt-0">
+              <div className="relative w-48 h-48 md:w-72 lg:w-96 md:h-72 lg:h-96 group animate-float">
                 <div className="absolute inset-0 rounded-full bg-primary/20 blur-[100px] group-hover:bg-primary/30 transition-all duration-1000"></div>
                 <div className="relative w-full h-full flex items-center justify-center p-4">
                   <img src={academic3d} alt="Graduate" loading="lazy" className="w-full h-full object-contain scale-125 select-none pointer-events-none" style={{ mixBlendMode: 'screen', maskImage: 'radial-gradient(circle, black 50%, transparent 95%)', WebkitMaskImage: 'radial-gradient(circle, black 50%, transparent 95%)' }} />
@@ -373,7 +373,7 @@ const About = ({ active, prewarm }) => {
         </div>
 
         {/* Zone 5: Experience Log Carousel */}
-        <div className="h-screen w-full flex items-center justify-center px-6 md:px-24 bg-transparent snap-start snap-always overflow-hidden z-20">
+        <div className="min-h-screen w-full flex items-center justify-center py-24 px-6 md:px-24 bg-transparent snap-start snap-always z-20">
           <div className="w-full max-w-5xl mx-auto transition-all duration-1000 ease-out" style={{ opacity: isZone5Active ? 1 : 0, transform: `translateY(${isZone5Active ? 0 : 80}px)`, filter: `blur(${isZone5Active ? 0 : 15}px)` }}>
             <div className="flex items-center gap-3 mb-8 group cursor-default">
               <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center border border-white/10 shadow-glow"><span className="text-primary font-black text-xl group-hover:animate-glitch">05</span></div>
@@ -381,20 +381,20 @@ const About = ({ active, prewarm }) => {
             </div>
             <div className="relative group/carousel">
               {/* Navigation Buttons - RESTORED and OPTIMIZED */}
-              <div className="absolute -left-12 md:-left-20 top-1/2 -translate-y-1/2 z-[100] pointer-events-auto">
+              <div className="absolute -left-4 sm:-left-12 md:-left-20 top-1/2 -translate-y-1/2 z-[100] pointer-events-auto">
                 <button
                   onClick={() => handleNavigate((expIndex - 1 + experiences.length) % experiences.length)}
-                  className="w-12 h-12 rounded-full glass border border-white/10 flex items-center justify-center text-white/50 hover:text-white hover:border-primary/50 hover:bg-primary/10 transition-all active:scale-95 shadow-xl backdrop-blur-xl"
+                  className="w-8 h-8 sm:w-12 sm:h-12 rounded-full glass border border-white/10 flex items-center justify-center text-white/50 hover:text-white hover:border-primary/50 hover:bg-primary/10 transition-all active:scale-95 shadow-xl backdrop-blur-xl"
                   aria-label="Previous Project"
                 >
                   <Icons.ChevronLeft />
                 </button>
               </div>
 
-              <div className="absolute -right-12 md:-right-20 top-1/2 -translate-y-1/2 z-[100] pointer-events-auto">
+              <div className="absolute -right-4 sm:-right-12 md:-right-20 top-1/2 -translate-y-1/2 z-[100] pointer-events-auto">
                 <button
                   onClick={() => handleNavigate((expIndex + 1) % experiences.length)}
-                  className="w-12 h-12 rounded-full glass border border-white/10 flex items-center justify-center text-white/50 hover:text-white hover:border-primary/50 hover:bg-primary/10 transition-all active:scale-95 shadow-xl backdrop-blur-xl"
+                  className="w-8 h-8 sm:w-12 sm:h-12 rounded-full glass border border-white/10 flex items-center justify-center text-white/50 hover:text-white hover:border-primary/50 hover:bg-primary/10 transition-all active:scale-95 shadow-xl backdrop-blur-xl"
                   aria-label="Next Project"
                 >
                   <Icons.ChevronRight />
@@ -445,15 +445,15 @@ const About = ({ active, prewarm }) => {
         </div>
 
         {/* Zone 6: PROGRAMMER FOOTER */}
-        <div className="h-screen w-full flex items-center justify-center px-6 md:px-24 bg-black snap-start snap-always relative overflow-hidden">
+        <div className="min-h-screen w-full flex items-center justify-center px-6 md:px-24 bg-black snap-start snap-always relative overflow-hidden">
           <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden flex items-center justify-center opacity-[0.07] transition-all duration-1000" style={{ transform: `scale(${isZone6Active ? 1 : 1.1})`, filter: `blur(${isZone6Active ? 0 : 20}px)` }}>
             <div className="absolute top-0 left-0 text-[30vw] font-display font-black text-slate-700 -translate-x-1/4 -translate-y-1/4">{"{"}</div>
             <div className="absolute bottom-0 right-0 text-[35vw] font-display font-black text-slate-700 translate-x-1/4 translate-y-1/4">{"}"}</div>
           </div>
 
-          <div className="container mx-auto relative z-10 w-full h-full flex flex-col justify-between py-12 md:py-20 transition-all duration-1000" style={{ opacity: isZone6Active ? 1 : 0, transform: `translateY(${isZone6Active ? 0 : 50}px)` }}>
-            <div className="max-w-5xl mt-20">
-              <h2 className="text-5xl md:text-[7.5rem] font-display font-bold text-white leading-[0.85] tracking-tighter mb-12 italic uppercase group">
+          <div className="container mx-auto relative z-10 w-full flex flex-col justify-between py-16 md:py-24 gap-12 md:gap-16 transition-all duration-1000" style={{ opacity: isZone6Active ? 1 : 0, transform: `translateY(${isZone6Active ? 0 : 50}px)` }}>
+            <div className="max-w-5xl">
+              <h2 className="text-4xl sm:text-5xl md:text-[6rem] lg:text-[7.5rem] font-display font-bold text-white leading-[0.9] tracking-tighter mb-8 md:mb-12 italic uppercase group">
                 TELL ME WHAT <br />
                 YOU'RE <span className="text-glow animate-glitch-heavy inline-block">BUILDING</span><br />
                 <span className="group-hover:animate-glitch-heavy inline-block">I'LL MAKE IT SHINE</span>
@@ -470,7 +470,7 @@ const About = ({ active, prewarm }) => {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 pt-16 border-t border-white/5 mt-auto">
+            <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8 lg:gap-12 pt-8 md:pt-12 border-t border-white/5">
               <div className="flex flex-col gap-4">
                 <h4 className="text-white/60 font-mono text-[10px] font-bold tracking-widest uppercase animate-glitch-heavy inline-block w-fit">Portfolio Version One</h4>
                 <p className="text-slate-600 font-mono text-[9px] leading-relaxed max-w-[220px] uppercase">Built with high-precision tools and modern ecosystems for maximum narrative impact.</p>
