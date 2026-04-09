@@ -5,7 +5,7 @@ import kayabaLogo from '../assets/kayaba.webp';
 import himasisLogo from '../assets/himasis.png';
 import academicTech from '../assets/academic_tech.png';
 
-const About = ({ active, prewarm }) => {
+const About = ({ active, prewarm, onScrollProgress }) => {
   const containerRef = useRef(null);
   const videoRef = useRef(null);
   const [scrollProgress, setScrollProgress] = useState(0);
@@ -122,6 +122,7 @@ const About = ({ active, prewarm }) => {
     const maxScroll = scrollHeight - clientHeight;
     const progress = currentScroll / (maxScroll || 1);
     setScrollProgress(progress);
+    if (onScrollProgress) onScrollProgress(progress);
 
     // Contiguous thresholds to prevent "flickering" or "dead zones"
     setIsZone2Active(progress > 0.08 && progress <= 0.38);
@@ -186,6 +187,7 @@ const About = ({ active, prewarm }) => {
       onScroll={handleScroll}
       className="w-screen h-screen flex-shrink-0 relative overflow-y-auto no-scrollbar select-none snap-y snap-proximity"
     >
+
       {/* Background Video */}
       <div
         className="sticky top-0 w-full h-full z-0 overflow-hidden bg-black transition-opacity duration-1000"
@@ -339,11 +341,23 @@ const About = ({ active, prewarm }) => {
                 </div>
               </div>
             </div>
-            <div className="flex flex-col gap-6">
-              {[{ title: "Web Development", desc: "Building modern, scalable web ecosystems.", icon: Icons.Web }, { title: "Android App", desc: "Developing native-feel mobile experiences.", icon: Icons.Mobile }, { title: "AI Integration", desc: "Implementing intelligent automation solutions.", icon: Icons.AI }].map((cap, i) => (
-                <div key={cap.title} className="glass group p-6 rounded-2xl border border-white/10 hover:border-primary/40 transition-all duration-500 flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform duration-500 shadow-glow shadow-primary/20"><cap.icon /></div>
-                  <div><h3 className="text-white font-semibold text-xl mb-1 tracking-tight">{cap.title}</h3><p className="text-slate-400 text-sm leading-relaxed font-light">{cap.desc}</p></div>
+            <div className="flex flex-col divide-y divide-white/[0.06]">
+              {[
+                { num: "01", title: "Web Development", tag: "Full-Stack", desc: "Building robust, scalable web ecosystems from DB to UI." },
+                { num: "02", title: "Android App", tag: "Native-Feel", desc: "Shipping mobile apps that feel fast, fluid, and intentional." },
+                { num: "03", title: "AI Integration", tag: "Intelligent", desc: "Embedding smart automation where it actually matters." },
+              ].map((cap) => (
+                <div key={cap.num} className="group flex items-start gap-5 py-5 relative cursor-default transition-all duration-300 hover:pl-3">
+                  {/* accent bar */}
+                  <div className="absolute left-0 top-0 bottom-0 w-[2px] bg-primary scale-y-0 group-hover:scale-y-100 transition-transform duration-300 origin-top" />
+                  <span className="text-[11px] font-mono text-white/20 group-hover:text-primary transition-colors duration-300 mt-1 w-6 shrink-0">{cap.num}</span>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-baseline gap-3 mb-1 flex-wrap">
+                      <h3 className="text-white font-bold text-lg tracking-tight leading-none">{cap.title}</h3>
+                      <span className="text-[9px] font-mono text-primary/60 uppercase tracking-[0.2em] border border-primary/20 px-1.5 py-0.5 rounded">{cap.tag}</span>
+                    </div>
+                    <p className="text-slate-500 text-sm font-light leading-snug group-hover:text-slate-300 transition-colors duration-300">{cap.desc}</p>
+                  </div>
                 </div>
               ))}
             </div>

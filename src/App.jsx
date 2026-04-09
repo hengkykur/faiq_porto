@@ -1,7 +1,5 @@
 import React, { useState, useEffect, Suspense, lazy } from 'react';
 import Navbar from './components/Navbar';
-import DotPagination from './components/DotPagination';
-
 import Hero from './components/Hero';
 
 // Dynamic imports for code-splitting (chunking) for non-immediate sections
@@ -13,6 +11,7 @@ function App() {
   const [ready, setReady] = useState(false);
   const [currentPage, setCurrentPage] = useState(0);
   const [isHeroReady, setIsHeroReady] = useState(false);
+  const [aboutScrollProgress, setAboutScrollProgress] = useState(0);
   useEffect(() => {
     // Safety fallback: Reveal site after 3s as a last resort
     const fallbackTimer = setTimeout(() => {
@@ -33,7 +32,7 @@ function App() {
         clearTimeout(fallbackTimer);
       };
     }
-    
+
     return () => clearTimeout(fallbackTimer);
   }, [isHeroReady, ready]);
 
@@ -41,9 +40,27 @@ function App() {
     <div className={`h-screen w-screen bg-black overflow-hidden relative ${ready ? 'opacity-100' : 'opacity-0'} transition-opacity duration-1000`}>
       {/* Fixed UI Elements */}
       <Navbar currentPage={currentPage} setCurrentPage={setCurrentPage} />
-      <DotPagination currentPage={currentPage} setCurrentPage={setCurrentPage} />
-      
-      <div 
+
+      {/* About Scroll Progress Bar — rendered at viewport level to escape translate3d */}
+      <div
+        className="fixed top-0 left-0 w-full z-[300] pointer-events-none"
+        style={{ opacity: currentPage === 2 ? 1 : 0, transition: 'opacity 500ms', height: '4px', backgroundColor: 'rgba(255,255,255,0.05)' }}
+      >
+        <div
+          style={{
+            height: '100%',
+            width: '100%',
+            transformOrigin: 'left',
+            transform: `scaleX(${aboutScrollProgress})`,
+            transition: 'transform 200ms linear',
+            backgroundColor: 'oklch(65% 0.25 260)',
+            boxShadow: '0 0 15px oklch(65% 0.25 260 / 0.8)',
+            willChange: 'transform',
+          }}
+        />
+      </div>
+
+      <div
         className="flex h-full w-full"
         style={{
           transform: `translate3d(-${currentPage * 100}%, 0, 0)`,
@@ -56,7 +73,7 @@ function App() {
           <Projects active={currentPage === 1} />
         </Suspense>
         <Suspense fallback={null}>
-          <About active={currentPage === 2} prewarm={currentPage === 1 || ready} />
+          <About active={currentPage === 2} prewarm={currentPage === 1 || ready} onScrollProgress={setAboutScrollProgress} />
         </Suspense>
         <Suspense fallback={null}>
           <Contact active={currentPage === 3} />
