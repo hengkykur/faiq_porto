@@ -14,8 +14,8 @@ const Contact = () => {
           <span className="text-primary font-mono text-[10px] tracking-[0.4em] uppercase">Ready for Deployment</span>
         </div>
 
-        <h2 className="text-6xl md:text-9xl font-display font-bold text-white mb-12 italic tracking-tighter shadow-glow uppercase">
-          Let's <span className="text-glow">Connect</span>
+        <h2 className="text-6xl md:text-9xl font-display font-bold text-white mb-12 italic tracking-tighter text-glow uppercase">
+          Let's Connect
         </h2>
 
         <div className="flex flex-col items-center gap-12 mt-12">
@@ -51,6 +51,46 @@ const Contact = () => {
         </div>
       </div>
 
+      {/* Robot Video — Invisible Frame Polish (Final Tiny Size) */}
+      <div
+        style={{
+          position: 'absolute',
+          bottom: '10px',
+          right: '24px',
+          width: '240px',
+          height: '385px',
+          zIndex: 20,
+          overflow: 'hidden',
+          mixBlendMode: 'screen',
+          filter: 'contrast(1.1) brightness(1.1) drop-shadow(0 0 30px rgba(99,179,237,0.4))',
+          animation: 'robotFloat 6s ease-in-out infinite',
+          pointerEvents: 'none',
+          WebkitMaskImage: 'radial-gradient(ellipse at center, black 50%, transparent 90%)',
+          maskImage: 'radial-gradient(ellipse at center, black 50%, transparent 90%)',
+        }}
+      >
+        <video
+          src="/Robot.mp4"
+          autoPlay
+          loop
+          muted
+          playsInline
+          style={{
+            width: '115%', 
+            height: '115%', 
+            objectFit: 'cover',
+            objectPosition: 'center 5%', 
+            opacity: 0.95,
+          }}
+        />
+      </div>
+
+      <style>{`
+        @keyframes robotFloat {
+          0%, 100% { transform: translateY(0px); }
+          50% { transform: translateY(-20px); }
+        }
+      `}</style>
     </div>
   );
 };

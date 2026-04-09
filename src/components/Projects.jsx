@@ -1,13 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 
 const Projects = ({ active }) => {
-  const [bgVideoLoaded, setBgVideoLoaded] = useState(true);
   const [isScrolling, setIsScrolling] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
   const scrollRef = useRef(null);
   const scrollTimeout = useRef(null);
-  const videoRef = useRef(null);
   const touchStartX = useRef(null);
   const touchStartY = useRef(null);
 
@@ -67,12 +65,7 @@ const Projects = ({ active }) => {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  // Ensure video plays
-  useEffect(() => {
-    if (active && videoRef.current) {
-      videoRef.current.play().catch(err => console.error("Video play failed:", err));
-    }
-  }, [active]);
+
 
   // Keyboard navigation (Desktop only)
   useEffect(() => {
@@ -153,18 +146,11 @@ const Projects = ({ active }) => {
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
       >
-        {/* Background */}
-        <div className="absolute inset-0 z-0">
-          <video
-            ref={videoRef}
-            autoPlay muted loop playsInline preload="metadata"
-            className="w-full h-full object-cover brightness-[0.25]"
-            onCanPlay={() => setBgVideoLoaded(true)}
-          >
-            <source src="/home1.mp4" type="video/mp4" />
-          </video>
-          <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black z-[2]" />
-          <div className="absolute inset-0 bg-radial-vignette opacity-60 z-[3]" />
+        {/* Background - Clean dark */}
+        <div className="absolute inset-0 z-0 bg-[#080810]">
+          <div className="project-grid-lines" />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-transparent to-black/90 z-[2]" />
+          <div className="absolute inset-0 bg-radial-vignette opacity-50 z-[3]" />
         </div>
 
         {/* Header */}
@@ -275,29 +261,13 @@ const Projects = ({ active }) => {
       onWheel={handleWheel}
       className="w-screen h-screen flex items-center relative overflow-hidden flex-shrink-0"
     >
-      {/* Cinematic Background Video Layer */}
-      <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
-        <div className="absolute inset-0 bg-[#0a0a0c] z-10"
-          style={{ opacity: bgVideoLoaded ? 0 : 1, transition: 'opacity 0.8s ease' }}
-        >
-          <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-10"></div>
-        </div>
-
-        <video
-          ref={videoRef}
-          autoPlay muted loop playsInline preload="metadata"
-          className="w-full h-full object-cover scale-105 brightness-[0.40]"
-          style={{ opacity: bgVideoLoaded ? 1 : 0, transition: 'opacity 0.8s ease' }}
-          onCanPlay={() => setBgVideoLoaded(true)}
-        >
-          <source src="/home1.mp4" type="video/mp4" />
-        </video>
-
-        <div className="absolute inset-0 pointer-events-none z-[5] opacity-20 mix-blend-overlay grain-overlay"></div>
-        <div className="absolute inset-0 pointer-events-none z-[6] opacity-10 scanlines"></div>
-        <div className="absolute inset-0 bg-gradient-to-l from-black via-black/60 to-transparent z-[7]"></div>
+      {/* Clean Dark Background */}
+      <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none bg-[#080810]">
+        <div className="project-grid-lines" />
+        <div className="absolute inset-0 pointer-events-none z-[5] opacity-10 mix-blend-overlay grain-overlay"></div>
+        <div className="absolute inset-0 bg-gradient-to-l from-black/50 via-transparent to-transparent z-[7]"></div>
         <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent z-[8]"></div>
-        <div className="absolute inset-0 bg-radial-vignette opacity-70 z-[9]"></div>
+        <div className="absolute inset-0 bg-radial-vignette opacity-40 z-[9]"></div>
       </div>
 
       <div className="w-full h-full relative z-20 flex flex-col justify-center">
