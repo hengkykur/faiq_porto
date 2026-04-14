@@ -2,39 +2,18 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import SpaceInvaders from './SpaceInvaders';
 
 /**
- * LazyVideo Component to pre-warm and buffer videos just before they scroll into view,
- * eliminating the "pop-in" network lag of conditional mounting.
+ * LazyVideo Component
+ * Using native browser autoplay and preload optimizations since WebM is lightweight.
  */
 const LazyVideo = ({ src, className }) => {
-  const ref = useRef(null);
-  const videoRef = useRef(null);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(([entry]) => {
-      if (entry.isIntersecting) {
-        if (videoRef.current) {
-          // Pre-warm playback when approaching viewport
-          videoRef.current.play().catch(() => {});
-        }
-        if (ref.current) observer.unobserve(ref.current);
-      }
-    }, { rootMargin: '1000px' }); // Wamp up 1000px before appearing
-    
-    const currentRef = ref.current;
-    if (currentRef) observer.observe(currentRef);
-    return () => {
-      if (currentRef) observer.unobserve(currentRef);
-    };
-  }, []);
-
   return (
-    <div ref={ref} className="w-full h-full bg-[#060608]">
+    <div className="w-full h-full bg-[#060608]">
       <video 
-        ref={videoRef}
+        autoPlay
         loop 
         muted 
         playsInline 
-        preload="metadata"
+        preload="auto"
         className={className} 
       >
         <source src={src.replace('.mp4', '.webm')} type="video/webm" />
