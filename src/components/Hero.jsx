@@ -2,6 +2,45 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import SpaceInvaders from './SpaceInvaders';
 
 /**
+ * LazyVideo Component to prevent off-screen heavy MP4s from loading on mount
+ */
+const LazyVideo = ({ src, className }) => {
+  const [inView, setInView] = useState(false);
+  const ref = useRef();
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) {
+        setInView(true);
+        if (ref.current) observer.unobserve(ref.current);
+      }
+    }, { rootMargin: '300px' });
+    
+    const currentRef = ref.current;
+    if (currentRef) observer.observe(currentRef);
+    return () => {
+      if (currentRef) observer.unobserve(currentRef);
+    };
+  }, []);
+
+  return (
+    <div ref={ref} className="w-full h-full">
+      {inView && (
+        <video 
+          src={src} 
+          autoPlay 
+          loop 
+          muted 
+          playsInline 
+          preload="none"
+          className={className} 
+        />
+      )}
+    </div>
+  );
+};
+
+/**
  * Dual-video crossfade using direct DOM manipulation — no React re-renders
  * during the crossfade so no risk of video elements unmounting.
  * Video A and B are always mounted; we only toggle style.opacity directly.
@@ -103,7 +142,7 @@ const HeroVideo = ({ src, onReady }) => {
         ref={vidBRef}
         muted
         playsInline
-        preload="auto"
+        preload="metadata"
         style={{ ...vidStyle, opacity: 0 }}
       >
         <source src={src} type="video/mp4" />
@@ -350,12 +389,8 @@ const Hero = ({ active, onReady }) => {
             <div className="grid grid-cols-1 md:grid-cols-12 gap-12 md:gap-8 items-center">
               <RevealOnScroll delay={100} className="md:col-span-7 relative group">
                 <div className="aspect-square md:aspect-[4/5] w-full overflow-hidden bg-white/5 ring-1 ring-white/10 rounded-sm">
-                  <video 
+                  <LazyVideo 
                     src="/lukisan.mp4" 
-                    autoPlay 
-                    loop 
-                    muted 
-                    playsInline 
                     className="w-full h-full object-cover opacity-60 grayscale-[50%] group-hover:opacity-100 group-hover:grayscale-0 group-hover:scale-[1.03] transition-all duration-[1.5s] ease-[cubic-bezier(0.19,1,0.22,1)]" 
                   />
                 </div>

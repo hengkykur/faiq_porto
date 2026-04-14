@@ -75,7 +75,7 @@ function App() {
           <Projects active={currentPage === 1} />
         </Suspense>
         <Suspense fallback={null}>
-          <About active={currentPage === 2} prewarm={currentPage === 1 || ready} onScrollProgress={setAboutScrollProgress} />
+          <About active={currentPage === 2} prewarm={currentPage === 1} onScrollProgress={setAboutScrollProgress} />
         </Suspense>
         <Suspense fallback={null}>
           <Contact active={currentPage === 3} />

@@ -1,61 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react';
+import ProjectDetail from './ProjectDetail';
+import { projectsData as projects } from '../data/projects';
 
 const Projects = ({ active }) => {
   const [isScrolling, setIsScrolling] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
+  const [selectedProject, setSelectedProject] = useState(null);
   const scrollRef = useRef(null);
   const scrollTimeout = useRef(null);
   const touchStartX = useRef(null);
   const touchStartY = useRef(null);
-
-  const projects = [
-    {
-      title: 'Nexus',
-      subtitle: 'UI Kit v2.0',
-      description: 'A comprehensive high-performance design system built for scalable enterprise applications.',
-      image: 'https://images.unsplash.com/photo-1614850523296-d8c1c0ba0256?auto=format&fit=crop&q=60&w=1200',
-      tags: ['React', 'CSS', 'System'],
-      year: '2024',
-      status: 'Live',
-    },
-    {
-      title: 'Cyber',
-      subtitle: 'Analytics',
-      description: 'Real-time data visualization engine for monitoring high-traffic network protocols and security.',
-      image: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=60&w=1200',
-      tags: ['Vite', 'Edge', 'D3.js'],
-      year: '2024',
-      status: 'Beta',
-    },
-    {
-      title: 'Vanguard',
-      subtitle: 'Eco Store',
-      description: 'Zero-latency e-commerce experience optimized for sustainable product distribution.',
-      image: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=60&w=1200',
-      tags: ['Next.js', 'Stripe', 'Node'],
-      year: '2023',
-      status: 'Live',
-    },
-    {
-      title: 'Aether',
-      subtitle: 'Mobile App',
-      description: 'Cross-platform mobile solution bringing intelligent workflow management to your fingertips.',
-      image: 'https://images.unsplash.com/photo-1618761760534-33c15fe7c909?auto=format&fit=crop&q=60&w=1200',
-      tags: ['Flutter', 'Firebase', 'Clean'],
-      year: '2023',
-      status: 'Live',
-    },
-    {
-      title: 'Horizon',
-      subtitle: 'AI Platform',
-      description: 'Advanced neural network interface designed for collaborative artificial intelligence training.',
-      image: 'https://images.unsplash.com/photo-1677442136019-21780ecad995?auto=format&fit=crop&q=60&w=1200',
-      tags: ['Python', 'Cloud', 'PyTorch'],
-      year: '2024',
-      status: 'Dev',
-    },
-  ];
 
   // Detect mobile viewport
   useEffect(() => {
@@ -69,7 +24,7 @@ const Projects = ({ active }) => {
 
   // Keyboard navigation (Desktop only)
   useEffect(() => {
-    if (!active || isMobile) return;
+    if (!active || isMobile || selectedProject) return;
 
     let animationTimeout = null;
     const handleAnimationState = () => {
@@ -97,7 +52,7 @@ const Projects = ({ active }) => {
 
   // Desktop scroll handler
   const handleWheel = (e) => {
-    if (isMobile) return;
+    if (isMobile || selectedProject) return;
     if (Math.abs(e.deltaY) < 30) return;
 
     if (e.deltaY > 0 && activeIndex < projects.length - 1) {
@@ -116,12 +71,13 @@ const Projects = ({ active }) => {
 
   // Mobile touch swipe handlers
   const handleTouchStart = (e) => {
+    if (selectedProject) return;
     touchStartX.current = e.touches[0].clientX;
     touchStartY.current = e.touches[0].clientY;
   };
 
   const handleTouchEnd = (e) => {
-    if (touchStartX.current === null) return;
+    if (selectedProject || touchStartX.current === null) return;
     const dx = e.changedTouches[0].clientX - touchStartX.current;
     const dy = e.changedTouches[0].clientY - touchStartY.current;
 
@@ -176,21 +132,25 @@ const Projects = ({ active }) => {
             {projects.map((p, i) => (
               <div
                 key={i}
-                className="relative flex flex-col justify-end"
+                className={`relative flex flex-col justify-end ${i === activeIndex ? 'cursor-pointer' : ''}`}
                 style={{ width: `${100 / projects.length}%`, height: '100%' }}
+                onClick={() => { if (i === activeIndex) setSelectedProject(p); }}
               >
-                {/* Card image */}
-                <img
-                  src={p.image}
-                  alt={p.title}
-                  loading="lazy"
-                  className="absolute inset-0 w-full h-full object-cover"
-                  style={{
-                    filter: i === activeIndex ? 'grayscale(0.2) brightness(0.45)' : 'grayscale(0.7) brightness(0.2)',
-                    transition: 'filter 0.5s ease',
-                  }}
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
+                {/* Square Card image container */}
+                <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[65vw] max-w-[240px] aspect-square z-0 bg-[#16161e] rounded-[2rem] shadow-[0_30px_60px_rgba(0,0,0,0.9)] border border-white/5 flex items-center justify-center p-12 mt-4 overflow-hidden">
+                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.15)_0%,transparent_70%)] pointer-events-none"></div>
+                  <img
+                    src={p.image}
+                    alt={p.title}
+                    loading="lazy"
+                    className={`w-full h-full object-contain relative z-10 ${p.invertLogo ? 'brightness-0 invert drop-shadow-[0_0_10px_rgba(255,255,255,0.4)] opacity-90' : 'drop-shadow-[0_0_20px_rgba(0,0,0,0.5)]'}`}
+                    style={{
+                      filter: i === activeIndex ? 'grayscale(0)' : 'grayscale(1) opacity(0.3)',
+                      transition: 'all 0.5s ease',
+                    }}
+                  />
+                  <div className="absolute inset-0 rounded-[2rem] ring-1 ring-inset ring-white/5 pointer-events-none z-20" />
+                </div>
 
                 {/* Card content */}
                 <div
@@ -202,15 +162,11 @@ const Projects = ({ active }) => {
                     pointerEvents: i === activeIndex ? 'auto' : 'none',
                   }}
                 >
-                  <div className="flex items-center gap-2 mb-3">
-                    <span className="text-[9px] font-mono text-primary border border-primary/30 px-2 py-0.5 uppercase tracking-widest">
-                      {p.status}
-                    </span>
-                    <span className="text-[9px] font-mono text-white/30 uppercase tracking-widest">{p.year}</span>
+                  <div className="flex flex-col gap-3 mb-2">
+                    <h2 className="text-4xl sm:text-5xl font-display font-black text-white italic uppercase leading-none tracking-tight mb-1">
+                      {p.title}
+                    </h2>
                   </div>
-                  <h2 className="text-5xl font-display font-black text-white italic uppercase leading-none tracking-tight mb-1">
-                    {p.title}
-                  </h2>
                   <h3 className="text-base font-display font-light text-primary/70 italic uppercase tracking-[0.2em] mb-4">
                     {p.subtitle}
                   </h3>
@@ -224,6 +180,13 @@ const Projects = ({ active }) => {
                       </span>
                     ))}
                   </div>
+
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setSelectedProject(p); }}
+                    className="mt-6 px-5 py-2 border border-primary/50 text-white font-mono text-xs uppercase tracking-wider hover:bg-primary/20 transition-colors w-full backdrop-blur-sm shadow-[0_0_15px_rgba(var(--color-primary),0.2)]"
+                  >
+                    Details
+                  </button>
                 </div>
               </div>
             ))}
@@ -251,6 +214,9 @@ const Projects = ({ active }) => {
             Swipe to explore
           </p>
         </div>
+        
+        {/* Detail Overlay */}
+        {selectedProject && <ProjectDetail project={selectedProject} onClose={() => setSelectedProject(null)} />}
       </div>
     );
   }
@@ -272,17 +238,20 @@ const Projects = ({ active }) => {
 
       <div className="w-full h-full relative z-20 flex flex-col justify-center">
         {/* Dynamic Project Metadata HUD (Left Side) */}
-        <div className="absolute top-[25%] left-24 z-30 max-w-sm pointer-events-none">
+        <div className="absolute top-[15%] left-24 z-30 max-w-sm pointer-events-none">
           <div key={activeIndex} className="animate-hud-enter">
             <div className="flex items-center gap-3 mb-4">
               <span className="text-[10px] font-mono text-primary border-l-2 border-primary pl-2 uppercase tracking-[0.2em]">Project Detail</span>
               <div className="h-px flex-1 bg-gradient-to-r from-primary/20 to-transparent"></div>
             </div>
 
-            <h2 className="text-6xl font-display font-black text-white italic leading-none uppercase tracking-tight mb-2">
-              {projects[activeIndex].title}
-            </h2>
-            <h3 className="text-2xl font-display font-light text-primary/80 italic uppercase tracking-[0.15em] mb-6">
+            <div className="flex items-center gap-4 mb-2">
+              <h2 className="text-5xl lg:text-6xl font-display font-black text-white italic leading-none uppercase tracking-tight">
+                {projects[activeIndex].title}
+              </h2>
+            </div>
+            
+            <h3 className="text-2xl font-display font-light text-primary/80 italic uppercase tracking-[0.15em] mb-6 mt-2">
               {projects[activeIndex].subtitle}
             </h3>
 
@@ -290,13 +259,21 @@ const Projects = ({ active }) => {
               {projects[activeIndex].description}
             </p>
 
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-2 mb-8">
               {projects[activeIndex].tags.map(tag => (
                 <span key={tag} className="text-[9px] font-mono border border-primary/30 px-3 py-1 rounded-sm text-primary/90 bg-primary/5 uppercase tracking-wider">
                   {tag}
                 </span>
               ))}
             </div>
+
+            <button
+              className="pointer-events-auto flex items-center gap-3 px-6 py-3 border border-primary/50 text-white font-mono text-[10px] uppercase tracking-widest hover:bg-primary/20 hover:border-primary transition-all group"
+              onClick={() => setSelectedProject(projects[activeIndex])}
+            >
+              <span>Explore Project</span>
+              <div className="w-4 h-px bg-primary group-hover:w-8 transition-all duration-300"></div>
+            </button>
 
             <div className="mt-12 flex items-center gap-4 text-white/20">
               <div className="text-[9px] font-mono">0{activeIndex + 1} / 0{projects.length}</div>
@@ -328,8 +305,9 @@ const Projects = ({ active }) => {
           {projects.map((p, i) => (
             <div
               key={i}
+              onClick={() => { if (activeIndex === i) setSelectedProject(p); }}
               className={`project-node flex-shrink-0 w-[42vw] h-full flex items-center justify-center group select-none pointer-events-auto
-                ${activeIndex === i ? 'opacity-100' : 'opacity-70'}
+                ${activeIndex === i ? 'opacity-100 cursor-pointer' : 'opacity-70'}
               `}
               style={{
                 transform: activeIndex === i ? 'scale(1.1)' : 'scale(0.8)',
@@ -340,26 +318,26 @@ const Projects = ({ active }) => {
               }}
             >
               <div className="relative w-full flex items-center justify-center">
-                {/* Skewed Stage (Artistic Parallelogram) */}
-                <div className={`relative z-20 w-[32vw] aspect-[16/10] overflow-hidden skew-x-[-15deg] border-2 shadow-[0_0_50px_rgba(0,0,0,0.8)] bg-[#151518]
-                  ${activeIndex === i ? 'border-primary/80 shadow-primary/20' : 'border-primary/20 shadow-primary/5'}
+                {/* Perfect Square App-Icon Stage */}
+                <div className={`relative z-20 w-full ${activeIndex === i ? 'max-w-[260px]' : 'max-w-[240px]'} aspect-square rounded-[2rem] overflow-hidden shadow-[0_30px_60px_rgba(0,0,0,0.9)] bg-[#0f0f13] border border-white/10 flex items-center justify-center p-8
+                  ${activeIndex === i ? 'ring-[2px] ring-primary/40 scale-100' : 'ring-1 ring-primary/10 scale-95'}
                 `}
-                style={{ transition: 'transform 0.5s ease, border-color 0.5s ease, box-shadow 0.5s ease' }}>
+                style={{ transition: 'transform 0.5s ease, box-shadow 0.5s ease, --tw-ring-color 0.5s ease' }}>
 
-                  <div className="absolute inset-[-15%] skew-x-[15deg] group-hover:skew-x-[12deg] transition-transform duration-700">
-                    <img
-                      src={p.image}
-                      alt={p.title}
-                      loading="lazy"
-                      className="w-full h-full object-cover grayscale-[0.5] group-hover:grayscale-0 scale-110 group-hover:scale-125"
-                      style={{ transition: 'filter 0.5s ease, transform 0.5s ease' }}
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent"></div>
-                  </div>
+                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.08)_0%,transparent_70%)] pointer-events-none"></div>
+
+                  <img
+                    src={p.image}
+                    alt={p.title}
+                    loading="lazy"
+                    className={`w-full h-full object-contain grayscale-[0.05] group-hover:grayscale-0 scale-100 group-hover:scale-105 relative z-10 ${p.invertLogo ? 'brightness-0 invert drop-shadow-[0_0_15px_rgba(255,255,255,0.4)] opacity-90' : 'drop-shadow-[0_0_15px_rgba(255,255,255,0.15)]'}`}
+                    style={{ transition: 'filter 0.5s ease, transform 0.5s ease' }}
+                  />
+                  <div className="absolute inset-0 rounded-[2rem] ring-1 ring-inset ring-white/10 pointer-events-none z-20"></div>
 
                   <div
-                    className={`absolute bottom-8 left-12 z-30 skew-x-[15deg] group-hover:skew-x-[12deg] pointer-events-none
-                      ${activeIndex === i ? 'opacity-0' : 'opacity-40'}
+                    className={`absolute bottom-6 left-1/2 -translate-x-1/2 z-30 pointer-events-none
+                      ${activeIndex === i ? 'opacity-0' : 'opacity-20'}
                     `}
                     style={{ transition: 'opacity 0.5s ease, transform 0.5s ease' }}
                   >
@@ -367,9 +345,6 @@ const Projects = ({ active }) => {
                       {p.title}
                     </h3>
                   </div>
-
-                  <div className="absolute top-4 left-4 w-4 h-4 border-t border-l border-white/40 group-hover:border-primary transition-colors"></div>
-                  <div className="absolute bottom-4 right-4 w-4 h-4 border-b border-r border-white/40 group-hover:border-primary transition-colors"></div>
                 </div>
 
                 {/* HUD Navigation Number */}
@@ -395,13 +370,15 @@ const Projects = ({ active }) => {
           </div>
         </div>
 
-        {/* Desktop keyboard hint */}
         <div className="absolute bottom-12 left-1/2 -translate-x-1/2 flex items-center gap-3 opacity-20 pointer-events-none">
           <div className="border border-white/30 rounded px-2 py-1 text-[9px] font-mono text-white">←</div>
           <span className="text-[9px] font-mono text-white uppercase tracking-widest">Navigate</span>
           <div className="border border-white/30 rounded px-2 py-1 text-[9px] font-mono text-white">→</div>
         </div>
       </div>
+
+      {/* Detail Overlay */}
+      {selectedProject && <ProjectDetail project={selectedProject} onClose={() => setSelectedProject(null)} />}
     </div>
   );
 };
