@@ -133,7 +133,7 @@ const HeroVideo = ({ src, onReady }) => {
         muted
         playsInline
         preload="auto"
-        onCanPlayThrough={handleCanPlay}
+        onLoadedData={handleCanPlay}
         style={vidStyle}
       >
         <source src={src} type="video/mp4" />

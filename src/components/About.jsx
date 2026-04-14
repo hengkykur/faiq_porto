@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 // import skillVid from '../assets/skillvid.mp4';
-import academic3d from '../assets/academic_3d.png';
+import academic3d from '../assets/academic_3d.webp';
 import kayabaLogo from '../assets/kayaba.webp';
-import himasisLogo from '../assets/himasis.png';
-import academicTech from '../assets/academic_tech.png';
+import himasisLogo from '../assets/himasis.webp';
+import academicTech from '../assets/academic_tech.webp';
 
 const About = ({ active, prewarm, onScrollProgress }) => {
   const containerRef = useRef(null);

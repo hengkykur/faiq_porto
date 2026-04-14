@@ -1,4 +1,4 @@
-import himasisImg from '../../assets/himasis.png';
+import himasisImg from '../../assets/himasis.webp';
 
 export const elearningProject = {
   title: 'E-Learning Platform',
