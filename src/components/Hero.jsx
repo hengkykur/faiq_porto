@@ -45,7 +45,7 @@ const LazyVideo = ({ src, className }) => {
  * during the crossfade so no risk of video elements unmounting.
  * Video A and B are always mounted; we only toggle style.opacity directly.
  */
-const HeroVideo = ({ src, onReady }) => {
+const HeroVideo = ({ src, onReady, active = true }) => {
   const vidARef = useRef(null);
   const vidBRef = useRef(null);
   const [ready, setReady] = useState(false);
@@ -79,33 +79,41 @@ const HeroVideo = ({ src, onReady }) => {
 
   // Crossfade loop checker — runs via setInterval (lightweight, not RAF)
   useEffect(() => {
-    if (!ready) return;
+    if (!ready || !active) {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+      return;
+    }
 
     intervalRef.current = setInterval(() => {
       const a = vidARef.current;
       const b = vidBRef.current;
       if (!a || !b || swappingRef.current) return;
 
-      const active = activeRef.current === 'A' ? a : b;
-      const next = activeRef.current === 'A' ? b : a;
+      const activeVid = activeRef.current === 'A' ? a : b;
+      const nextVid = activeRef.current === 'A' ? b : a;
 
-      if (!active.duration) return;
-      const timeLeft = active.duration - active.currentTime;
+      if (!activeVid.duration) return;
+      const timeLeft = activeVid.duration - activeVid.currentTime;
 
       if (timeLeft <= CROSSFADE && timeLeft > 0) {
         swappingRef.current = true;
+        // Lazy-load the second video source only when crossfade is imminent
+        if (!nextVid.src) {
+           nextVid.src = src;
+           nextVid.load();
+        }
         // Prepare next video
-        next.currentTime = 0;
-        next.play().catch(() => { });
-        doFade(active, next);
+        nextVid.currentTime = 0;
+        nextVid.play().catch(() => { });
+        doFade(activeVid, nextVid);
 
         // After crossfade completes, swap references and unlock
         setTimeout(() => {
           activeRef.current = activeRef.current === 'A' ? 'B' : 'A';
           swappingRef.current = false;
           // Reset the old one so it's ready for next crossfade
-          active.currentTime = 0;
-          active.pause();
+          activeVid.currentTime = 0;
+          activeVid.pause();
         }, CROSSFADE * 1000 + 50);
       }
     }, 100);
@@ -113,7 +121,7 @@ const HeroVideo = ({ src, onReady }) => {
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
-  }, [ready, doFade]);
+  }, [ready, active, doFade, src]);
 
   const vidStyle = {
     position: 'absolute',
@@ -123,7 +131,7 @@ const HeroVideo = ({ src, onReady }) => {
     objectFit: 'cover',
     mixBlendMode: 'screen',
     opacity: 0,
-    willChange: 'opacity',
+    /* Removed willChange to free GPU memory */
   };
 
   return (
@@ -142,13 +150,33 @@ const HeroVideo = ({ src, onReady }) => {
         ref={vidBRef}
         muted
         playsInline
-        preload="metadata"
+        preload="none"
         style={{ ...vidStyle, opacity: 0 }}
       >
-        <source src={src} type="video/mp4" />
+        {/* Source injected dynamically to avoid duplicate parallel fetch */}
       </video>
     </>
   );
+};
+
+// --- Shared IntersectionObserver for highly optimized scroll reveals ---
+let sharedObserver = null;
+const observationMap = new Map();
+
+const getSharedObserver = () => {
+  if (!sharedObserver) {
+    sharedObserver = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          const callback = observationMap.get(entry.target);
+          if (callback) callback();
+          sharedObserver.unobserve(entry.target);
+          observationMap.delete(entry.target);
+        }
+      });
+    }, { rootMargin: '0px 0px -15% 0px' });
+  }
+  return sharedObserver;
 };
 
 const RevealOnScroll = ({ children, delay = 0, className = '' }) => {
@@ -156,20 +184,18 @@ const RevealOnScroll = ({ children, delay = 0, className = '' }) => {
   const domRef = useRef();
 
   useEffect(() => {
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          setIsVisible(true);
-          if (entry.target) observer.unobserve(entry.target);
-        }
-      });
-    }, { rootMargin: '0px 0px -15% 0px' });
-    
-    const currentRef = domRef.current;
-    if (currentRef) observer.observe(currentRef);
+    const ref = domRef.current;
+    if (!ref) return;
+
+    const observer = getSharedObserver();
+    observationMap.set(ref, () => setIsVisible(true));
+    observer.observe(ref);
     
     return () => {
-      if (currentRef) observer.unobserve(currentRef);
+      if (ref && observationMap.has(ref)) {
+        observer.unobserve(ref);
+        observationMap.delete(ref);
+      }
     };
   }, []);
 
@@ -180,8 +206,8 @@ const RevealOnScroll = ({ children, delay = 0, className = '' }) => {
       style={{
         opacity: isVisible ? 1 : 0,
         transform: isVisible ? 'translateY(0)' : 'translateY(50px)',
-        transition: `opacity 1s ease-out ${delay}ms, transform 1.2s cubic-bezier(0.16, 1, 0.3, 1) ${delay}ms`,
-        willChange: 'opacity, transform'
+        transition: `opacity 1s ease-out ${delay}ms, transform 1.2s cubic-bezier(0.16, 1, 0.3, 1) ${delay}ms`
+        /* Removed willChange to free GPU memory */
       }}
     >
       {children}
@@ -189,19 +215,18 @@ const RevealOnScroll = ({ children, delay = 0, className = '' }) => {
   );
 };
 
-const Hero = ({ active, onReady }) => {
+const TypewriterText = () => {
   const [wordIndex, setWordIndex] = useState(0);
   const [currentText, setCurrentText] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
   const [typeSpeed, setTypeSpeed] = useState(150);
-  const [videoReady, setVideoReady] = useState(false);
 
-  const wordConfigs = [
+  const wordConfigs = React.useMemo(() => [
     { text: 'Digital Art', font: "'Cormorant Garamond', serif", italic: true, weight: 300 },
     { text: 'Sleek Code', font: "'Space Grotesk', sans-serif", italic: false, weight: 400 },
     { text: 'Architecture', font: "'Outfit', sans-serif", italic: true, weight: 600 },
     { text: 'Simplicity', font: "'Plus Jakarta Sans', sans-serif", italic: false, weight: 300 },
-  ];
+  ], []);
 
   useEffect(() => {
     const config = wordConfigs[wordIndex];
@@ -226,9 +251,27 @@ const Hero = ({ active, onReady }) => {
 
     const timer = setTimeout(handleTyping, typeSpeed);
     return () => clearTimeout(timer);
-  }, [currentText, isDeleting, wordIndex, typeSpeed]);
+  }, [currentText, isDeleting, wordIndex, typeSpeed, wordConfigs]);
 
   const config = wordConfigs[wordIndex];
+
+  return (
+    <span
+      className="text-glow inline-block min-w-[120px] sm:min-w-[200px] pr-4 sm:pr-6"
+      style={{
+        fontFamily: config.font,
+        fontStyle: config.italic ? 'italic' : 'normal',
+        fontWeight: config.weight,
+        transition: 'font-family 0.4s, font-style 0.4s, font-weight 0.4s',
+      }}
+    >
+      {currentText}<span className="animate-pulse border-r-[3px] border-primary ml-0.5 inline-block h-[0.85em] align-middle" />
+    </span>
+  );
+};
+
+const Hero = ({ active, onReady }) => {
+  const [videoReady, setVideoReady] = useState(false);
 
   return (
     <div className="w-screen h-screen overflow-y-auto overflow-x-hidden bg-[#060608] flex-shrink-0 no-scrollbar scroll-smooth">
@@ -273,6 +316,7 @@ const Hero = ({ active, onReady }) => {
             >
               <HeroVideo
                 src="/vidiohomebulet.mp4"
+                active={active}
                 onReady={() => {
                   setVideoReady(true);
                   if (onReady) onReady();
@@ -297,17 +341,7 @@ const Hero = ({ active, onReady }) => {
               <span className="text-white italic">Sleek</span>
               <span className="italic"> Digital</span>
               <br />
-              <span
-                className="text-glow inline-block min-w-[120px] sm:min-w-[200px] pr-4 sm:pr-6"
-                style={{
-                  fontFamily: config.font,
-                  fontStyle: config.italic ? 'italic' : 'normal',
-                  fontWeight: config.weight,
-                  transition: 'font-family 0.4s, font-style 0.4s, font-weight 0.4s',
-                }}
-              >
-                {currentText}<span className="animate-pulse border-r-[3px] border-primary ml-0.5 inline-block h-[0.85em] align-middle" />
-              </span>
+              <TypewriterText />
               <span className="text-white font-light">.</span>
             </h1>
 
