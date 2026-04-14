@@ -245,7 +245,6 @@ const About = ({ active, assetsAllowed, onScrollProgress }) => {
         {hasStartedLoading && (
           <video
             ref={videoRef}
-            src="/skillvid.mp4"
             autoPlay
             muted={true}
             defaultMuted
@@ -256,7 +255,10 @@ const About = ({ active, assetsAllowed, onScrollProgress }) => {
             onLoadedData={() => setVideoLoaded(true)}
             className={`absolute inset-0 w-full h-full object-cover transition-all duration-1000 ${videoLoaded ? 'opacity-100 blur-0' : 'opacity-0 blur-lg'}`}
             style={{ opacity: videoLoaded ? (videoOpacity * 0.7) : 0 }}
-          />
+          >
+            <source src="/skillvid.webm" type="video/webm" />
+            <source src="/skillvid.mp4" type="video/mp4" />
+          </video>
         )}
         <div className="absolute inset-0 bg-black/30 z-10"></div>
 

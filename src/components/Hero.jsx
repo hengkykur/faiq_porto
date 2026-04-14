@@ -27,14 +27,16 @@ const LazyVideo = ({ src, className }) => {
     <div ref={ref} className="w-full h-full">
       {inView && (
         <video 
-          src={src} 
           autoPlay 
           loop 
           muted 
           playsInline 
           preload="none"
           className={className} 
-        />
+        >
+          <source src={src.replace('.mp4', '.webm')} type="video/webm" />
+          <source src={src} type="video/mp4" />
+        </video>
       )}
     </div>
   );
@@ -98,8 +100,11 @@ const HeroVideo = ({ src, onReady, active = true }) => {
       if (timeLeft <= CROSSFADE && timeLeft > 0) {
         swappingRef.current = true;
         // Lazy-load the second video source only when crossfade is imminent
-        if (!nextVid.src) {
-           nextVid.src = src;
+        if (!nextVid.currentSrc) {
+           nextVid.innerHTML = `
+             <source src="${src.replace('.mp4', '.webm')}" type="video/webm" />
+             <source src="${src}" type="video/mp4" />
+           `;
            nextVid.load();
         }
         // Prepare next video
@@ -144,6 +149,7 @@ const HeroVideo = ({ src, onReady, active = true }) => {
         onCanPlayThrough={handleCanPlay}
         style={vidStyle}
       >
+        <source src={src.replace('.mp4', '.webm')} type="video/webm" />
         <source src={src} type="video/mp4" />
       </video>
       <video

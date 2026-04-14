@@ -97,11 +97,11 @@ const Contact = ({ active, assetsAllowed }) => {
       <div style={robotStyle}>
         {(active || assetsAllowed) && (
           <video
-            src="/Robot.mp4"
             autoPlay
             loop
             muted
             playsInline
+            preload="metadata"
             style={{
               width: '115%',
               height: '115%',
@@ -109,7 +109,10 @@ const Contact = ({ active, assetsAllowed }) => {
               objectPosition: 'center 5%',
               opacity: 0.95,
             }}
-          />
+          >
+            <source src="/Robot.webm" type="video/webm" />
+            <source src="/Robot.mp4" type="video/mp4" />
+          </video>
         )}
       </div>
 
