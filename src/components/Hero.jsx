@@ -451,7 +451,7 @@ const Hero = ({ active, onReady }) => {
               </RevealOnScroll>
               <RevealOnScroll delay={300} className="md:col-span-8 relative group order-1 md:order-2">
                 <div className="aspect-[16/9] w-full overflow-hidden bg-white/5 ring-1 ring-white/10 rounded-sm">
-                  <img src="https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=2070&auto=format&fit=crop" alt="Retro Tech" className="w-full h-full object-cover opacity-60 grayscale-[50%] group-hover:opacity-100 group-hover:grayscale-0 group-hover:scale-[1.02] transition-all duration-[1.5s] ease-[cubic-bezier(0.19,1,0.22,1)]" loading="lazy" />
+                  <img src="https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=700&auto=format&fit=crop" alt="Retro Tech" className="w-full h-full object-cover opacity-60 grayscale-[50%] group-hover:opacity-100 group-hover:grayscale-0 group-hover:scale-[1.02] transition-all duration-[1.5s] ease-[cubic-bezier(0.19,1,0.22,1)]" loading="lazy" />
                 </div>
                 <div className="absolute -inset-4 border border-primary/20 scale-95 opacity-0 group-hover:scale-100 group-hover:opacity-100 transition-all duration-1000 pointer-events-none rounded-sm"></div>
               </RevealOnScroll>
