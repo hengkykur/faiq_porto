@@ -256,7 +256,7 @@ const About = ({ active, assetsAllowed, onScrollProgress }) => {
             className={`absolute inset-0 w-full h-full object-cover transition-all duration-1000 ${videoLoaded ? 'opacity-100 blur-0' : 'opacity-0 blur-lg'}`}
             style={{ opacity: videoLoaded ? (videoOpacity * 0.7) : 0 }}
           >
-            <source src="/skillvid.webm" type="video/webm" />
+            {/* Note: WebM was explicitly removed because the converted file size was 3x larger than the highly-compressed MP4 */}
             <source src="/skillvid.mp4" type="video/mp4" />
           </video>
         )}

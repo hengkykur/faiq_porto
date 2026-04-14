@@ -101,10 +101,7 @@ const HeroVideo = ({ src, onReady, active = true }) => {
         swappingRef.current = true;
         // Lazy-load the second video source only when crossfade is imminent
         if (!nextVid.currentSrc) {
-           nextVid.innerHTML = `
-             <source src="${src.replace('.mp4', '.webm')}" type="video/webm" />
-             <source src="${src}" type="video/mp4" />
-           `;
+           nextVid.innerHTML = `<source src="${src}" type="video/mp4" />`;
            nextVid.load();
         }
         // Prepare next video
@@ -149,7 +146,6 @@ const HeroVideo = ({ src, onReady, active = true }) => {
         onCanPlayThrough={handleCanPlay}
         style={vidStyle}
       >
-        <source src={src.replace('.mp4', '.webm')} type="video/webm" />
         <source src={src} type="video/mp4" />
       </video>
       <video
