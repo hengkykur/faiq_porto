@@ -2,19 +2,23 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import SpaceInvaders from './SpaceInvaders';
 
 /**
- * LazyVideo Component to prevent off-screen heavy MP4s from loading on mount
+ * LazyVideo Component to pre-warm and buffer videos just before they scroll into view,
+ * eliminating the "pop-in" network lag of conditional mounting.
  */
 const LazyVideo = ({ src, className }) => {
-  const [inView, setInView] = useState(false);
-  const ref = useRef();
+  const ref = useRef(null);
+  const videoRef = useRef(null);
 
   useEffect(() => {
     const observer = new IntersectionObserver(([entry]) => {
       if (entry.isIntersecting) {
-        setInView(true);
+        if (videoRef.current) {
+          // Pre-warm playback when approaching viewport
+          videoRef.current.play().catch(() => {});
+        }
         if (ref.current) observer.unobserve(ref.current);
       }
-    }, { rootMargin: '300px' });
+    }, { rootMargin: '1000px' }); // Wamp up 1000px before appearing
     
     const currentRef = ref.current;
     if (currentRef) observer.observe(currentRef);
@@ -24,20 +28,18 @@ const LazyVideo = ({ src, className }) => {
   }, []);
 
   return (
-    <div ref={ref} className="w-full h-full">
-      {inView && (
-        <video 
-          autoPlay 
-          loop 
-          muted 
-          playsInline 
-          preload="none"
-          className={className} 
-        >
-          <source src={src.replace('.mp4', '.webm')} type="video/webm" />
-          <source src={src} type="video/mp4" />
-        </video>
-      )}
+    <div ref={ref} className="w-full h-full bg-[#060608]">
+      <video 
+        ref={videoRef}
+        loop 
+        muted 
+        playsInline 
+        preload="metadata"
+        className={className} 
+      >
+        <source src={src.replace('.mp4', '.webm')} type="video/webm" />
+        <source src={src} type="video/mp4" />
+      </video>
     </div>
   );
 };
