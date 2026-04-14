@@ -15,31 +15,18 @@ function App() {
   const [isHeroReady, setIsHeroReady] = useState(false);
   const [aboutScrollProgress, setAboutScrollProgress] = useState(0);
   useEffect(() => {
-    // Safety fallback: Reveal site after 3s as a last resort
-    const fallbackTimer = setTimeout(() => {
-      if (!ready) {
-        setReady(true);
-        document.body.classList.add('loaded');
-      }
-    }, 3000);
+    // Lift preloader aggressively to improve perceived speed and FCP
+    // Do not wait for heavy video processing
+    const timer = setTimeout(() => {
+      setReady(true);
+      document.body.classList.add('loaded');
+    }, 50);
 
-    // Lift preloader as soon as Hero video has first frames
-    if (isHeroReady) {
-      const timer = setTimeout(() => {
-        setReady(true);
-        document.body.classList.add('loaded');
-      }, 200); // Minimal crossfade delay
-      return () => {
-        clearTimeout(timer);
-        clearTimeout(fallbackTimer);
-      };
-    }
-
-    return () => clearTimeout(fallbackTimer);
-  }, [isHeroReady, ready]);
+    return () => clearTimeout(timer);
+  }, []);
 
   return (
-    <div className={`h-screen w-screen bg-black overflow-hidden relative ${ready ? 'opacity-100' : 'opacity-0'} transition-opacity duration-1000`}>
+    <div className={`h-screen w-screen bg-black overflow-hidden relative ${ready ? 'opacity-100' : 'opacity-0'} transition-opacity duration-300`}>
       {/* Fixed UI Elements */}
       <Navbar currentPage={currentPage} setCurrentPage={setCurrentPage} />
 
