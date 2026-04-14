@@ -46,8 +46,8 @@ const About = ({ active, assetsAllowed, onScrollProgress }) => {
   const [isZone2Active, setIsZone2Active] = useState(false);
   const [isZone3Active, setIsZone3Active] = useState(false);
   const [isZone4Active, setIsZone4Active] = useState(false);
-  const [isZone5Active, setIsZone5Active] = useState(false);
   const [isZone6Active, setIsZone6Active] = useState(false);
+  const [journeyTab, setJourneyTab] = useState('academic'); // 'academic' | 'experience'
   const [hasStartedLoading, setHasStartedLoading] = useState(false);
   const [videoLoaded, setVideoLoaded] = useState(false);
   const scrollRafId = useRef(null);
@@ -67,10 +67,6 @@ const About = ({ active, assetsAllowed, onScrollProgress }) => {
 
   // Carousel State
   const [expIndex, setExpIndex] = useState(0);
-  const [isSpinning, setIsSpinning] = useState(false);
-  const [isFastSpin, setIsFastSpin] = useState(false);
-  const [showFlash, setShowFlash] = useState(false);
-  const [hasSpunIntro, setHasSpunIntro] = useState(false);
 
   // 3D Tilt State
   const techRef = useRef(null);
@@ -106,37 +102,7 @@ const About = ({ active, assetsAllowed, onScrollProgress }) => {
     }
   ];
 
-  // Roulette Intro Sequence
-  useEffect(() => {
-    let isActive = true;
-    if (isZone5Active && !hasSpunIntro) {
-      const runRoulette = async () => {
-        setIsSpinning(true);
-        setIsFastSpin(true);
-        const sequence = [1, 2, 0, 1, 2]; // Shortened for faster intro
-        for (let i = 0; i < sequence.length; i++) {
-          if (!isActive) return;
-          setExpIndex(sequence[i]);
-          await new Promise(r => setTimeout(r, 150));
-          if (!isActive) return;
-          if (i === sequence.length - 2) setIsFastSpin(false);
-        }
-        setTimeout(() => {
-          if (!isActive) return;
-          setIsSpinning(false);
-          setShowFlash(true);
-          setHasSpunIntro(true);
-          setTimeout(() => { if (isActive) setShowFlash(false); }, 500);
-        }, 1200);
-      };
-      runRoulette();
-    }
-    return () => { isActive = false; };
-  }, [isZone5Active, hasSpunIntro]);
-
   const handleNavigate = (newIndex) => {
-    if (isSpinning) return;
-    setIsFastSpin(false);
     setExpIndex(newIndex);
   };
 
@@ -188,9 +154,9 @@ const About = ({ active, assetsAllowed, onScrollProgress }) => {
       // Contiguous thresholds to prevent "flickering" or "dead zones"
       setIsZone2Active(progress > 0.08 && progress <= 0.38);
       setIsZone3Active(progress > 0.38 && progress <= 0.55);
-      setIsZone4Active(progress > 0.55 && progress <= 0.75);
-      setIsZone5Active(progress > 0.75 && progress <= 0.92);
-      setIsZone6Active(progress > 0.92);
+      // Merged Zone 4 & 5
+      setIsZone4Active(progress > 0.55 && progress <= 0.88);
+      setIsZone6Active(progress > 0.88);
       
       scrollRafId.current = null;
     });
@@ -267,7 +233,7 @@ const About = ({ active, assetsAllowed, onScrollProgress }) => {
         <div className="absolute inset-0 pointer-events-none z-[12] opacity-10 scanlines"></div>
       </div>
 
-      <div className="absolute top-0 left-0 z-10 w-full" style={{ minHeight: '700vh' }}>
+      <div className="absolute top-0 left-0 z-10 w-full" style={{ minHeight: '600vh' }}>
 
         {/* Zone 1: Intro */}
         <div className="h-screen w-full flex items-center justify-center relative snap-start">
@@ -398,96 +364,140 @@ const About = ({ active, assetsAllowed, onScrollProgress }) => {
           </div>
         </div>
 
-        {/* Zone 4: Academic Background */}
-        <div className="min-h-screen w-full flex items-center py-24 px-6 md:px-24 bg-transparent snap-start">
-          <div className={`w-full max-w-7xl mx-auto transition-all duration-1000 ease-out grid grid-cols-1 lg:grid-cols-[1.2fr_0.8fr] gap-12 lg:gap-20 items-center ${isZone4Active ? 'opacity-100 translate-y-0 scale-100 blur-none' : 'opacity-0 translate-y-20 scale-95 blur-xl'}`}>
-            <div>
-              <div className="flex items-center gap-3 mb-6"><Icons.Ribbon /><span className="text-primary font-bold tracking-[0.4em] uppercase text-xs">Academic Background</span></div>
-              <h1 className="text-4xl md:text-7xl font-display font-black text-white mb-10 leading-none tracking-tight uppercase italic drop-shadow-2xl">POLITEKNIK STMI <br /> <span className="text-glow">JAKARTA</span></h1>
-              <div className="flex flex-col md:flex-row md:items-center gap-8 mb-12">
-                <div className="pl-6 border-l-2 border-primary/40"><h3 className="text-white font-bold text-2xl uppercase tracking-tighter mb-1">Information System</h3></div>
-                <div className="flex gap-8 text-slate-400 font-medium text-sm md:text-base uppercase tracking-[0.2em]"><div>GPA: <span className="text-white">- / 4.00</span></div><div>Class of <span className="text-white">2023</span></div></div>
-              </div>
-            </div>
-            <div className="flex justify-center mt-8 lg:mt-0">
-              <div className="relative w-48 h-48 md:w-72 lg:w-96 md:h-72 lg:h-96 group animate-float">
-                <div className="absolute inset-0 rounded-full bg-primary/20 blur-[100px] group-hover:bg-primary/30 transition-all duration-1000"></div>
-                <div className="relative w-full h-full flex items-center justify-center p-4">
-                  {assetsAllowed && <img src={academic3d} alt="Graduate" className="w-full h-full object-contain scale-125 select-none pointer-events-none" style={{ mixBlendMode: 'screen', maskImage: 'radial-gradient(circle, black 50%, transparent 95%)', WebkitMaskImage: 'radial-gradient(circle, black 50%, transparent 95%)' }} />}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Zone 5: Experience Log Carousel */}
-        <div className="min-h-screen w-full flex items-center justify-center py-24 px-6 md:px-24 bg-transparent snap-start snap-always z-20">
-          <div className={`w-full max-w-5xl mx-auto transition-all duration-1000 ease-out ${isZone5Active ? 'opacity-100 translate-y-0 blur-none' : 'opacity-0 translate-y-20 blur-xl'}`}>
-            <div className="flex items-center gap-3 mb-8 group cursor-default">
-              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center border border-white/10 shadow-glow"><span className="text-primary font-black text-xl group-hover:animate-glitch">05</span></div>
-              <h2 className="text-2xl md:text-3xl font-display font-bold italic text-white uppercase tracking-tight group-hover:animate-glitch">Experience <span className="text-glow animate-glitch-heavy">Log</span></h2>
-            </div>
-            <div className="relative group/carousel">
-              {/* Navigation Buttons - RESTORED and OPTIMIZED */}
-              <div className="absolute -left-4 sm:-left-12 md:-left-20 top-1/2 -translate-y-1/2 z-[100] pointer-events-auto">
-                <button
-                  onClick={() => handleNavigate((expIndex - 1 + experiences.length) % experiences.length)}
-                  className="w-8 h-8 sm:w-12 sm:h-12 rounded-full glass border border-white/10 flex items-center justify-center text-white/50 hover:text-white hover:border-primary/50 hover:bg-primary/10 transition-all active:scale-95 shadow-xl backdrop-blur-xl"
-                  aria-label="Previous Project"
+        {/* Zone 4: The Journey (Academic & Experience) */}
+        <div className="min-h-screen w-full flex flex-col items-center justify-center py-24 px-6 md:px-24 bg-transparent snap-start snap-always z-20 relative overflow-hidden">
+          
+          <div className={`w-full max-w-7xl mx-auto transition-all duration-1000 ease-out flex flex-col items-center ${isZone4Active ? 'opacity-100 translate-y-0 scale-100 blur-none' : 'opacity-0 translate-y-20 scale-95 blur-xl'}`}>
+            
+            {/* Header / Tabs */}
+            <div className="text-center mb-16 w-full">
+              <h2 className="text-5xl md:text-[7rem] font-display font-black text-white italic tracking-tighter uppercase mb-10 drop-shadow-2xl">
+                THE <span className="text-glow animate-glitch-heavy">JOURNEY</span>
+              </h2>
+              
+              <div className="flex items-center justify-center flex-wrap gap-2 md:gap-4 bg-white/5 p-2 rounded-full border border-white/10 backdrop-blur-md w-max mx-auto relative z-30 shadow-[0_0_30px_rgba(0,0,0,0.5)]">
+                <button 
+                  onClick={() => setJourneyTab('academic')}
+                  className={`px-4 sm:px-6 py-3 rounded-full text-[10px] md:text-sm font-mono tracking-widest uppercase font-bold transition-all duration-500 relative overflow-hidden ${journeyTab === 'academic' ? 'text-primary' : 'text-slate-400 hover:text-white'}`}
                 >
-                  <Icons.ChevronLeft />
+                  {journeyTab === 'academic' && <div className="absolute inset-0 bg-primary/10 -z-10 rounded-full animate-pulse"></div>}
+                  Academic Background
+                </button>
+                <div className="w-[1px] h-6 bg-white/20 hidden md:block"></div>
+                <button 
+                  onClick={() => setJourneyTab('experience')}
+                  className={`px-4 sm:px-6 py-3 rounded-full text-[10px] md:text-sm font-mono tracking-widest uppercase font-bold transition-all duration-500 relative overflow-hidden ${journeyTab === 'experience' ? 'text-primary' : 'text-slate-400 hover:text-white'}`}
+                >
+                  {journeyTab === 'experience' && <div className="absolute inset-0 bg-primary/10 -z-10 rounded-full animate-pulse"></div>}
+                  Experience Log
                 </button>
               </div>
+            </div>
 
-              <div className="absolute -right-4 sm:-right-12 md:-right-20 top-1/2 -translate-y-1/2 z-[100] pointer-events-auto">
-                <button
-                  onClick={() => handleNavigate((expIndex + 1) % experiences.length)}
-                  className="w-8 h-8 sm:w-12 sm:h-12 rounded-full glass border border-white/10 flex items-center justify-center text-white/50 hover:text-white hover:border-primary/50 hover:bg-primary/10 transition-all active:scale-95 shadow-xl backdrop-blur-xl"
-                  aria-label="Next Project"
-                >
-                  <Icons.ChevronRight />
-                </button>
-              </div>
-
-              {/* Carousel Viewport */}
-              <div className="relative w-full h-[380px] md:h-[420px] overflow-hidden rounded-[40px] glass border border-white/20 z-10 pointer-events-auto">
-                <div className={`flex h-full ${isSpinning ? 'slot-blur-h' : ''} ${isFastSpin ? 'slot-track-fast' : 'slot-track-h'}`} style={{ transform: `translateX(-${expIndex * 100}%)`, transitionProperty: 'transform' }}>
-                  {experiences.map((exp, i) => (
-                    <div key={i} className="min-w-full h-full p-8 md:p-14 flex flex-col justify-center relative overflow-hidden group/item">
-                      {/* Industrial HUD Background Pattern */}
-                      <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden opacity-20">
-                        <div className="absolute inset-0" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(255,255,255,0.05) 1px, transparent 0)', backgroundSize: '32px 32px' }}></div>
-                        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary/20 to-transparent animate-[scan_8s_linear_infinite]"></div>
-                        <div className="absolute top-10 left-10 text-[8px] font-mono text-slate-700 uppercase tracking-[0.4em]">Coord_X: 00.{i + 1} <br /> Coord_Y: 00.A7</div>
-                        <div className="absolute bottom-10 right-10 text-[8px] font-mono text-slate-700 uppercase tracking-[0.4em]">Sector_7G <br /> Node: LVL_0{i}</div>
-                      </div>
-
-                      <div className={`absolute top-4 right-4 md:top-8 md:right-10 w-28 h-28 md:w-48 md:h-48 rounded-3xl p-6 flex items-center justify-center transition-all duration-500 overflow-hidden z-10 ${exp.isLightLogo ? 'bg-white/95 shadow-[0_0_30px_rgba(255,255,255,0.4)]' : 'glass opacity-90'}`}>
-                        {assetsAllowed && <img src={exp.logo} alt={exp.company} className="w-full h-full object-contain" />}
-                      </div>
-                      <div className="text-primary font-bold tracking-[0.2em] text-[10px] md:text-xs mb-3 uppercase flex items-center gap-2 z-10">
-                        <div className="w-2 h-2 rounded-full bg-primary animate-pulse"></div>
-                        {exp.date}
-                        {exp.date.includes('Present') && (
-                          <span className="ml-4 px-2 py-0.5 rounded border border-primary/40 text-[8px] font-black text-primary animate-pulse">
-                            [ STATUS: ACTIVE ]
-                          </span>
-                        )}
-                      </div>
-                      <h3 className="text-2xl md:text-5xl font-display font-black leading-tight text-white mb-2 italic uppercase max-w-[80%] group-hover/item:animate-glitch-heavy z-10">{exp.title}</h3>
-                      <div className="text-lg md:text-2xl text-slate-400 font-semibold uppercase tracking-widest mb-8 z-10">{exp.company}</div>
-                      {exp.achievements.length > 0 ? (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-3">
-                          {exp.achievements.map((ach, j) => (
-                            <div key={j} className="flex items-start gap-3"><div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5"></div><div className="text-slate-300 text-[11px] md:text-sm leading-relaxed"><span className="text-white font-bold italic uppercase">{ach.rank}</span> — {ach.name}</div></div>
-                          ))}
-                        </div>
-                      ) : (<p className="text-slate-300 text-sm md:text-lg font-light leading-relaxed italic">"{exp.description}"</p>)}
+            {/* Tab Contents */}
+            <div className="relative w-full min-h-[500px] md:min-h-[550px]">
+              
+              {/* ACADEMIC CONTENT */}
+              <div className={`absolute inset-0 w-full transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${journeyTab === 'academic' ? 'opacity-100 translate-y-0 pointer-events-auto scale-100' : 'opacity-0 translate-y-12 pointer-events-none scale-95'}`}>
+                <div className="grid grid-cols-1 lg:grid-cols-[1.2fr_0.8fr] gap-12 lg:gap-20 items-center justify-center pt-4 md:pt-8 w-full max-w-5xl mx-auto">
+                  <div>
+                    <div className="flex items-center gap-3 mb-6"><Icons.Ribbon /><span className="text-primary font-bold tracking-[0.4em] uppercase text-[10px] md:text-xs">Foundation</span></div>
+                    <h1 className="text-3xl md:text-5xl lg:text-7xl font-display font-black text-white mb-8 md:mb-10 leading-none tracking-tight uppercase italic drop-shadow-2xl">POLITEKNIK STMI <br /> <span className="text-glow">JAKARTA</span></h1>
+                    <div className="flex flex-col md:flex-row md:items-center gap-6 md:gap-8 mb-8 md:mb-12">
+                      <div className="pl-4 md:pl-6 border-l-2 border-primary/40"><h3 className="text-white font-bold text-xl md:text-2xl uppercase tracking-tighter mb-1">Information System</h3></div>
+                      <div className="flex gap-4 md:gap-8 text-slate-400 font-medium text-[10px] md:text-sm uppercase tracking-[0.2em]"><div className="whitespace-nowrap">GPA: <span className="text-white">- / 4.00</span></div><div className="whitespace-nowrap">Class of <span className="text-white">2023</span></div></div>
                     </div>
-                  ))}
+                  </div>
+                  <div className="flex justify-center mt-4 lg:mt-0">
+                    <div className="relative w-48 h-48 md:w-64 lg:w-96 md:h-64 lg:h-96 group animate-float">
+                      <div className="absolute inset-0 rounded-full bg-primary/20 blur-[100px] group-hover:bg-primary/30 transition-all duration-1000"></div>
+                      <div className="relative w-full h-full flex items-center justify-center p-4">
+                        {assetsAllowed && <img src={academic3d} alt="Graduate" className="w-full h-full object-contain scale-125 select-none pointer-events-none" style={{ mixBlendMode: 'screen', maskImage: 'radial-gradient(circle, black 50%, transparent 95%)', WebkitMaskImage: 'radial-gradient(circle, black 50%, transparent 95%)' }} />}
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                {showFlash && <div className="absolute inset-0 bg-white pointer-events-none z-50 animate-impact"></div>}
               </div>
+
+              {/* EXPERIENCE CONTENT */}
+              <div className={`absolute inset-0 w-full transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${journeyTab === 'experience' ? 'opacity-100 translate-y-0 pointer-events-auto scale-100' : 'opacity-0 translate-y-12 pointer-events-none scale-95'}`}>
+                <div className="w-full max-w-5xl mx-auto pt-4 md:pt-8">
+                  <div className="relative group/carousel">
+                    {/* Navigation Buttons */}
+                    <div className="absolute -left-4 sm:-left-12 md:-left-20 top-1/2 -translate-y-1/2 z-[100] pointer-events-auto">
+                      <button
+                        onClick={() => handleNavigate((expIndex - 1 + experiences.length) % experiences.length)}
+                        className="w-8 h-8 sm:w-12 sm:h-12 rounded-full glass border border-white/10 flex items-center justify-center text-white/50 hover:text-white hover:border-primary/50 hover:bg-primary/10 transition-all active:scale-95 shadow-xl backdrop-blur-xl"
+                        aria-label="Previous Project"
+                      >
+                        <Icons.ChevronLeft />
+                      </button>
+                    </div>
+
+                    <div className="absolute -right-4 sm:-right-12 md:-right-20 top-1/2 -translate-y-1/2 z-[100] pointer-events-auto">
+                      <button
+                        onClick={() => handleNavigate((expIndex + 1) % experiences.length)}
+                        className="w-8 h-8 sm:w-12 sm:h-12 rounded-full glass border border-white/10 flex items-center justify-center text-white/50 hover:text-white hover:border-primary/50 hover:bg-primary/10 transition-all active:scale-95 shadow-xl backdrop-blur-xl"
+                        aria-label="Next Project"
+                      >
+                        <Icons.ChevronRight />
+                      </button>
+                    </div>
+
+                    {/* Carousel Viewport */}
+                    <div className="relative w-full h-[480px] sm:h-[450px] md:h-[420px] overflow-hidden rounded-[30px] md:rounded-[40px] glass border border-white/20 z-10 pointer-events-auto">
+                      <div className={`flex h-full transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]`} style={{ transform: `translateX(-${expIndex * 100}%)` }}>
+                        {experiences.map((exp, i) => (
+                          <div key={i} className="min-w-full h-full p-8 md:p-14 flex flex-col justify-center relative overflow-hidden group/item">
+                            {/* Industrial HUD Background Pattern */}
+                            <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden opacity-20">
+                              <div className="absolute inset-0" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(255,255,255,0.05) 1px, transparent 0)', backgroundSize: '32px 32px' }}></div>
+                              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary/20 to-transparent animate-[scan_8s_linear_infinite]"></div>
+                              <div className="absolute top-10 left-10 text-[8px] font-mono text-slate-700 uppercase tracking-[0.4em]">Coord_X: 00.{i + 1} <br /> Coord_Y: 00.A7</div>
+                              <div className="absolute bottom-10 right-10 text-[8px] font-mono text-slate-700 uppercase tracking-[0.4em]">Sector_7G <br /> Node: LVL_0{i}</div>
+                            </div>
+
+                            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 md:gap-12 w-full h-full z-10 relative">
+                              
+                              {/* Left Text Content */}
+                              <div className="flex-1 flex flex-col justify-center h-full w-full">
+                                <div className="text-primary font-bold tracking-[0.2em] text-[10px] md:text-sm mb-3 uppercase flex items-center gap-2">
+                                  <div className="w-2 h-2 rounded-full bg-primary animate-pulse shrink-0"></div>
+                                  <span>{exp.date}</span>
+                                  {exp.date.includes('Present') && (
+                                    <span className="ml-2 md:ml-4 px-2 py-0.5 rounded border border-primary/40 text-[8px] font-black text-primary animate-pulse inline-block shrink-0">
+                                      [ ACTIVE ]
+                                    </span>
+                                  )}
+                                </div>
+                                <h3 className="text-3xl md:text-5xl lg:text-5xl font-display font-black leading-[1.1] text-white mb-2 md:mb-3 italic uppercase group-hover/item:animate-glitch-heavy break-words">
+                                  {exp.title}
+                                </h3>
+                                <div className="text-sm md:text-xl text-slate-400 font-semibold uppercase tracking-widest mb-4 md:mb-8">{exp.company}</div>
+                                
+                                {exp.achievements.length > 0 ? (
+                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-3 pt-2">
+                                    {exp.achievements.map((ach, j) => (
+                                      <div key={j} className="flex items-start gap-3"><div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 shrink-0"></div><div className="text-slate-300 text-[11px] md:text-sm leading-relaxed"><span className="text-white font-bold italic uppercase">{ach.rank}</span> — {ach.name}</div></div>
+                                    ))}
+                                  </div>
+                                ) : (<p className="text-slate-300 text-xs sm:text-sm md:text-lg font-light leading-relaxed italic max-w-2xl line-clamp-4 md:line-clamp-none">"{exp.description}"</p>)}
+                              </div>
+
+                              {/* Right Logo Component */}
+                              <div className={`self-start md:self-auto shrink-0 w-16 h-16 lg:w-48 lg:h-48 rounded-xl md:rounded-3xl p-3 md:p-8 flex items-center justify-center transition-all duration-500 overflow-hidden ${exp.isLightLogo ? 'bg-white/95 shadow-[0_0_30px_rgba(255,255,255,0.4)]' : 'glass opacity-90'}`}>
+                                {assetsAllowed && <img src={exp.logo} alt={exp.company} className="w-full h-full object-contain" />}
+                              </div>
+
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
             </div>
           </div>
         </div>
