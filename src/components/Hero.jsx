@@ -62,21 +62,36 @@ const HeroVideo = ({ src, onReady, active = true }) => {
 
   // Crossfade loop checker — runs via setInterval (lightweight, not RAF)
   useEffect(() => {
-    if (!ready || !active) {
+    if (!ready) return;
+
+    const a = vidARef.current;
+    const b = vidBRef.current;
+    const initialActive = activeRef.current === 'A' ? a : b;
+
+    // Pause video if user scrolls away to save resources and prevent it from reaching the end silently
+    if (!active) {
+      if (initialActive) initialActive.pause();
       if (intervalRef.current) clearInterval(intervalRef.current);
       return;
+    } else {
+      // Resume video when user returns
+      if (initialActive) {
+        // If it accidentally reached the end (or very close to it), reset to 0
+        if (initialActive.ended || (initialActive.duration && initialActive.currentTime >= initialActive.duration - 0.5)) {
+          initialActive.currentTime = 0;
+        }
+        initialActive.play().catch(() => {});
+      }
     }
 
     intervalRef.current = setInterval(() => {
-      const a = vidARef.current;
-      const b = vidBRef.current;
       if (!a || !b || swappingRef.current) return;
 
-      const activeVid = activeRef.current === 'A' ? a : b;
+      const currentActiveVid = activeRef.current === 'A' ? a : b;
       const nextVid = activeRef.current === 'A' ? b : a;
 
-      if (!activeVid.duration) return;
-      const timeLeft = activeVid.duration - activeVid.currentTime;
+      if (!currentActiveVid.duration) return;
+      const timeLeft = currentActiveVid.duration - currentActiveVid.currentTime;
 
       if (timeLeft <= CROSSFADE && timeLeft > 0) {
         swappingRef.current = true;
@@ -91,15 +106,15 @@ const HeroVideo = ({ src, onReady, active = true }) => {
         // Prepare next video
         nextVid.currentTime = 0;
         nextVid.play().catch(() => { });
-        doFade(activeVid, nextVid);
+        doFade(currentActiveVid, nextVid);
 
         // After crossfade completes, swap references and unlock
         setTimeout(() => {
           activeRef.current = activeRef.current === 'A' ? 'B' : 'A';
           swappingRef.current = false;
           // Reset the old one so it's ready for next crossfade
-          activeVid.currentTime = 0;
-          activeVid.pause();
+          currentActiveVid.currentTime = 0;
+          currentActiveVid.pause();
         }, CROSSFADE * 1000 + 50);
       }
     }, 100);

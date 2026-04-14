@@ -22,8 +22,9 @@ const Contact = ({ active, assetsAllowed }) => {
         zIndex: 5,
         overflow: 'hidden',
         mixBlendMode: 'screen',
-        filter: 'contrast(1.1) brightness(1.05) drop-shadow(0 0 16px rgba(99,179,237,0.3))',
+        filter: 'contrast(1.1) brightness(1.05)',
         animation: 'robotFloat 6s ease-in-out infinite',
+        willChange: 'transform',
         pointerEvents: 'none',
         WebkitMaskImage: 'radial-gradient(ellipse at center, black 45%, transparent 85%)',
         maskImage: 'radial-gradient(ellipse at center, black 45%, transparent 85%)',
@@ -38,8 +39,9 @@ const Contact = ({ active, assetsAllowed }) => {
         zIndex: 20,
         overflow: 'hidden',
         mixBlendMode: 'screen',
-        filter: 'contrast(1.1) brightness(1.1) drop-shadow(0 0 30px rgba(99,179,237,0.4))',
+        filter: 'contrast(1.1) brightness(1.1)',
         animation: 'robotFloat 6s ease-in-out infinite',
+        willChange: 'transform',
         pointerEvents: 'none',
         WebkitMaskImage: 'radial-gradient(ellipse at center, black 50%, transparent 90%)',
         maskImage: 'radial-gradient(ellipse at center, black 50%, transparent 90%)',
@@ -94,6 +96,11 @@ const Contact = ({ active, assetsAllowed }) => {
       </div>
 
       {/* Robot Video — Always visible, mobile: behind content (z:5), desktop: foreground (z:20) */}
+      <div className={`absolute ${isMobile ? 'bottom-0 right-0 w-[180px] h-[290px] z-[4]' : 'bottom-[10px] right-[24px] w-[240px] h-[385px] z-[19]'} pointer-events-none flex items-center justify-center`}>
+         {/* Static GPU-friendly Glow replacing the extremely expensive drop-shadow */}
+         <div className="w-[60%] h-[60%] bg-[#63b3ed] rounded-full blur-[40px] opacity-20"></div>
+      </div>
+
       <div style={robotStyle}>
         {(active || assetsAllowed) && (
           <video
