@@ -5,6 +5,39 @@ import kayabaLogo from '../assets/kayaba.webp';
 import himasisLogo from '../assets/himasis.webp';
 import academicTech from '../assets/academic_tech.webp';
 
+const Icons = {
+  Web: () => (
+    <svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+    </svg>
+  ),
+  Mobile: () => (
+    <svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+    </svg>
+  ),
+  AI: () => (
+    <svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+    </svg>
+  ),
+  Ribbon: () => (
+    <svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 15.546c-.523 0-1.046.151-1.5.454a2.704 2.704 0 01-3 0 2.703 2.703 0 01-3 0 2.703 2.703 0 01-3 0 2.703 2.703 0 01-3 0 2.604 2.604 0 01-1.5-.454V4.4a2.4 2.4 0 011.95-2.35 15.65 15.65 0 0110.1 0 2.4 2.4 0 011.95 2.35v11.146zM15.5 12a3.5 3.5 0 11-7 0 3.5 3.5 0 017 0z" />
+    </svg>
+  ),
+  ChevronLeft: () => (
+    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+    </svg>
+  ),
+  ChevronRight: () => (
+    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+    </svg>
+  )
+};
+
 const About = ({ active, assetsAllowed, onScrollProgress }) => {
   const containerRef = useRef(null);
   const videoRef = useRef(null);
@@ -17,11 +50,18 @@ const About = ({ active, assetsAllowed, onScrollProgress }) => {
   const [isZone6Active, setIsZone6Active] = useState(false);
   const [hasStartedLoading, setHasStartedLoading] = useState(false);
   const [videoLoaded, setVideoLoaded] = useState(false);
+  const scrollRafId = useRef(null);
+  const tiltRafId = useRef(null);
 
   // Lazy load video when component becomes active or prewarmed
   useEffect(() => {
     if ((active || assetsAllowed) && !hasStartedLoading) {
       setHasStartedLoading(true);
+    }
+    return () => {
+      // Cleanup RAFs if component unmounts
+      if (scrollRafId.current) cancelAnimationFrame(scrollRafId.current);
+      if (tiltRafId.current) cancelAnimationFrame(tiltRafId.current);
     }
   }, [active, assetsAllowed, hasStartedLoading]);
 
@@ -68,25 +108,30 @@ const About = ({ active, assetsAllowed, onScrollProgress }) => {
 
   // Roulette Intro Sequence
   useEffect(() => {
+    let isActive = true;
     if (isZone5Active && !hasSpunIntro) {
       const runRoulette = async () => {
         setIsSpinning(true);
         setIsFastSpin(true);
         const sequence = [1, 2, 0, 1, 2]; // Shortened for faster intro
         for (let i = 0; i < sequence.length; i++) {
+          if (!isActive) return;
           setExpIndex(sequence[i]);
           await new Promise(r => setTimeout(r, 150));
+          if (!isActive) return;
           if (i === sequence.length - 2) setIsFastSpin(false);
         }
         setTimeout(() => {
+          if (!isActive) return;
           setIsSpinning(false);
           setShowFlash(true);
           setHasSpunIntro(true);
-          setTimeout(() => setShowFlash(false), 500);
+          setTimeout(() => { if (isActive) setShowFlash(false); }, 500);
         }, 1200);
       };
       runRoulette();
     }
+    return () => { isActive = false; };
   }, [isZone5Active, hasSpunIntro]);
 
   const handleNavigate = (newIndex) => {
@@ -96,18 +141,31 @@ const About = ({ active, assetsAllowed, onScrollProgress }) => {
   };
 
   const handleTechMouseMove = (e) => {
-    if (!techRef.current) return;
-    const { left, top, width, height } = techRef.current.getBoundingClientRect();
-    const x = (e.clientX - left) / width;
-    const y = (e.clientY - top) / height;
+    if (tiltRafId.current) return;
+    
+    // Capture event values before RAF
+    const clientX = e.clientX;
+    const clientY = e.clientY;
+    
+    tiltRafId.current = requestAnimationFrame(() => {
+      if (!techRef.current) { tiltRafId.current = null; return; }
+      const { left, top, width, height } = techRef.current.getBoundingClientRect();
+      const x = (clientX - left) / width;
+      const y = (clientY - top) / height;
 
-    // Calculate rotation (-15 to 15 degrees)
-    const rotateY = (x - 0.5) * 30;
-    const rotateX = (y - 0.5) * -30;
-    setTilt({ x: rotateX, y: rotateY });
+      // Calculate rotation (-15 to 15 degrees)
+      const rotateY = (x - 0.5) * 30;
+      const rotateX = (y - 0.5) * -30;
+      setTilt({ x: rotateX, y: rotateY });
+      tiltRafId.current = null;
+    });
   };
 
   const handleTechMouseLeave = () => {
+    if (tiltRafId.current) {
+        cancelAnimationFrame(tiltRafId.current);
+        tiltRafId.current = null;
+    }
     setTilt({ x: 0, y: 0 });
   };
 
@@ -116,20 +174,26 @@ const About = ({ active, assetsAllowed, onScrollProgress }) => {
   }, []);
 
   const handleScroll = () => {
-    if (!containerRef.current) return;
-    const { scrollTop, scrollHeight, clientHeight } = containerRef.current;
-    const currentScroll = Math.max(0, scrollTop);
-    const maxScroll = scrollHeight - clientHeight;
-    const progress = currentScroll / (maxScroll || 1);
-    setScrollProgress(progress);
-    if (onScrollProgress) onScrollProgress(progress);
+    if (scrollRafId.current) return;
+    scrollRafId.current = requestAnimationFrame(() => {
+      if (!containerRef.current) { scrollRafId.current = null; return; }
+      const { scrollTop, scrollHeight, clientHeight } = containerRef.current;
+      const currentScroll = Math.max(0, scrollTop);
+      const maxScroll = scrollHeight - clientHeight;
+      const progress = currentScroll / (maxScroll || 1);
+      
+      setScrollProgress(progress);
+      if (onScrollProgress) onScrollProgress(progress);
 
-    // Contiguous thresholds to prevent "flickering" or "dead zones"
-    setIsZone2Active(progress > 0.08 && progress <= 0.38);
-    setIsZone3Active(progress > 0.38 && progress <= 0.55);
-    setIsZone4Active(progress > 0.55 && progress <= 0.75);
-    setIsZone5Active(progress > 0.75 && progress <= 0.92);
-    setIsZone6Active(progress > 0.92);
+      // Contiguous thresholds to prevent "flickering" or "dead zones"
+      setIsZone2Active(progress > 0.08 && progress <= 0.38);
+      setIsZone3Active(progress > 0.38 && progress <= 0.55);
+      setIsZone4Active(progress > 0.55 && progress <= 0.75);
+      setIsZone5Active(progress > 0.75 && progress <= 0.92);
+      setIsZone6Active(progress > 0.92);
+      
+      scrollRafId.current = null;
+    });
   };
 
   const handleTimeUpdate = () => {
@@ -144,39 +208,6 @@ const About = ({ active, assetsAllowed, onScrollProgress }) => {
         setVideoOpacity(1);
       }
     }
-  };
-
-  const Icons = {
-    Web: () => (
-      <svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-      </svg>
-    ),
-    Mobile: () => (
-      <svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
-      </svg>
-    ),
-    AI: () => (
-      <svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-      </svg>
-    ),
-    Ribbon: () => (
-      <svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 15.546c-.523 0-1.046.151-1.5.454a2.704 2.704 0 01-3 0 2.703 2.703 0 01-3 0 2.703 2.703 0 01-3 0 2.703 2.703 0 01-3 0 2.703 2.703 0 01-3 0 2.604 2.604 0 01-1.5-.454V4.4a2.4 2.4 0 011.95-2.35 15.65 15.65 0 0110.1 0 2.4 2.4 0 011.95 2.35v11.146zM15.5 12a3.5 3.5 0 11-7 0 3.5 3.5 0 017 0z" />
-      </svg>
-    ),
-    ChevronLeft: () => (
-      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-      </svg>
-    ),
-    ChevronRight: () => (
-      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-      </svg>
-    )
   };
 
   const currentYear = new Date().getFullYear();
@@ -248,8 +279,8 @@ const About = ({ active, assetsAllowed, onScrollProgress }) => {
         <div className="h-[200vh] w-full relative">
           <div className="sticky top-0 h-screen w-full flex items-center justify-center px-6 pointer-events-none">
             <div className="text-center w-full max-w-5xl">
-              <h2 className="text-primary font-semibold mb-8 tracking-[0.5em] uppercase text-xs transition-all duration-1000" style={{ opacity: isZone2Active ? 1 : 0, transform: `translateY(${isZone2Active ? 0 : 20}px)`, filter: `blur(${isZone2Active ? 0 : 10}px)` }}>Mastering the Craft</h2>
-              <svg viewBox="0 0 1000 300" className="w-full h-auto drop-shadow-[0_0_30px_rgba(255,255,255,0.05)] transition-all duration-1000 ease-out" style={{ opacity: isZone2Active ? 1 : 0, transform: `scale(${isZone2Active ? 1 : 0.95}) translateY(${isZone2Active ? 0 : -20}px)`, filter: `blur(${isZone2Active ? 0 : 20}px)` }}>
+              <h2 className={`text-primary font-semibold mb-8 tracking-[0.5em] uppercase text-xs transition-all duration-1000 ${isZone2Active ? 'opacity-100 translate-y-0 blur-none' : 'opacity-0 translate-y-5 blur-md'}`}>Mastering the Craft</h2>
+              <svg viewBox="0 0 1000 300" className={`w-full h-auto drop-shadow-[0_0_30px_rgba(255,255,255,0.05)] transition-all duration-1000 ease-out ${isZone2Active ? 'opacity-100 scale-100 translate-y-0 blur-none' : 'opacity-0 scale-95 -translate-y-5 blur-xl'}`}>
                 <defs><linearGradient id="textGradient" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stopColor="var(--color-primary)" /><stop offset="100%" stopColor="#818cf8" /></linearGradient></defs>
                 <text x="50%" y="35%" textAnchor="middle" className="font-display font-black italic tracking-tighter" style={{ fontSize: '120px', fill: 'white', fillOpacity: isZone2Active ? 1 : 0, stroke: 'white', strokeWidth: '1.2', strokeDasharray: '1000', strokeDashoffset: isZone2Active ? 0 : 1000, transition: isZone2Active ? 'stroke-dashoffset 2.5s cubic-bezier(0.4, 0, 0.2, 1), fill-opacity 1s ease-out 1.5s' : 'stroke-dashoffset 1.2s ease-in, fill-opacity 0.5s ease-in' }}>FAIQ</text>
                 <text x="50%" y="75%" textAnchor="middle" className="font-display font-black italic tracking-tighter" style={{ fontSize: '120px', fill: 'url(#textGradient)', fillOpacity: isZone2Active ? 1 : 0, stroke: 'url(#textGradient)', strokeWidth: '1.2', strokeDasharray: '1000', strokeDashoffset: isZone2Active ? 0 : 1000, transition: isZone2Active ? 'stroke-dashoffset 2.5s cubic-bezier(0.4, 0, 0.2, 1) 0.5s, fill-opacity 1s ease-out 1.8s' : 'stroke-dashoffset 1.2s ease-in, fill-opacity 0.5s ease-in' }}>ADIMULYO</text>
@@ -260,7 +291,7 @@ const About = ({ active, assetsAllowed, onScrollProgress }) => {
 
         {/* Zone 3: About Me */}
         <div className="min-h-screen w-full flex items-center py-24 px-6 md:px-24 bg-transparent snap-start">
-          <div className="w-full max-w-7xl mx-auto transition-all duration-1000 ease-out grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center" style={{ opacity: isZone3Active ? 1 : 0, transform: `translateY(${isZone3Active ? 0 : 60}px) scale(${isZone3Active ? 1 : 0.98})`, filter: `blur(${isZone3Active ? 0 : 10}px)` }}>
+          <div className={`w-full max-w-7xl mx-auto transition-all duration-1000 ease-out grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center ${isZone3Active ? 'opacity-100 translate-y-0 scale-100 blur-none' : 'opacity-0 translate-y-16 scale-95 blur-md'}`}>
             <div>
               <h2 className="text-3xl md:text-5xl font-display font-bold mb-6 drop-shadow-2xl text-white text-left italic">About <span className="text-glow">Me</span></h2>
               <p className="text-slate-300 mb-8 leading-relaxed text-base md:text-lg font-light drop-shadow-lg max-w-2xl whitespace-pre-wrap text-left">
@@ -367,7 +398,7 @@ const About = ({ active, assetsAllowed, onScrollProgress }) => {
 
         {/* Zone 4: Academic Background */}
         <div className="min-h-screen w-full flex items-center py-24 px-6 md:px-24 bg-transparent snap-start">
-          <div className="w-full max-w-7xl mx-auto transition-all duration-1000 ease-out grid grid-cols-1 lg:grid-cols-[1.2fr_0.8fr] gap-12 lg:gap-20 items-center" style={{ opacity: isZone4Active ? 1 : 0, transform: `translateY(${isZone4Active ? 0 : 80}px) scale(${isZone4Active ? 1 : 0.95})`, filter: `blur(${isZone4Active ? 0 : 15}px)` }}>
+          <div className={`w-full max-w-7xl mx-auto transition-all duration-1000 ease-out grid grid-cols-1 lg:grid-cols-[1.2fr_0.8fr] gap-12 lg:gap-20 items-center ${isZone4Active ? 'opacity-100 translate-y-0 scale-100 blur-none' : 'opacity-0 translate-y-20 scale-95 blur-xl'}`}>
             <div>
               <div className="flex items-center gap-3 mb-6"><Icons.Ribbon /><span className="text-primary font-bold tracking-[0.4em] uppercase text-xs">Academic Background</span></div>
               <h1 className="text-4xl md:text-7xl font-display font-black text-white mb-10 leading-none tracking-tight uppercase italic drop-shadow-2xl">POLITEKNIK STMI <br /> <span className="text-glow">JAKARTA</span></h1>
@@ -389,7 +420,7 @@ const About = ({ active, assetsAllowed, onScrollProgress }) => {
 
         {/* Zone 5: Experience Log Carousel */}
         <div className="min-h-screen w-full flex items-center justify-center py-24 px-6 md:px-24 bg-transparent snap-start snap-always z-20">
-          <div className="w-full max-w-5xl mx-auto transition-all duration-1000 ease-out" style={{ opacity: isZone5Active ? 1 : 0, transform: `translateY(${isZone5Active ? 0 : 80}px)`, filter: `blur(${isZone5Active ? 0 : 15}px)` }}>
+          <div className={`w-full max-w-5xl mx-auto transition-all duration-1000 ease-out ${isZone5Active ? 'opacity-100 translate-y-0 blur-none' : 'opacity-0 translate-y-20 blur-xl'}`}>
             <div className="flex items-center gap-3 mb-8 group cursor-default">
               <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center border border-white/10 shadow-glow"><span className="text-primary font-black text-xl group-hover:animate-glitch">05</span></div>
               <h2 className="text-2xl md:text-3xl font-display font-bold italic text-white uppercase tracking-tight group-hover:animate-glitch">Experience <span className="text-glow animate-glitch-heavy">Log</span></h2>
@@ -461,12 +492,12 @@ const About = ({ active, assetsAllowed, onScrollProgress }) => {
 
         {/* Zone 6: PROGRAMMER FOOTER */}
         <div className="min-h-screen w-full flex items-center justify-center px-6 md:px-24 bg-black snap-start snap-always relative overflow-hidden">
-          <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden flex items-center justify-center opacity-[0.07] transition-all duration-1000" style={{ transform: `scale(${isZone6Active ? 1 : 1.1})`, filter: `blur(${isZone6Active ? 0 : 20}px)` }}>
+          <div className={`absolute inset-0 pointer-events-none z-0 overflow-hidden flex items-center justify-center opacity-[0.07] transition-all duration-1000 ${isZone6Active ? 'scale-100 blur-none' : 'scale-110 blur-xl'}`}>
             <div className="absolute top-0 left-0 text-[30vw] font-display font-black text-slate-700 -translate-x-1/4 -translate-y-1/4">{"{"}</div>
             <div className="absolute bottom-0 right-0 text-[35vw] font-display font-black text-slate-700 translate-x-1/4 translate-y-1/4">{"}"}</div>
           </div>
 
-          <div className="container mx-auto relative z-10 w-full flex flex-col justify-between py-16 md:py-24 gap-12 md:gap-16 transition-all duration-1000" style={{ opacity: isZone6Active ? 1 : 0, transform: `translateY(${isZone6Active ? 0 : 50}px)` }}>
+          <div className={`container mx-auto relative z-10 w-full flex flex-col justify-between py-16 md:py-24 gap-12 md:gap-16 transition-all duration-1000 ${isZone6Active ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'}`}>
             <div className="max-w-5xl">
               <h2 className="text-4xl sm:text-5xl md:text-[6rem] lg:text-[7.5rem] font-display font-bold text-white leading-[0.9] tracking-tighter mb-8 md:mb-12 italic uppercase group">
                 TELL ME WHAT <br />
