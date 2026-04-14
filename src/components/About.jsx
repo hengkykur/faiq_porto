@@ -312,7 +312,6 @@ const About = ({ active, prewarm, onScrollProgress }) => {
                         <img
                           src={academicTech}
                           alt="Technical Skills Visualization"
-                          loading="lazy"
                           className="w-full h-full object-cover mix-blend-screen opacity-60 group-hover:opacity-90 transition-all duration-700 filter saturate-[1.2] brightness-[1.1]"
                         />
                       </div>
@@ -379,7 +378,7 @@ const About = ({ active, prewarm, onScrollProgress }) => {
               <div className="relative w-48 h-48 md:w-72 lg:w-96 md:h-72 lg:h-96 group animate-float">
                 <div className="absolute inset-0 rounded-full bg-primary/20 blur-[100px] group-hover:bg-primary/30 transition-all duration-1000"></div>
                 <div className="relative w-full h-full flex items-center justify-center p-4">
-                  <img src={academic3d} alt="Graduate" loading="lazy" className="w-full h-full object-contain scale-125 select-none pointer-events-none" style={{ mixBlendMode: 'screen', maskImage: 'radial-gradient(circle, black 50%, transparent 95%)', WebkitMaskImage: 'radial-gradient(circle, black 50%, transparent 95%)' }} />
+                  <img src={academic3d} alt="Graduate" className="w-full h-full object-contain scale-125 select-none pointer-events-none" style={{ mixBlendMode: 'screen', maskImage: 'radial-gradient(circle, black 50%, transparent 95%)', WebkitMaskImage: 'radial-gradient(circle, black 50%, transparent 95%)' }} />
                 </div>
               </div>
             </div>
@@ -429,7 +428,7 @@ const About = ({ active, prewarm, onScrollProgress }) => {
                       </div>
 
                       <div className={`absolute top-4 right-4 md:top-8 md:right-10 w-28 h-28 md:w-48 md:h-48 rounded-3xl p-6 flex items-center justify-center transition-all duration-500 overflow-hidden z-10 ${exp.isLightLogo ? 'bg-white/95 shadow-[0_0_30px_rgba(255,255,255,0.4)]' : 'glass opacity-90'}`}>
-                        <img src={exp.logo} alt={exp.company} loading="lazy" className="w-full h-full object-contain" />
+                        <img src={exp.logo} alt={exp.company} className="w-full h-full object-contain" />
                       </div>
                       <div className="text-primary font-bold tracking-[0.2em] text-[10px] md:text-xs mb-3 uppercase flex items-center gap-2 z-10">
                         <div className="w-2 h-2 rounded-full bg-primary animate-pulse"></div>

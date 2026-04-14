@@ -142,7 +142,6 @@ const Projects = ({ active }) => {
                   <img
                     src={p.image}
                     alt={p.title}
-                    loading="lazy"
                     className={`w-full h-full object-contain relative z-10 ${p.invertLogo ? 'brightness-0 invert drop-shadow-[0_0_10px_rgba(255,255,255,0.4)] opacity-90' : 'drop-shadow-[0_0_20px_rgba(0,0,0,0.5)]'}`}
                     style={{
                       filter: i === activeIndex ? 'grayscale(0)' : 'grayscale(1) opacity(0.3)',
@@ -329,7 +328,6 @@ const Projects = ({ active }) => {
                   <img
                     src={p.image}
                     alt={p.title}
-                    loading="lazy"
                     className={`w-full h-full object-contain grayscale-[0.05] group-hover:grayscale-0 scale-100 group-hover:scale-105 relative z-10 ${p.invertLogo ? 'brightness-0 invert drop-shadow-[0_0_15px_rgba(255,255,255,0.4)] opacity-90' : 'drop-shadow-[0_0_15px_rgba(255,255,255,0.15)]'}`}
                     style={{ transition: 'filter 0.5s ease, transform 0.5s ease' }}
                   />
