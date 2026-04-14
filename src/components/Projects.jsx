@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import ProjectDetail from './ProjectDetail';
 import { projectsData as projects } from '../data/projects';
 
-const Projects = ({ active }) => {
+const Projects = ({ active, assetsAllowed }) => {
   const [isScrolling, setIsScrolling] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
@@ -139,15 +139,17 @@ const Projects = ({ active }) => {
                 {/* Square Card image container */}
                 <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[65vw] max-w-[240px] aspect-square z-0 bg-[#16161e] rounded-[2rem] shadow-[0_30px_60px_rgba(0,0,0,0.9)] border border-white/5 flex items-center justify-center p-12 mt-4 overflow-hidden">
                   <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.15)_0%,transparent_70%)] pointer-events-none"></div>
-                  <img
-                    src={p.image}
-                    alt={p.title}
-                    className={`w-full h-full object-contain relative z-10 ${p.invertLogo ? 'brightness-0 invert drop-shadow-[0_0_10px_rgba(255,255,255,0.4)] opacity-90' : 'drop-shadow-[0_0_20px_rgba(0,0,0,0.5)]'}`}
-                    style={{
-                      filter: i === activeIndex ? 'grayscale(0)' : 'grayscale(1) opacity(0.3)',
-                      transition: 'all 0.5s ease',
-                    }}
-                  />
+                  {assetsAllowed && (
+                    <img
+                      src={p.image}
+                      alt={p.title}
+                      className={`w-full h-full object-contain relative z-10 ${p.invertLogo ? 'brightness-0 invert drop-shadow-[0_0_10px_rgba(255,255,255,0.4)] opacity-90' : 'drop-shadow-[0_0_20px_rgba(0,0,0,0.5)]'}`}
+                      style={{
+                        filter: i === activeIndex ? 'grayscale(0)' : 'grayscale(1) opacity(0.3)',
+                        transition: 'all 0.5s ease',
+                      }}
+                    />
+                  )}
                   <div className="absolute inset-0 rounded-[2rem] ring-1 ring-inset ring-white/5 pointer-events-none z-20" />
                 </div>
 
@@ -325,12 +327,14 @@ const Projects = ({ active }) => {
 
                   <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.08)_0%,transparent_70%)] pointer-events-none"></div>
 
-                  <img
-                    src={p.image}
-                    alt={p.title}
-                    className={`w-full h-full object-contain grayscale-[0.05] group-hover:grayscale-0 scale-100 group-hover:scale-105 relative z-10 ${p.invertLogo ? 'brightness-0 invert drop-shadow-[0_0_15px_rgba(255,255,255,0.4)] opacity-90' : 'drop-shadow-[0_0_15px_rgba(255,255,255,0.15)]'}`}
-                    style={{ transition: 'filter 0.5s ease, transform 0.5s ease' }}
-                  />
+                  {assetsAllowed && (
+                    <img
+                      src={p.image}
+                      alt={p.title}
+                      className={`w-full h-full object-contain grayscale-[0.05] group-hover:grayscale-0 scale-100 group-hover:scale-105 relative z-10 ${p.invertLogo ? 'brightness-0 invert drop-shadow-[0_0_15px_rgba(255,255,255,0.4)] opacity-90' : 'drop-shadow-[0_0_15px_rgba(255,255,255,0.15)]'}`}
+                      style={{ transition: 'filter 0.5s ease, transform 0.5s ease' }}
+                    />
+                  )}
                   <div className="absolute inset-0 rounded-[2rem] ring-1 ring-inset ring-white/10 pointer-events-none z-20"></div>
 
                   <div

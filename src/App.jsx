@@ -12,18 +12,33 @@ const Contact = lazy(() => import('./components/Contact'));
 function App() {
   const [ready, setReady] = useState(false);
   const [currentPage, setCurrentPage] = useState(0);
-  const [isHeroReady, setIsHeroReady] = useState(false);
+  const [loadStage, setLoadStage] = useState(0); // 0=Wait Hero, 1=Hero Ready/Projects, 2=About, 3=Contact
   const [aboutScrollProgress, setAboutScrollProgress] = useState(0);
+
+  // Fallback timer: NEVER lock the screen forever
   useEffect(() => {
-    // Lift preloader aggressively to improve perceived speed and FCP
-    // Do not wait for heavy video processing
-    const timer = setTimeout(() => {
+    if (loadStage === 0) {
+      const fallbackTimer = setTimeout(() => {
+        setLoadStage(prev => (prev === 0 ? 1 : prev));
+      }, 7000); // Wait up to 7s max for Hero assets
+      return () => clearTimeout(fallbackTimer);
+    }
+  }, [loadStage]);
+
+  // Waterfall logic
+  useEffect(() => {
+    if (loadStage === 1) {
+      // Hero is ready: Lift preloader
       setReady(true);
       document.body.classList.add('loaded');
-    }, 50);
 
-    return () => clearTimeout(timer);
-  }, []);
+      // Schedule the next assets sequentially to prevent network clogging
+      const t1 = setTimeout(() => setLoadStage(2), 2000); // 2s after preloader lifts, download About assets
+      const t2 = setTimeout(() => setLoadStage(3), 4000); // 4s after preloader lifts, download Contact assets
+
+      return () => { clearTimeout(t1); clearTimeout(t2); };
+    }
+  }, [loadStage]);
 
   return (
     <div className={`h-screen w-screen bg-black overflow-hidden relative ${ready ? 'opacity-100' : 'opacity-0'} transition-opacity duration-300`}>
@@ -57,15 +72,15 @@ function App() {
           willChange: 'transform',
         }}
       >
-        <Hero active={currentPage === 0} onReady={() => setIsHeroReady(true)} />
+        <Hero active={currentPage === 0} onReady={() => setLoadStage(prev => prev === 0 ? 1 : prev)} />
         <Suspense fallback={null}>
-          <Projects active={currentPage === 1} />
+          <Projects active={currentPage === 1} assetsAllowed={loadStage >= 1} />
         </Suspense>
         <Suspense fallback={null}>
-          <About active={currentPage === 2} prewarm={currentPage === 1} onScrollProgress={setAboutScrollProgress} />
+          <About active={currentPage === 2} assetsAllowed={loadStage >= 2} onScrollProgress={setAboutScrollProgress} />
         </Suspense>
         <Suspense fallback={null}>
-          <Contact active={currentPage === 3} />
+          <Contact active={currentPage === 3} assetsAllowed={loadStage >= 3} />
         </Suspense>
       </div>
 

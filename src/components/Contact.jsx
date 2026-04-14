@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-const Contact = ({ active }) => {
+const Contact = ({ active, assetsAllowed }) => {
   const currentYear = new Date().getFullYear();
   const [isMobile, setIsMobile] = useState(false);
 
@@ -95,7 +95,7 @@ const Contact = ({ active }) => {
 
       {/* Robot Video — Always visible, mobile: behind content (z:5), desktop: foreground (z:20) */}
       <div style={robotStyle}>
-        {active && (
+        {(active || assetsAllowed) && (
           <video
             src="/Robot.mp4"
             autoPlay
