@@ -71,4 +71,4 @@ const Navbar = ({ currentPage, setCurrentPage }) => {
   );
 };
 
-export default Navbar;
+export default React.memo(Navbar);

@@ -38,7 +38,7 @@ const Icons = {
   )
 };
 
-const About = ({ active, assetsAllowed, onScrollProgress }) => {
+const About = React.memo(({ active, assetsAllowed, onScrollProgress }) => {
   const containerRef = useRef(null);
   const videoRef = useRef(null);
   const [scrollProgress, setScrollProgress] = useState(0);
@@ -220,10 +220,12 @@ const About = ({ active, assetsAllowed, onScrollProgress }) => {
             onTimeUpdate={handleTimeUpdate}
             onLoadedData={() => setVideoLoaded(true)}
             className={`absolute inset-0 w-full h-full object-cover transition-all duration-1000 ${videoLoaded ? 'opacity-100 blur-0' : 'opacity-0 blur-lg'}`}
-            style={{ opacity: videoLoaded ? (videoOpacity * 0.7) : 0 }}
+            style={{ 
+              opacity: videoLoaded ? (videoOpacity * 0.7) : 0,
+            }}
           >
-            <source src="/skillvid.webm" type="video/webm" />
             <source src="/skillvid.mp4" type="video/mp4" />
+            <source src="/skillvid.webm" type="video/webm" />
           </video>
         )}
         <div className="absolute inset-0 bg-black/30 z-10"></div>
@@ -556,6 +558,6 @@ const About = ({ active, assetsAllowed, onScrollProgress }) => {
       </div>
     </div>
   );
-};
+});
 
 export default About;

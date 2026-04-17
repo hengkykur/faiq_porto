@@ -1,12 +1,34 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { createPortal } from 'react-dom';
 
-const ProjectDetail = ({ project, onClose }) => {
+const ProjectDetail = ({ project, onClose, assetsAllowed = true }) => {
   const [isRendered, setIsRendered] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  const [mousePos, setMousePos] = useState({ x: 50, y: 50 });
+  const mouseRaf = useRef(null);
+
+  const handleMouseMove = (e) => {
+    if (mouseRaf.current || isMobile) return;
+    mouseRaf.current = requestAnimationFrame(() => {
+      setMousePos({
+        x: (e.clientX / window.innerWidth) * 100,
+        y: (e.clientY / window.innerHeight) * 100
+      });
+      mouseRaf.current = null;
+    });
+  };
 
   useEffect(() => {
-    // Small delay to trigger animation
+    // Detect mobile
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+
     const timer = setTimeout(() => setIsRendered(true), 50);
+
+    // Set playback rate for the background video
+    const video = document.querySelector('video[autoplay]');
+    if (video) video.playbackRate = 0.3;
 
     // Prevent scrolling on body when open
     document.body.style.overflow = 'hidden';
@@ -20,9 +42,11 @@ const ProjectDetail = ({ project, onClose }) => {
     window.addEventListener('keydown', handleKeyDown);
 
     return () => {
+      window.removeEventListener('resize', checkMobile);
       clearTimeout(timer);
       document.body.style.overflow = '';
       window.removeEventListener('keydown', handleKeyDown);
+      if (mouseRaf.current) cancelAnimationFrame(mouseRaf.current);
     };
   }, []);
 
@@ -35,12 +59,47 @@ const ProjectDetail = ({ project, onClose }) => {
 
   const modalContent = (
     <div
+      onMouseMove={handleMouseMove}
       className={`fixed inset-0 z-[200] flex items-center justify-center transition-all duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] ${isRendered ? 'opacity-100 backdrop-blur-md' : 'opacity-0 backdrop-blur-none'
         }`}
       style={{
-        backgroundColor: isRendered ? 'rgba(8, 8, 16, 0.85)' : 'rgba(8, 8, 16, 0)'
+        backgroundColor: 'transparent'
       }}
     >
+      {/* Background Video */}
+      <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none bg-[#080810]">
+        {assetsAllowed && (
+          <video
+            autoPlay
+            loop
+            muted
+            playsInline
+            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${isRendered ? 'opacity-80' : 'opacity-0'} select-none`}
+            style={{
+              animation: 'background-slow-zoom 300s ease-in-out infinite alternate',
+            }}
+          >
+            <source src="/Project.webm" type="video/webm" />
+            <source src="/Project.mp4" type="video/mp4" />
+          </video>
+        )}
+
+        {/* Cursor Spotlight Overlay (Desktop only) */}
+        {!isMobile && (
+          <div
+            className="absolute inset-0 z-[2] transition-opacity duration-1000"
+            style={{
+              background: `radial-gradient(circle at ${mousePos.x}% ${mousePos.y}%, rgba(99, 102, 241, 0.08) 0%, transparent 40%)`,
+              opacity: isRendered ? 1 : 0
+            }}
+          />
+        )}
+
+        <div className="absolute inset-0 bg-black/5 mix-blend-multiply" />
+        <div className="project-grid-lines relative z-[1]" />
+        <div className="absolute inset-0 bg-radial-vignette opacity-20 z-[3]" />
+      </div>
+
       {/* Background close area */}
       <div className="absolute inset-0 cursor-pointer" onClick={handleClose}></div>
 

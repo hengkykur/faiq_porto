@@ -8,16 +8,16 @@ import SpaceInvaders from './SpaceInvaders';
 const LazyVideo = ({ src, className }) => {
   return (
     <div className="w-full h-full bg-[#060608]">
-      <video 
+      <video
         autoPlay
-        loop 
-        muted 
-        playsInline 
+        loop
+        muted
+        playsInline
         preload="auto"
-        className={className} 
+        className={className}
       >
-        <source src={src.replace('.mp4', '.webm')} type="video/webm" />
         <source src={src} type="video/mp4" />
+        <source src={src.replace('.mp4', '.webm')} type="video/webm" />
       </video>
     </div>
   );
@@ -80,7 +80,7 @@ const HeroVideo = ({ src, onReady, active = true }) => {
         if (initialActive.ended || (initialActive.duration && initialActive.currentTime >= initialActive.duration - 0.5)) {
           initialActive.currentTime = 0;
         }
-        initialActive.play().catch(() => {});
+        initialActive.play().catch(() => { });
       }
     }
 
@@ -97,11 +97,11 @@ const HeroVideo = ({ src, onReady, active = true }) => {
         swappingRef.current = true;
         // Lazy-load the second video source only when crossfade is imminent
         if (!nextVid.currentSrc) {
-           nextVid.innerHTML = `
+          nextVid.innerHTML = `
              <source src="${src.replace('.mp4', '.webm')}" type="video/webm" />
              <source src="${src}" type="video/mp4" />
            `;
-           nextVid.load();
+          nextVid.load();
         }
         // Prepare next video
         nextVid.currentTime = 0;
@@ -117,7 +117,7 @@ const HeroVideo = ({ src, onReady, active = true }) => {
           currentActiveVid.pause();
         }, CROSSFADE * 1000 + 50);
       }
-    }, 100);
+    }, 250); // Increased interval to 250ms for performance
 
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
@@ -145,8 +145,8 @@ const HeroVideo = ({ src, onReady, active = true }) => {
         onCanPlayThrough={handleCanPlay}
         style={vidStyle}
       >
-        <source src={src.replace('.mp4', '.webm')} type="video/webm" />
         <source src={src} type="video/mp4" />
+        <source src={src.replace('.mp4', '.webm')} type="video/webm" />
       </video>
       <video
         ref={vidBRef}
@@ -192,7 +192,7 @@ const RevealOnScroll = ({ children, delay = 0, className = '' }) => {
     const observer = getSharedObserver();
     observationMap.set(ref, () => setIsVisible(true));
     observer.observe(ref);
-    
+
     return () => {
       if (ref && observationMap.has(ref)) {
         observer.unobserve(ref);
@@ -217,7 +217,7 @@ const RevealOnScroll = ({ children, delay = 0, className = '' }) => {
   );
 };
 
-const TypewriterText = () => {
+const TypewriterText = React.memo(() => {
   const [wordIndex, setWordIndex] = useState(0);
   const [currentText, setCurrentText] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
@@ -270,17 +270,17 @@ const TypewriterText = () => {
       {currentText}<span className="animate-pulse border-r-[3px] border-primary ml-0.5 inline-block h-[0.85em] align-middle" />
     </span>
   );
-};
+});
 
-const Hero = ({ active, onReady }) => {
+const Hero = React.memo(({ active, onReady }) => {
   const [videoReady, setVideoReady] = useState(false);
 
   return (
     <div className="w-screen h-screen overflow-y-auto overflow-x-hidden bg-[#060608] flex-shrink-0 no-scrollbar scroll-smooth">
-      
+
       {/* ── Hero First Fold (100vh) ── */}
       <div className="w-full h-screen flex items-center relative overflow-hidden bg-black flex-shrink-0">
-        
+
         {/* ── Background ── */}
         <div className="absolute inset-0 z-0 pointer-events-none">
           {/* Base dark gradient */}
@@ -360,7 +360,7 @@ const Hero = ({ active, onReady }) => {
 
         {/* Decorative corner glow */}
         <div className="absolute bottom-0 right-0 w-[35vw] h-[35vw] bg-indigo-600/10 blur-[120px] rounded-full pointer-events-none z-10" />
-        
+
         {/* Scroll down indicator */}
         <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-30 flex flex-col items-center gap-2 opacity-60 hover:opacity-100 transition-opacity">
           <span className="text-white/70 text-[10px] tracking-[0.3em] uppercase font-light">Discover</span>
@@ -370,24 +370,24 @@ const Hero = ({ active, onReady }) => {
         {/* AI Asset Disclaimer */}
         <div className="absolute bottom-4 left-6 z-30 pointer-events-none opacity-40 hidden md:block">
           <p className="text-[9px] text-white/50 font-body uppercase tracking-[0.05em] leading-relaxed">
-            Visual assets generated with AI to enhance user experience<br/>while focusing on core development.
+            Visual assets generated with AI to enhance user experience<br />while focusing on core development.
           </p>
         </div>
         <div className="absolute bottom-3 left-0 w-full text-center z-30 pointer-events-none opacity-40 md:hidden">
           <p className="text-[8px] text-white/50 font-body uppercase tracking-[0.05em] px-4 leading-relaxed">
-            Visual assets generated with AI to enhance user experience<br/>while focusing on core development.
+            Visual assets generated with AI to enhance user experience<br />while focusing on core development.
           </p>
         </div>
       </div>
 
       {/* ── Aesthetic Gallery Section (Scrollable Area) ── */}
       <div className="w-full relative z-10 bg-gradient-to-b from-black to-[#060608] py-32 px-6">
-        
+
         {/* Subdued grain overlay for gallery */}
         <div className="absolute inset-0 pointer-events-none opacity-10 mix-blend-overlay grain-overlay" />
-        
+
         <div className="container mx-auto max-w-6xl relative z-10">
-          
+
           {/* Section Header */}
           <RevealOnScroll className="mb-32 flex flex-col items-center text-center">
             <p className="text-primary tracking-[0.3em] text-[10px] uppercase font-medium mb-4">Exhibition</p>
@@ -401,7 +401,7 @@ const Hero = ({ active, onReady }) => {
 
           {/* Gallery Rows */}
           <div className="space-y-32 md:space-y-48">
-            
+
             {/* Gallery Item 1 */}
             <div className="grid grid-cols-1 md:grid-cols-12 gap-12 md:gap-8 items-center">
               <RevealOnScroll delay={100} className="md:col-span-5 space-y-6 order-2 md:order-1 pt-8 md:pt-0">
@@ -409,7 +409,7 @@ const Hero = ({ active, onReady }) => {
                 <h3 className="text-3xl md:text-5xl font-display text-white">Monolithic Setup</h3>
                 <div className="w-12 h-[1px] bg-primary/50 my-6"></div>
                 <p className="text-slate-400 font-light leading-relaxed text-sm md:text-base pr-0 md:pr-12">
-                  Exploring the boundaries between rigid geometry and fluid motion. 
+                  Exploring the boundaries between rigid geometry and fluid motion.
                   The synthesis of light and shadow defines the invisible weight of a minimalist digital workspace.
                 </p>
               </RevealOnScroll>
@@ -425,9 +425,9 @@ const Hero = ({ active, onReady }) => {
             <div className="grid grid-cols-1 md:grid-cols-12 gap-12 md:gap-8 items-center">
               <RevealOnScroll delay={100} className="md:col-span-7 relative group">
                 <div className="aspect-square md:aspect-[4/5] w-full overflow-hidden bg-white/5 ring-1 ring-white/10 rounded-sm">
-                  <LazyVideo 
-                    src="/lukisan.mp4" 
-                    className="w-full h-full object-cover opacity-60 grayscale-[50%] group-hover:opacity-100 group-hover:grayscale-0 group-hover:scale-[1.03] transition-all duration-[1.5s] ease-[cubic-bezier(0.19,1,0.22,1)]" 
+                  <LazyVideo
+                    src="/lukisan.mp4"
+                    className="w-full h-full object-cover opacity-60 grayscale-[50%] group-hover:opacity-100 group-hover:grayscale-0 group-hover:scale-[1.03] transition-all duration-[1.5s] ease-[cubic-bezier(0.19,1,0.22,1)]"
                   />
                 </div>
               </RevealOnScroll>
@@ -458,19 +458,19 @@ const Hero = ({ active, onReady }) => {
                 <div className="absolute -inset-4 border border-primary/20 scale-95 opacity-0 group-hover:scale-100 group-hover:opacity-100 transition-all duration-1000 pointer-events-none rounded-sm"></div>
               </RevealOnScroll>
             </div>
-            
+
           </div>
 
           {/* Footer of Gallery to provide spacing */}
           <RevealOnScroll delay={200} className="h-32 w-full flex items-center justify-center mt-32">
             <div className="w-[1px] h-32 bg-gradient-to-t from-primary/50 to-transparent"></div>
           </RevealOnScroll>
-          
+
         </div>
       </div>
-      
+
     </div>
   );
-};
+});
 
 export default Hero;

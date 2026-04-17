@@ -392,19 +392,14 @@ const SpaceInvaders = () => {
       onTouchMove={handleTouchMove}
       onTouchEnd={() => { setIsHovered(false); mouseX.current = null; }}
     >
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
-        .retro-pixel-font { font-family: 'Press Start 2P', monospace; }
-      `}</style>
-      
       {/* ── Retro Loading Screen Overlay ── */}
       {isLoading && (
         <div className="absolute inset-0 z-50 bg-[#010101] flex flex-col items-center justify-center p-6">
-           <div className="text-[#10b981] retro-pixel-font text-[10px] md:text-[12px] animate-pulse">
+           <div className="text-[#10b981] font-arcade text-[10px] md:text-[12px] animate-pulse">
              {hasStartedLoading ? 'INSERT COIN / SYS BOOT' : 'STANDBY'}
            </div>
            
-           <div className="text-[#10b981] retro-pixel-font text-xl md:text-2xl mt-6">
+           <div className="text-[#10b981] font-arcade text-xl md:text-2xl mt-6">
              {Math.min(loadingProgress, 100)}%
            </div>
            

@@ -455,6 +455,17 @@
   animation: hud-enter 0.8s cubic-bezier(0.23, 1, 0.32, 1) forwards;
 }
 
+@keyframes fadeInUp {
+  0% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 /* Animated grid lines for Projects background */
 @keyframes grid-flow {
   0%   { transform: translateY(0); }
@@ -464,6 +475,15 @@
 @keyframes grid-flow-x {
   0%   { transform: translateX(0); }
   100% { transform: translateX(60px); }
+}
+
+@keyframes background-slow-zoom {
+  0% {
+    transform: scale(1);
+  }
+  100% {
+    transform: scale(1.05);
+  }
 }
 
 .project-grid-lines {
@@ -476,7 +496,7 @@
     linear-gradient(0deg,   transparent 59px, rgba(99, 102, 241, 0.07) 60px),
     linear-gradient(90deg,  transparent 59px, rgba(99, 102, 241, 0.05) 60px);
   background-size: 60px 60px;
-  animation: grid-flow 6s linear infinite;
+  animation: grid-flow 30s linear infinite;
   will-change: transform;
 }
 
