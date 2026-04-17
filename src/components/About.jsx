@@ -42,7 +42,7 @@ const About = React.memo(({ active, assetsAllowed, onScrollProgress }) => {
   const containerRef = useRef(null);
   const videoRef = useRef(null);
   const [scrollProgress, setScrollProgress] = useState(0);
-  const [videoOpacity, setVideoOpacity] = useState(1);
+  const videoOpacityRef = useRef(1);
   const [isZone2Active, setIsZone2Active] = useState(false);
   const [isZone3Active, setIsZone3Active] = useState(false);
   const [isZone4Active, setIsZone4Active] = useState(false);
@@ -64,6 +64,17 @@ const About = React.memo(({ active, assetsAllowed, onScrollProgress }) => {
       if (tiltRafId.current) cancelAnimationFrame(tiltRafId.current);
     }
   }, [active, assetsAllowed, hasStartedLoading]);
+
+  // Pause/resume video based on active state to save resources
+  useEffect(() => {
+    const vid = videoRef.current;
+    if (!vid || !videoLoaded) return;
+    if (active) {
+      vid.play().catch(() => {});
+    } else {
+      vid.pause();
+    }
+  }, [active, videoLoaded]);
 
   // Carousel State
   const [expIndex, setExpIndex] = useState(0);
@@ -163,15 +174,22 @@ const About = React.memo(({ active, assetsAllowed, onScrollProgress }) => {
   };
 
   const handleTimeUpdate = () => {
-    if (!videoRef.current) return;
-    const { currentTime, duration } = videoRef.current;
+    const vid = videoRef.current;
+    if (!vid) return;
+    const { currentTime, duration } = vid;
     if (duration > 0) {
+      let opacity;
       if (currentTime > duration - 0.8) {
-        setVideoOpacity(Math.max(0.4, (duration - currentTime) / 0.8));
+        opacity = Math.max(0.4, (duration - currentTime) / 0.8);
       } else if (currentTime < 0.8) {
-        setVideoOpacity(Math.max(0.4, currentTime / 0.8));
+        opacity = Math.max(0.4, currentTime / 0.8);
       } else {
-        setVideoOpacity(1);
+        opacity = 1;
+      }
+      // Direct DOM manipulation instead of setState to avoid re-renders
+      if (videoOpacityRef.current !== opacity) {
+        videoOpacityRef.current = opacity;
+        vid.style.opacity = String(opacity * 0.7);
       }
     }
   };
@@ -219,9 +237,9 @@ const About = React.memo(({ active, assetsAllowed, onScrollProgress }) => {
             preload="metadata"
             onTimeUpdate={handleTimeUpdate}
             onLoadedData={() => setVideoLoaded(true)}
-            className={`absolute inset-0 w-full h-full object-cover transition-all duration-1000 ${videoLoaded ? 'opacity-100 blur-0' : 'opacity-0 blur-lg'}`}
+            className={`absolute inset-0 w-full h-full object-cover transition-all duration-1000 ${videoLoaded ? 'blur-0' : 'opacity-0 blur-lg'}`}
             style={{ 
-              opacity: videoLoaded ? (videoOpacity * 0.7) : 0,
+              opacity: videoLoaded ? 0.7 : 0,
             }}
           >
             <source src="/skillvid.mp4" type="video/mp4" />

@@ -42,6 +42,7 @@ const Projects = ({ active, assetsAllowed }) => {
   const [videoLoaded, setVideoLoaded] = useState(false);
   const mouseRaf = useRef(null);
   const containerRef = useRef(null);
+  const resizeTimerRef = useRef(null);
 
 
   const handleMouseMove = (e) => {
@@ -64,10 +65,16 @@ const Projects = ({ active, assetsAllowed }) => {
 
   // Detect mobile viewport
   useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 768);
-    checkMobile();
+    const checkMobile = () => {
+      clearTimeout(resizeTimerRef.current);
+      resizeTimerRef.current = setTimeout(() => setIsMobile(window.innerWidth < 768), 150);
+    };
+    setIsMobile(window.innerWidth < 768);
     window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
+    return () => {
+      window.removeEventListener('resize', checkMobile);
+      clearTimeout(resizeTimerRef.current);
+    };
   }, []);
 
 
@@ -355,7 +362,6 @@ const Projects = ({ active, assetsAllowed }) => {
           style={{
             transform: `translate3d(calc(54vw - (${activeIndex} * (42vw + 2vw)) - 21vw), 0, 0)`,
             transition: 'transform 0.7s cubic-bezier(0.23, 1, 0.32, 1)',
-            willChange: 'transform',
           }}
         >
           {projects.map((p, i) => (

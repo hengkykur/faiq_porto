@@ -7,6 +7,8 @@ import tailwindcss from '@tailwindcss/vite'
 export default defineConfig({
   plugins: [react(), tailwindcss()],
   build: {
+    target: 'es2020',
+    cssMinify: 'lightningcss',
     rollupOptions: {
       output: {
         manualChunks(id) {

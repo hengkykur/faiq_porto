@@ -1,15 +1,34 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 const Contact = ({ active, assetsAllowed }) => {
   const currentYear = new Date().getFullYear();
   const [isMobile, setIsMobile] = useState(false);
+  const videoRef = useRef(null);
+  const resizeTimerRef = useRef(null);
 
   useEffect(() => {
-    const check = () => setIsMobile(window.innerWidth < 768);
-    check();
+    const check = () => {
+      clearTimeout(resizeTimerRef.current);
+      resizeTimerRef.current = setTimeout(() => setIsMobile(window.innerWidth < 768), 150);
+    };
+    setIsMobile(window.innerWidth < 768);
     window.addEventListener('resize', check);
-    return () => window.removeEventListener('resize', check);
+    return () => {
+      window.removeEventListener('resize', check);
+      clearTimeout(resizeTimerRef.current);
+    };
   }, []);
+
+  // Pause/resume robot video based on active state
+  useEffect(() => {
+    const vid = videoRef.current;
+    if (!vid) return;
+    if (active) {
+      vid.play().catch(() => {});
+    } else {
+      vid.pause();
+    }
+  }, [active]);
 
   const robotStyle = isMobile
     ? {
@@ -24,7 +43,7 @@ const Contact = ({ active, assetsAllowed }) => {
         mixBlendMode: 'screen',
         filter: 'contrast(1.1) brightness(1.05)',
         animation: 'robotFloat 6s ease-in-out infinite',
-        willChange: 'transform',
+        /* willChange removed to free GPU layer */
         pointerEvents: 'none',
         WebkitMaskImage: 'radial-gradient(ellipse at center, black 45%, transparent 85%)',
         maskImage: 'radial-gradient(ellipse at center, black 45%, transparent 85%)',
@@ -41,7 +60,7 @@ const Contact = ({ active, assetsAllowed }) => {
         mixBlendMode: 'screen',
         filter: 'contrast(1.1) brightness(1.1)',
         animation: 'robotFloat 6s ease-in-out infinite',
-        willChange: 'transform',
+        /* willChange removed to free GPU layer */
         pointerEvents: 'none',
         WebkitMaskImage: 'radial-gradient(ellipse at center, black 50%, transparent 90%)',
         maskImage: 'radial-gradient(ellipse at center, black 50%, transparent 90%)',
@@ -104,6 +123,7 @@ const Contact = ({ active, assetsAllowed }) => {
       <div style={robotStyle}>
         {(active || assetsAllowed) && (
           <video
+            ref={videoRef}
             autoPlay
             loop
             muted

@@ -3,22 +3,65 @@ import SpaceInvaders from './SpaceInvaders';
 
 /**
  * LazyVideo Component
- * Using native browser autoplay and preload optimizations since WebM is lightweight.
+ * Only loads and plays the video when scrolled into viewport via IntersectionObserver.
  */
 const LazyVideo = ({ src, className }) => {
+  const containerRef = useRef(null);
+  const videoRef = useRef(null);
+  const [shouldLoad, setShouldLoad] = useState(false);
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setShouldLoad(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: '200px' }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  // Pause/resume based on visibility
+  useEffect(() => {
+    if (!shouldLoad) return;
+    const el = containerRef.current;
+    const vid = videoRef.current;
+    if (!el || !vid) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          vid.play().catch(() => {});
+        } else {
+          vid.pause();
+        }
+      },
+      { threshold: 0.1 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [shouldLoad]);
+
   return (
-    <div className="w-full h-full bg-[#060608]">
-      <video
-        autoPlay
-        loop
-        muted
-        playsInline
-        preload="auto"
-        className={className}
-      >
-        <source src={src} type="video/mp4" />
-        <source src={src.replace('.mp4', '.webm')} type="video/webm" />
-      </video>
+    <div ref={containerRef} className="w-full h-full bg-[#060608]">
+      {shouldLoad && (
+        <video
+          ref={videoRef}
+          autoPlay
+          loop
+          muted
+          playsInline
+          preload="metadata"
+          className={className}
+        >
+          <source src={src.replace('.mp4', '.webm')} type="video/webm" />
+          <source src={src} type="video/mp4" />
+        </video>
+      )}
     </div>
   );
 };
@@ -141,14 +184,14 @@ const HeroVideo = ({ src, onReady, active = true }) => {
         ref={vidARef}
         muted
         playsInline
-        preload="auto"
+        preload="metadata"
         poster="/vidiohome_poster.webp"
         fetchpriority="high"
         onCanPlayThrough={handleCanPlay}
         style={vidStyle}
       >
-        <source src={src} type="video/mp4" />
         <source src={src.replace('.mp4', '.webm')} type="video/webm" />
+        <source src={src} type="video/mp4" />
       </video>
       <video
         ref={vidBRef}

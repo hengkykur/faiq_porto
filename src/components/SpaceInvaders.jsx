@@ -62,14 +62,19 @@ const SpaceInvaders = () => {
   const [hasStartedLoading, setHasStartedLoading] = useState(false);
   const reqRef = useRef();
   const mouseX = useRef(null);
+  const isVisibleRef = useRef(false);
+  const lastFrameTimeRef = useRef(0);
+  const FPS_CAP = 30;
+  const FRAME_INTERVAL = 1000 / FPS_CAP;
 
-  // Trigger loading when component becomes visible on screen
+  // Trigger loading when component becomes visible on screen + track visibility
   useEffect(() => {
     const observer = new IntersectionObserver(([entry]) => {
+      isVisibleRef.current = entry.isIntersecting;
       if (entry.isIntersecting && !hasStartedLoading) {
          setHasStartedLoading(true);
       }
-    }, { threshold: 0.8 }); // Ensure it's very visible before triggering
+    }, { threshold: 0.1 });
     
     if (containerRef.current) observer.observe(containerRef.current);
     return () => observer.disconnect();
@@ -144,7 +149,20 @@ const SpaceInvaders = () => {
       }
     };
 
-    const update = () => {
+    const update = (timestamp) => {
+      // FPS cap: skip frame if not enough time has elapsed
+      if (timestamp - lastFrameTimeRef.current < FRAME_INTERVAL) {
+        reqRef.current = requestAnimationFrame(update);
+        return;
+      }
+      lastFrameTimeRef.current = timestamp;
+
+      // Pause game loop when not visible to save CPU
+      if (!isVisibleRef.current) {
+        reqRef.current = requestAnimationFrame(update);
+        return;
+      }
+
       frame++;
       
       if (player.deadTime > 0) {

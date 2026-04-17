@@ -18,17 +18,18 @@ const ProjectDetail = ({ project, onClose, assetsAllowed = true }) => {
     });
   };
 
+  const resizeTimerRef = useRef(null);
+
   useEffect(() => {
-    // Detect mobile
-    const checkMobile = () => setIsMobile(window.innerWidth < 768);
-    checkMobile();
+    // Detect mobile (debounced)
+    const checkMobile = () => {
+      clearTimeout(resizeTimerRef.current);
+      resizeTimerRef.current = setTimeout(() => setIsMobile(window.innerWidth < 768), 150);
+    };
+    setIsMobile(window.innerWidth < 768);
     window.addEventListener('resize', checkMobile);
 
     const timer = setTimeout(() => setIsRendered(true), 50);
-
-    // Set playback rate for the background video
-    const video = document.querySelector('video[autoplay]');
-    if (video) video.playbackRate = 0.3;
 
     // Prevent scrolling on body when open
     document.body.style.overflow = 'hidden';
@@ -44,6 +45,7 @@ const ProjectDetail = ({ project, onClose, assetsAllowed = true }) => {
     return () => {
       window.removeEventListener('resize', checkMobile);
       clearTimeout(timer);
+      clearTimeout(resizeTimerRef.current);
       document.body.style.overflow = '';
       window.removeEventListener('keydown', handleKeyDown);
       if (mouseRaf.current) cancelAnimationFrame(mouseRaf.current);
@@ -68,16 +70,14 @@ const ProjectDetail = ({ project, onClose, assetsAllowed = true }) => {
     >
       {/* Background Video */}
       <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none bg-[#080810]">
-        {assetsAllowed && (
+        {assetsAllowed && isRendered && (
           <video
             autoPlay
             loop
             muted
             playsInline
+            preload="metadata"
             className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${isRendered ? 'opacity-80' : 'opacity-0'} select-none`}
-            style={{
-              animation: 'background-slow-zoom 300s ease-in-out infinite alternate',
-            }}
           >
             <source src="/Project.webm" type="video/webm" />
             <source src="/Project.mp4" type="video/mp4" />

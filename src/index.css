@@ -497,7 +497,7 @@
     linear-gradient(90deg,  transparent 59px, rgba(99, 102, 241, 0.05) 60px);
   background-size: 60px 60px;
   animation: grid-flow 30s linear infinite;
-  will-change: transform;
+  /* will-change removed — persistent GPU layer was wasting VRAM */
 }
 
 .project-grid-lines::after {
