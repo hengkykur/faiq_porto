@@ -35,7 +35,7 @@ const LazyVideo = ({ src, className }) => {
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
-          vid.play().catch(() => {});
+          vid.play().catch(() => { });
         } else {
           vid.pause();
         }
@@ -74,6 +74,7 @@ const LazyVideo = ({ src, className }) => {
 const HeroVideo = ({ src, onReady, active = true }) => {
   const vidARef = useRef(null);
   const vidBRef = useRef(null);
+  const posterRef = useRef(null);
   const [ready, setReady] = useState(false);
   const activeRef = useRef('A');     // tracks which video is "live"
   const swappingRef = useRef(false); // lock to prevent double-trigger
@@ -91,14 +92,20 @@ const HeroVideo = ({ src, onReady, active = true }) => {
     outEl.style.opacity = '0';
   }, []);
 
-  // Called once video A has loaded enough to play
+  // Called once video A can play — fade poster out & show video
   const handleCanPlay = useCallback(() => {
     if (ready) return;
     const vid = vidARef.current;
     if (!vid) return;
     vid.play().catch(() => { });
-    // Set initial opacity directly
+    // Reveal video instantly
+    vid.style.transition = 'opacity 0.4s ease-out';
     vid.style.opacity = '0.75';
+    // Fade out the poster image so video takes over
+    if (posterRef.current) {
+      posterRef.current.style.transition = 'opacity 0.4s ease-out';
+      posterRef.current.style.opacity = '0';
+    }
     setReady(true);
     if (onReady) onReady();
   }, [ready, onReady]);
@@ -111,15 +118,13 @@ const HeroVideo = ({ src, onReady, active = true }) => {
     const b = vidBRef.current;
     const initialActive = activeRef.current === 'A' ? a : b;
 
-    // Pause video if user scrolls away to save resources and prevent it from reaching the end silently
+    // Pause video if user scrolls away to save resources
     if (!active) {
       if (initialActive) initialActive.pause();
       if (intervalRef.current) clearInterval(intervalRef.current);
       return;
     } else {
-      // Resume video when user returns
       if (initialActive) {
-        // If it accidentally reached the end (or very close to it), reset to 0
         if (initialActive.ended || (initialActive.duration && initialActive.currentTime >= initialActive.duration - 0.5)) {
           initialActive.currentTime = 0;
         }
@@ -138,7 +143,6 @@ const HeroVideo = ({ src, onReady, active = true }) => {
 
       if (timeLeft <= CROSSFADE && timeLeft > 0) {
         swappingRef.current = true;
-        // Lazy-load the second video source only when crossfade is imminent
         if (!nextVid.currentSrc) {
           nextVid.innerHTML = `
              <source src="${src.replace('.mp4', '.webm')}" type="video/webm" />
@@ -146,21 +150,18 @@ const HeroVideo = ({ src, onReady, active = true }) => {
            `;
           nextVid.load();
         }
-        // Prepare next video
         nextVid.currentTime = 0;
         nextVid.play().catch(() => { });
         doFade(currentActiveVid, nextVid);
 
-        // After crossfade completes, swap references and unlock
         setTimeout(() => {
           activeRef.current = activeRef.current === 'A' ? 'B' : 'A';
           swappingRef.current = false;
-          // Reset the old one so it's ready for next crossfade
           currentActiveVid.currentTime = 0;
           currentActiveVid.pause();
         }, CROSSFADE * 1000 + 50);
       }
-    }, 250); // Increased interval to 250ms for performance
+    }, 250);
 
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
@@ -175,24 +176,42 @@ const HeroVideo = ({ src, onReady, active = true }) => {
     objectFit: 'cover',
     mixBlendMode: 'screen',
     opacity: 0,
-    /* Removed willChange to free GPU memory */
   };
 
   return (
     <>
+      {/* ── LCP-critical poster: renders immediately, visible without JS ── */}
+      <img
+        ref={posterRef}
+        src="/vidiohome_poster.webp"
+        alt=""
+        aria-hidden="true"
+        fetchPriority="high"
+        decoding="async"
+        style={{
+          position: 'absolute',
+          inset: 0,
+          width: '100%',
+          height: '100%',
+          objectFit: 'cover',
+          mixBlendMode: 'screen',
+          opacity: 0.75,
+          pointerEvents: 'none',
+        }}
+      />
+      {/* ── Video A (active) ── */}
       <video
         ref={vidARef}
         muted
         playsInline
-        preload="metadata"
-        poster="/vidiohome_poster.webp"
-        fetchPriority="high"
+        preload="auto"
         onCanPlayThrough={handleCanPlay}
         style={vidStyle}
       >
         <source src={src.replace('.mp4', '.webm')} type="video/webm" />
         <source src={src} type="video/mp4" />
       </video>
+      {/* ── Video B (crossfade reserve) ── */}
       <video
         ref={vidBRef}
         muted
@@ -341,7 +360,6 @@ const TypewriterText = React.memo(() => {
 });
 
 const Hero = React.memo(({ active, onReady }) => {
-  const [videoReady, setVideoReady] = useState(false);
 
   return (
     <div className="w-screen h-screen overflow-y-auto overflow-x-hidden bg-[#060608] flex-shrink-0 no-scrollbar scroll-smooth">
@@ -372,8 +390,6 @@ const Hero = React.memo(({ active, onReady }) => {
             style={{
               width: 'min(75vw, 480px)',
               height: 'min(75vw, 480px)',
-              opacity: videoReady ? 1 : 0,
-              transition: 'opacity 0.8s ease-out',
             }}
           >
             {/* Circular mask wrapper */}
@@ -388,7 +404,6 @@ const Hero = React.memo(({ active, onReady }) => {
                 src="/vidiohomebulet.mp4"
                 active={active}
                 onReady={() => {
-                  setVideoReady(true);
                   if (onReady) onReady();
                 }}
               />
