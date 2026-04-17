@@ -24,7 +24,7 @@ const Contact = ({ active, assetsAllowed }) => {
     const vid = videoRef.current;
     if (!vid) return;
     if (active) {
-      vid.play().catch(() => {});
+      vid.play().catch(() => { });
     } else {
       vid.pause();
     }
@@ -32,39 +32,39 @@ const Contact = ({ active, assetsAllowed }) => {
 
   const robotStyle = isMobile
     ? {
-        // Mobile: di belakang konten (zIndex 5 < z-10 konten), pojok kanan bawah
-        position: 'absolute',
-        bottom: '0px',
-        right: '0px',
-        width: '180px',
-        height: '290px',
-        zIndex: 5,
-        overflow: 'hidden',
-        mixBlendMode: 'screen',
-        filter: 'contrast(1.1) brightness(1.05)',
-        animation: 'robotFloat 6s ease-in-out infinite',
-        /* willChange removed to free GPU layer */
-        pointerEvents: 'none',
-        WebkitMaskImage: 'radial-gradient(ellipse at center, black 45%, transparent 85%)',
-        maskImage: 'radial-gradient(ellipse at center, black 45%, transparent 85%)',
-      }
+      // Mobile: di belakang konten (zIndex 5 < z-10 konten), pojok kanan bawah
+      position: 'absolute',
+      bottom: '0px',
+      right: '0px',
+      width: '180px',
+      height: '290px',
+      zIndex: 5,
+      overflow: 'hidden',
+      mixBlendMode: 'screen',
+      filter: 'contrast(1.1) brightness(1.05)',
+      animation: 'robotFloat 6s ease-in-out infinite',
+      /* willChange removed to free GPU layer */
+      pointerEvents: 'none',
+      WebkitMaskImage: 'radial-gradient(ellipse at center, black 45%, transparent 85%)',
+      maskImage: 'radial-gradient(ellipse at center, black 45%, transparent 85%)',
+    }
     : {
-        // Desktop: ukuran normal
-        position: 'absolute',
-        bottom: '10px',
-        right: '24px',
-        width: '240px',
-        height: '385px',
-        zIndex: 20,
-        overflow: 'hidden',
-        mixBlendMode: 'screen',
-        filter: 'contrast(1.1) brightness(1.1)',
-        animation: 'robotFloat 6s ease-in-out infinite',
-        /* willChange removed to free GPU layer */
-        pointerEvents: 'none',
-        WebkitMaskImage: 'radial-gradient(ellipse at center, black 50%, transparent 90%)',
-        maskImage: 'radial-gradient(ellipse at center, black 50%, transparent 90%)',
-      };
+      // Desktop: ukuran normal
+      position: 'absolute',
+      bottom: '10px',
+      right: '24px',
+      width: '240px',
+      height: '385px',
+      zIndex: 20,
+      overflow: 'hidden',
+      mixBlendMode: 'screen',
+      filter: 'contrast(1.1) brightness(1.1)',
+      animation: 'robotFloat 6s ease-in-out infinite',
+      /* willChange removed to free GPU layer */
+      pointerEvents: 'none',
+      WebkitMaskImage: 'radial-gradient(ellipse at center, black 50%, transparent 90%)',
+      maskImage: 'radial-gradient(ellipse at center, black 50%, transparent 90%)',
+    };
 
   return (
     <div className="w-screen h-screen flex items-center justify-center flex-shrink-0 relative overflow-hidden bg-black select-none">
@@ -116,8 +116,8 @@ const Contact = ({ active, assetsAllowed }) => {
 
       {/* Robot Video — Always visible, mobile: behind content (z:5), desktop: foreground (z:20) */}
       <div className={`absolute ${isMobile ? 'bottom-0 right-0 w-[180px] h-[290px] z-[4]' : 'bottom-[10px] right-[24px] w-[240px] h-[385px] z-[19]'} pointer-events-none flex items-center justify-center`}>
-         {/* Static GPU-friendly Glow replacing the extremely expensive drop-shadow */}
-         <div className="w-[60%] h-[60%] bg-[#63b3ed] rounded-full blur-[40px] opacity-20"></div>
+        {/* Static GPU-friendly Glow replacing the extremely expensive drop-shadow */}
+        <div className="w-[60%] h-[60%] bg-[#63b3ed] rounded-full blur-[40px] opacity-20"></div>
       </div>
 
       <div style={robotStyle}>
@@ -137,7 +137,6 @@ const Contact = ({ active, assetsAllowed }) => {
               opacity: 0.95,
             }}
           >
-            <source src="/Robot.webm" type="video/webm" />
             <source src="/Robot.mp4" type="video/mp4" />
           </video>
         )}

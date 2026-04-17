@@ -68,22 +68,7 @@ const ProjectDetail = ({ project, onClose, assetsAllowed = true }) => {
         backgroundColor: 'transparent'
       }}
     >
-      {/* Background Video */}
       <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none bg-[#080810]">
-        {assetsAllowed && isRendered && (
-          <video
-            autoPlay
-            loop
-            muted
-            playsInline
-            preload="metadata"
-            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${isRendered ? 'opacity-80' : 'opacity-0'} select-none`}
-          >
-            <source src="/Project.webm" type="video/webm" />
-            <source src="/Project.mp4" type="video/mp4" />
-          </video>
-        )}
-
         {/* Cursor Spotlight Overlay (Desktop only) */}
         {!isMobile && (
           <div

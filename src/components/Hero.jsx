@@ -58,7 +58,6 @@ const LazyVideo = ({ src, className }) => {
           preload="metadata"
           className={className}
         >
-          <source src={src.replace('.mp4', '.webm')} type="video/webm" />
           <source src={src} type="video/mp4" />
         </video>
       )}
@@ -145,7 +144,6 @@ const HeroVideo = ({ src, onReady, active = true }) => {
         swappingRef.current = true;
         if (!nextVid.currentSrc) {
           nextVid.innerHTML = `
-             <source src="${src.replace('.mp4', '.webm')}" type="video/webm" />
              <source src="${src}" type="video/mp4" />
            `;
           nextVid.load();
@@ -208,7 +206,6 @@ const HeroVideo = ({ src, onReady, active = true }) => {
         onCanPlayThrough={handleCanPlay}
         style={vidStyle}
       >
-        <source src={src.replace('.mp4', '.webm')} type="video/webm" />
         <source src={src} type="video/mp4" />
       </video>
       {/* ── Video B (crossfade reserve) ── */}

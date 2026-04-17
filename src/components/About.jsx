@@ -70,7 +70,7 @@ const About = React.memo(({ active, assetsAllowed, onScrollProgress }) => {
     const vid = videoRef.current;
     if (!vid || !videoLoaded) return;
     if (active) {
-      vid.play().catch(() => {});
+      vid.play().catch(() => { });
     } else {
       vid.pause();
     }
@@ -119,11 +119,11 @@ const About = React.memo(({ active, assetsAllowed, onScrollProgress }) => {
 
   const handleTechMouseMove = (e) => {
     if (tiltRafId.current) return;
-    
+
     // Capture event values before RAF
     const clientX = e.clientX;
     const clientY = e.clientY;
-    
+
     tiltRafId.current = requestAnimationFrame(() => {
       if (!techRef.current) { tiltRafId.current = null; return; }
       const { left, top, width, height } = techRef.current.getBoundingClientRect();
@@ -140,8 +140,8 @@ const About = React.memo(({ active, assetsAllowed, onScrollProgress }) => {
 
   const handleTechMouseLeave = () => {
     if (tiltRafId.current) {
-        cancelAnimationFrame(tiltRafId.current);
-        tiltRafId.current = null;
+      cancelAnimationFrame(tiltRafId.current);
+      tiltRafId.current = null;
     }
     setTilt({ x: 0, y: 0 });
   };
@@ -158,7 +158,7 @@ const About = React.memo(({ active, assetsAllowed, onScrollProgress }) => {
       const currentScroll = Math.max(0, scrollTop);
       const maxScroll = scrollHeight - clientHeight;
       const progress = currentScroll / (maxScroll || 1);
-      
+
       setScrollProgress(progress);
       if (onScrollProgress) onScrollProgress(progress);
 
@@ -168,7 +168,7 @@ const About = React.memo(({ active, assetsAllowed, onScrollProgress }) => {
       // Merged Zone 4 & 5
       setIsZone4Active(progress > 0.55 && progress <= 0.88);
       setIsZone6Active(progress > 0.88);
-      
+
       scrollRafId.current = null;
     });
   };
@@ -237,12 +237,11 @@ const About = React.memo(({ active, assetsAllowed, onScrollProgress }) => {
             onTimeUpdate={handleTimeUpdate}
             onLoadedData={() => setVideoLoaded(true)}
             className={`absolute inset-0 w-full h-full object-cover transition-all duration-1000 ${videoLoaded ? 'blur-0' : 'opacity-0 blur-lg'}`}
-            style={{ 
+            style={{
               opacity: videoLoaded ? 0.7 : 0,
             }}
           >
             <source src="/skillvid.mp4" type="video/mp4" />
-            <source src="/skillvid.webm" type="video/webm" />
           </video>
         )}
         <div className="absolute inset-0 bg-black/30 z-10"></div>
@@ -385,17 +384,17 @@ const About = React.memo(({ active, assetsAllowed, onScrollProgress }) => {
 
         {/* Zone 4: The Journey (Academic & Experience) */}
         <div className="min-h-screen w-full flex flex-col items-center justify-center py-24 px-6 md:px-24 bg-transparent snap-start snap-always z-20 relative overflow-hidden">
-          
+
           <div className={`w-full max-w-7xl mx-auto transition-all duration-1000 ease-out flex flex-col items-center ${isZone4Active ? 'opacity-100 translate-y-0 scale-100 blur-none' : 'opacity-0 translate-y-20 scale-95 blur-xl'}`}>
-            
+
             {/* Header / Tabs */}
             <div className="text-center mb-16 w-full">
               <h2 className="text-5xl md:text-[7rem] font-display font-black text-white italic tracking-tighter uppercase mb-10 drop-shadow-2xl">
                 THE <span className="text-glow animate-glitch-heavy">JOURNEY</span>
               </h2>
-              
+
               <div className="flex items-center justify-center flex-wrap gap-2 md:gap-4 bg-white/5 p-2 rounded-full border border-white/10 backdrop-blur-md w-max mx-auto relative z-30 shadow-[0_0_30px_rgba(0,0,0,0.5)]">
-                <button 
+                <button
                   onClick={() => setJourneyTab('academic')}
                   className={`px-4 sm:px-6 py-3 rounded-full text-[10px] md:text-sm font-mono tracking-widest uppercase font-bold transition-all duration-500 relative overflow-hidden ${journeyTab === 'academic' ? 'text-primary' : 'text-slate-400 hover:text-white'}`}
                 >
@@ -403,7 +402,7 @@ const About = React.memo(({ active, assetsAllowed, onScrollProgress }) => {
                   Academic Background
                 </button>
                 <div className="w-[1px] h-6 bg-white/20 hidden md:block"></div>
-                <button 
+                <button
                   onClick={() => setJourneyTab('experience')}
                   className={`px-4 sm:px-6 py-3 rounded-full text-[10px] md:text-sm font-mono tracking-widest uppercase font-bold transition-all duration-500 relative overflow-hidden ${journeyTab === 'experience' ? 'text-primary' : 'text-slate-400 hover:text-white'}`}
                 >
@@ -415,7 +414,7 @@ const About = React.memo(({ active, assetsAllowed, onScrollProgress }) => {
 
             {/* Tab Contents */}
             <div className="relative w-full min-h-[500px] md:min-h-[550px]">
-              
+
               {/* ACADEMIC CONTENT */}
               <div className={`absolute inset-0 w-full transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${journeyTab === 'academic' ? 'opacity-100 translate-y-0 pointer-events-auto scale-100' : 'opacity-0 translate-y-12 pointer-events-none scale-95'}`}>
                 <div className="grid grid-cols-1 lg:grid-cols-[1.2fr_0.8fr] gap-12 lg:gap-20 items-center justify-center pt-4 md:pt-8 w-full max-w-5xl mx-auto">
@@ -477,7 +476,7 @@ const About = React.memo(({ active, assetsAllowed, onScrollProgress }) => {
                             </div>
 
                             <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 md:gap-12 w-full h-full z-10 relative">
-                              
+
                               {/* Left Text Content */}
                               <div className="flex-1 flex flex-col justify-center h-full w-full">
                                 <div className="text-primary font-bold tracking-[0.2em] text-[10px] md:text-sm mb-3 uppercase flex items-center gap-2">
@@ -493,7 +492,7 @@ const About = React.memo(({ active, assetsAllowed, onScrollProgress }) => {
                                   {exp.title}
                                 </h3>
                                 <div className="text-sm md:text-xl text-slate-400 font-semibold uppercase tracking-widest mb-4 md:mb-8">{exp.company}</div>
-                                
+
                                 {exp.achievements.length > 0 ? (
                                   <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-3 pt-2">
                                     {exp.achievements.map((ach, j) => (
