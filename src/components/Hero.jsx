@@ -258,16 +258,39 @@ const TypewriterText = React.memo(() => {
   const config = wordConfigs[wordIndex];
 
   return (
-    <span
-      className="text-glow inline-block min-w-[120px] sm:min-w-[200px] pr-4 sm:pr-6"
-      style={{
-        fontFamily: config.font,
-        fontStyle: config.italic ? 'italic' : 'normal',
-        fontWeight: config.weight,
-        transition: 'font-family 0.4s, font-style 0.4s, font-weight 0.4s',
-      }}
-    >
-      {currentText}<span className="animate-pulse border-r-[3px] border-primary ml-0.5 inline-block h-[0.85em] align-middle" />
+    <span className="relative inline-block align-middle overflow-hidden pr-4 sm:pr-8" style={{ contain: 'layout paint' }}>
+      {/* ── Ghost Loader (Pre-measures widest word across all fonts to prevent CLS) ── */}
+      <span className="invisible h-0 block overflow-hidden select-none pointer-events-none" aria-hidden="true" style={{ fontSize: 'inherit' }}>
+        {wordConfigs.map((w, i) => (
+          <span
+            key={i}
+            className="block"
+            style={{
+              fontFamily: w.font,
+              fontStyle: w.italic ? 'italic' : 'normal',
+              fontWeight: w.weight,
+              height: 0,
+            }}
+          >
+            {w.text}
+          </span>
+        ))}
+      </span>
+
+      {/* ── Actual Typewriter ── */}
+      <span
+        className="text-glow inline-block transition-[font-family,font-weight,font-style] duration-500 ease-in-out"
+        style={{
+          fontFamily: config.font,
+          fontStyle: config.italic ? 'italic' : 'normal',
+          fontWeight: config.weight,
+          whiteSpace: 'nowrap'
+        }}
+      >
+        {currentText}
+        {/* Blinking Cursor */}
+        <span className="animate-pulse border-r-[3px] border-primary ml-0.5 inline-block h-[0.85em] align-middle" />
+      </span>
     </span>
   );
 });
