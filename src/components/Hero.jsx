@@ -142,6 +142,8 @@ const HeroVideo = ({ src, onReady, active = true }) => {
         muted
         playsInline
         preload="auto"
+        poster="/vidiohome_poster.webp"
+        fetchpriority="high"
         onCanPlayThrough={handleCanPlay}
         style={vidStyle}
       >
