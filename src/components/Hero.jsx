@@ -58,6 +58,7 @@ const LazyVideo = ({ src, className }) => {
           preload="metadata"
           className={className}
         >
+          <source src={src.replace('.mp4', '.webm')} type="video/webm" />
           <source src={src} type="video/mp4" />
         </video>
       )}

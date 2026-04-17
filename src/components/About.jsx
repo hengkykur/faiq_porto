@@ -242,6 +242,7 @@ const About = React.memo(({ active, assetsAllowed, onScrollProgress }) => {
             }}
           >
             <source src="/skillvid.mp4" type="video/mp4" />
+            <source src="/skillvid.webm" type="video/webm" />
           </video>
         )}
         <div className="absolute inset-0 bg-black/30 z-10"></div>
