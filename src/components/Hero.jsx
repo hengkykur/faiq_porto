@@ -186,7 +186,7 @@ const HeroVideo = ({ src, onReady, active = true }) => {
         playsInline
         preload="metadata"
         poster="/vidiohome_poster.webp"
-        fetchpriority="high"
+        fetchPriority="high"
         onCanPlayThrough={handleCanPlay}
         style={vidStyle}
       >

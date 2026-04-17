@@ -231,7 +231,6 @@ const About = React.memo(({ active, assetsAllowed, onScrollProgress }) => {
             ref={videoRef}
             autoPlay
             muted={true}
-            defaultMuted
             loop
             playsInline
             preload="metadata"
