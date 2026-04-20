@@ -358,9 +358,61 @@ const TypewriterText = React.memo(() => {
 });
 
 const Hero = React.memo(({ active, onReady }) => {
+  const containerRef = useRef(null);
+  const customCursorRef = useRef(null);
+  const lastMousePos = useRef({ x: -100, y: -100 });
+
+  useEffect(() => {
+    const updateCursor = () => {
+      if (customCursorRef.current && containerRef.current) {
+        const x = lastMousePos.current.x;
+        const y = lastMousePos.current.y + containerRef.current.scrollTop;
+        customCursorRef.current.style.transform = `translate3d(${x - 16}px, ${y - 16}px, 0)`;
+      }
+    };
+
+    const handleGlobalMouseMove = (e) => {
+      lastMousePos.current = { x: e.clientX, y: e.clientY };
+      updateCursor();
+    };
+
+    const scrollContainer = containerRef.current;
+    if (scrollContainer) {
+      scrollContainer.addEventListener('scroll', updateCursor, { passive: true });
+    }
+    window.addEventListener('mousemove', handleGlobalMouseMove);
+
+    return () => {
+      if (scrollContainer) scrollContainer.removeEventListener('scroll', updateCursor);
+      window.removeEventListener('mousemove', handleGlobalMouseMove);
+    };
+  }, []);
+
+  const handleGlobalClick = (e) => {
+    if (e.target.closest('button') || e.target.closest('a')) return;
+    if (containerRef.current) {
+      containerRef.current.scrollBy({ top: window.innerHeight, behavior: 'smooth' });
+    }
+  };
 
   return (
-    <div className="w-screen h-screen overflow-y-auto overflow-x-hidden bg-[#060608] flex-shrink-0 no-scrollbar scroll-smooth">
+    <div 
+      ref={containerRef}
+      onClick={handleGlobalClick}
+      className="w-screen h-screen relative overflow-y-auto overflow-x-hidden bg-[#060608] flex-shrink-0 no-scrollbar scroll-smooth cursor-none"
+    >
+      {/* Custom Scroll Cursor */}
+      <div 
+        ref={customCursorRef} 
+        className="absolute top-0 left-0 z-[9999] pointer-events-none flex items-center justify-center transition-transform duration-75 ease-out"
+        style={{ transform: 'translate3d(-100px, -100px, 0)' }}
+      >
+        <div className="flex items-center justify-center text-white w-8 h-8 rounded-full border border-white/40 bg-white/20 backdrop-blur-md animate-pulse shadow-[0_0_15px_rgba(255,255,255,0.4)]">
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+          </svg>
+        </div>
+      </div>
 
       {/* ── Hero First Fold (100vh) ── */}
       <div className="w-full h-screen flex items-center relative overflow-hidden bg-black flex-shrink-0">

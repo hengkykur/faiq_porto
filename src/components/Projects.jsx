@@ -45,15 +45,41 @@ const Projects = ({ active, assetsAllowed }) => {
   const resizeTimerRef = useRef(null);
 
 
+  const customCursorRef = useRef(null);
+
   const handleMouseMove = (e) => {
-    if (isMobile || !containerRef.current || mouseRaf.current) return;
+    if (isMobile || !containerRef.current) return;
+
+    if (customCursorRef.current) {
+      customCursorRef.current.style.transform = `translate3d(${e.clientX - 16}px, ${e.clientY - 16}px, 0)`;
+      const isRight = e.clientX > window.innerWidth / 2;
+      const svg = customCursorRef.current.querySelector('svg');
+      if (svg) {
+        svg.style.transform = isRight ? 'rotate(0deg)' : 'rotate(180deg)';
+      }
+    }
+
+    if (mouseRaf.current) return;
     const x = (e.clientX / window.innerWidth) * 100;
     const y = (e.clientY / window.innerHeight) * 100;
     mouseRaf.current = requestAnimationFrame(() => {
-      containerRef.current.style.setProperty('--mouse-x', `${x}%`);
-      containerRef.current.style.setProperty('--mouse-y', `${y}%`);
+      if (containerRef.current) {
+        containerRef.current.style.setProperty('--mouse-x', `${x}%`);
+        containerRef.current.style.setProperty('--mouse-y', `${y}%`);
+      }
       mouseRaf.current = null;
     });
+  };
+
+  const handleGlobalClick = (e) => {
+    if (isMobile || e.target.closest('button') || e.target.closest('a') || e.target.closest('.project-node') || e.target.closest('.no-custom-click')) return;
+    
+    const isRight = e.clientX > window.innerWidth / 2;
+    if (isRight && activeIndex < projects.length - 1) {
+      setActiveIndex(prev => prev + 1);
+    } else if (!isRight && activeIndex > 0) {
+      setActiveIndex(prev => prev - 1);
+    }
   };
 
   useEffect(() => {
@@ -192,21 +218,20 @@ const Projects = ({ active, assetsAllowed }) => {
                 style={{ width: `${100 / projects.length}%`, height: '100%' }}
                 onClick={() => { if (i === activeIndex) setSelectedProject(p); }}
               >
-                {/* Square Card image container - Adjusted to be more centered vertically */}
-                <div className="absolute top-[32%] left-1/2 -translate-x-1/2 w-[65vw] max-w-[240px] aspect-square z-0 bg-[#16161e] rounded-[2rem] shadow-[0_30px_60px_rgba(0,0,0,0.9)] border border-white/5 flex items-center justify-center p-12 mt-4 overflow-hidden">
-                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.15)_0%,transparent_70%)] pointer-events-none"></div>
+                {/* Square Card image container - Floating 3D */}
+                <div className="absolute top-[32%] left-1/2 -translate-x-1/2 w-[65vw] max-w-[240px] aspect-square z-0 flex items-center justify-center p-12 mt-4 overflow-visible">
                   {assetsAllowed && (
                     <img
                       src={p.image}
                       alt={p.title}
-                      className={`w-full h-full object-contain relative z-10 ${p.invertLogo ? 'brightness-0 invert drop-shadow-[0_0_10px_rgba(255,255,255,0.4)] opacity-90' : 'drop-shadow-[0_0_20px_rgba(0,0,0,0.5)]'}`}
+                      className={`w-full h-full object-contain relative z-10 ${p.invertLogo ? 'brightness-0 invert drop-shadow-[0_0_10px_rgba(255,255,255,0.4)] opacity-90' : 'drop-shadow-[0_20px_40px_rgba(0,0,0,0.5)]'}`}
                       style={{
-                        filter: i === activeIndex ? 'grayscale(0)' : 'grayscale(1) opacity(0.3)',
-                        transition: 'all 0.5s ease',
+                        filter: i === activeIndex ? 'grayscale(0) drop-shadow(0 20px 30px rgba(0,0,0,0.4))' : 'grayscale(1) opacity(0.3)',
+                        transform: i === activeIndex ? 'scale(1.2) translateY(-10px)' : 'scale(1)',
+                        transition: 'all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)',
                       }}
                     />
                   )}
-                  <div className="absolute inset-0 rounded-[2rem] ring-1 ring-inset ring-white/5 pointer-events-none z-20" />
                 </div>
 
                 {/* Card content */}
@@ -284,8 +309,21 @@ const Projects = ({ active, assetsAllowed }) => {
       ref={containerRef}
       onWheel={handleWheel}
       onMouseMove={handleMouseMove}
-      className="w-screen h-screen flex items-center relative overflow-hidden flex-shrink-0"
+      onClick={handleGlobalClick}
+      className="w-screen h-screen flex items-center relative overflow-hidden flex-shrink-0 cursor-none"
     >
+      {/* Custom Horizontal Scroll Cursor */}
+      <div 
+        ref={customCursorRef} 
+        className="absolute top-0 left-0 z-[9999] pointer-events-none flex items-center justify-center transition-transform duration-75 ease-out"
+        style={{ transform: 'translate3d(-100px, -100px, 0)' }}
+      >
+        <div className="flex items-center justify-center text-white w-8 h-8 rounded-full border border-white/40 bg-white/20 backdrop-blur-md animate-pulse shadow-[0_0_15px_rgba(255,255,255,0.4)]">
+          <svg className="w-4 h-4 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 12h14M12 5l7 7-7 7" />
+          </svg>
+        </div>
+      </div>
       {/* Clean Dark Background */}
       <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none bg-[#080810]">
         {/* Cursor Spotlight Overlay (Desktop only) */}
@@ -377,34 +415,20 @@ const Projects = ({ active, assetsAllowed }) => {
               }}
             >
               <div className="relative w-full flex items-center justify-center">
-                {/* Perfect Square App-Icon Stage */}
-                <div className={`relative z-20 w-full ${activeIndex === i ? 'max-w-[260px]' : 'max-w-[240px]'} aspect-square rounded-[2rem] overflow-hidden shadow-[0_30px_60px_rgba(0,0,0,0.9)] bg-[#0f0f13] border border-white/10 flex items-center justify-center p-8
-                  ${activeIndex === i ? 'ring-[2px] ring-primary/40 scale-100' : 'ring-1 ring-primary/10 scale-95'}
-                `}
-                  style={{ transition: 'transform 0.5s ease, box-shadow 0.5s ease, --tw-ring-color 0.5s ease' }}>
-
-                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.08)_0%,transparent_70%)] pointer-events-none"></div>
+                {/* Perfect Square App-Icon Stage - Floating 3D */}
+                <div className={`relative z-20 w-full ${activeIndex === i ? 'max-w-[260px]' : 'max-w-[240px]'} aspect-square flex items-center justify-center p-8 overflow-visible ${activeIndex === i ? 'scale-110' : 'scale-95'}`}
+                  style={{ transition: 'transform 0.5s ease' }}>
 
                   {assetsAllowed && (
                     <img
                       src={p.image}
                       alt={p.title}
-                      className={`w-full h-full object-contain grayscale-[0.05] group-hover:grayscale-0 scale-100 group-hover:scale-105 relative z-10 ${p.invertLogo ? 'brightness-0 invert drop-shadow-[0_0_15px_rgba(255,255,255,0.4)] opacity-90' : 'drop-shadow-[0_0_15px_rgba(255,255,255,0.15)]'}`}
-                      style={{ transition: 'filter 0.5s ease, transform 0.5s ease' }}
+                      className={`w-full h-full object-contain grayscale-[0.05] group-hover:grayscale-0 relative z-10 
+                        scale-[1.3] group-hover:scale-[1.4] -translate-y-2 group-hover:-translate-y-4 ${p.invertLogo ? 'brightness-0 invert opacity-90 drop-shadow-[0_20px_30px_rgba(255,255,255,0.3)]' : 'drop-shadow-[0_30px_40px_rgba(0,0,0,0.6)]'}
+                      `}
+                      style={{ transition: 'filter 0.5s ease, transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)' }}
                     />
                   )}
-                  <div className="absolute inset-0 rounded-[2rem] ring-1 ring-inset ring-white/10 pointer-events-none z-20"></div>
-
-                  <div
-                    className={`absolute bottom-6 left-1/2 -translate-x-1/2 z-30 pointer-events-none
-                      ${activeIndex === i ? 'opacity-0' : 'opacity-20'}
-                    `}
-                    style={{ transition: 'opacity 0.5s ease, transform 0.5s ease' }}
-                  >
-                    <h3 className="text-4xl font-display font-black text-white italic leading-tight uppercase tracking-tight drop-shadow-2xl">
-                      {p.title}
-                    </h3>
-                  </div>
                 </div>
 
 
