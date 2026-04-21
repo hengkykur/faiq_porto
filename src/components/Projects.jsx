@@ -43,6 +43,8 @@ const Projects = ({ active, assetsAllowed }) => {
   const mouseRaf = useRef(null);
   const containerRef = useRef(null);
   const resizeTimerRef = useRef(null);
+  const [autoPlayProgress, setAutoPlayProgress] = useState(0);
+  const AUTO_PLAY_DURATION = 6000; // 6 seconds per slide
 
 
   const customCursorRef = useRef(null);
@@ -177,6 +179,32 @@ const Projects = ({ active, assetsAllowed }) => {
     touchStartY.current = null;
   };
 
+  // ─── AUTO-PLAY LOGIC ───
+  useEffect(() => {
+    if (!active || selectedProject) {
+      setAutoPlayProgress(0);
+      return;
+    }
+
+    const step = 100 / (AUTO_PLAY_DURATION / 30); // Increment every 30ms
+    const interval = setInterval(() => {
+      setAutoPlayProgress(prev => {
+        if (prev >= 100) {
+          setActiveIndex(current => (current + 1) % projects.length);
+          return 0;
+        }
+        return prev + step;
+      });
+    }, 30);
+
+    return () => clearInterval(interval);
+  }, [active, selectedProject, projects.length]);
+
+  // Reset progress when activeIndex changes (manual navigation)
+  useEffect(() => {
+    setAutoPlayProgress(0);
+  }, [activeIndex]);
+
   // ─── MOBILE LAYOUT ───
   if (isMobile) {
     return (
@@ -288,6 +316,13 @@ const Projects = ({ active, assetsAllowed }) => {
 
         {/* Bottom navigation dots + swipe hint */}
         <div className="absolute bottom-8 left-0 right-0 z-30 flex flex-col items-center gap-4">
+          {/* Auto-play Progress Bar */}
+          <div className="h-[2px] w-32 bg-white/10 relative overflow-hidden mb-1">
+             <div 
+               className="absolute inset-0 bg-primary/80 origin-left"
+               style={{ transform: `scaleX(${autoPlayProgress / 100})` }}
+             />
+          </div>
           <div className="flex items-center gap-3">
             {projects.map((_, i) => (
               <button
@@ -400,13 +435,23 @@ const Projects = ({ active, assetsAllowed }) => {
             <div className="w-4 h-px bg-primary group-hover:w-8 transition-all duration-300"></div>
           </button>
 
-          <div className="mt-8 flex items-center gap-4 text-white/20">
-            <div className="text-[9px] font-mono">0{activeIndex + 1} / 0{projects.length}</div>
-            <div className="h-[2px] w-24 bg-white/5 relative overflow-hidden">
-              <div
-                className="absolute inset-0 bg-primary transition-transform duration-700 ease-out origin-left"
-                style={{ transform: `scaleX(${(activeIndex + 1) / projects.length})` }}
-              ></div>
+          <div className="mt-8 flex flex-col items-center gap-4 text-white/20">
+            {/* Auto-play Progress Bar */}
+            <div className="h-[2px] w-48 bg-white/10 relative overflow-hidden mb-2">
+               <div 
+                 className="absolute inset-0 bg-primary/80 origin-left"
+                 style={{ transform: `scaleX(${autoPlayProgress / 100})` }}
+               />
+            </div>
+
+            <div className="flex items-center gap-4">
+              <div className="text-[9px] font-mono">0{activeIndex + 1} / 0{projects.length}</div>
+              <div className="h-[2px] w-24 bg-white/5 relative overflow-hidden">
+                <div
+                  className="absolute inset-0 bg-primary transition-transform duration-700 ease-out origin-left"
+                  style={{ transform: `scaleX(${(activeIndex + 1) / projects.length})` }}
+                ></div>
+              </div>
             </div>
           </div>
         </div>

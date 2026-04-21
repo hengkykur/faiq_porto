@@ -56,7 +56,7 @@ const ALIEN_SPRITE_B2 = [
 const SpaceInvaders = () => {
   const canvasRef = useRef(null);
   const containerRef = useRef(null);
-  const [isHovered, setIsHovered] = useState(false);
+  const isHoveredRef = useRef(false);
   const [isLoading, setIsLoading] = useState(true);
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [hasStartedLoading, setHasStartedLoading] = useState(false);
@@ -64,7 +64,9 @@ const SpaceInvaders = () => {
   const mouseX = useRef(null);
   const isVisibleRef = useRef(false);
   const lastFrameTimeRef = useRef(0);
-  const FPS_CAP = 30;
+  // Use a separate state ONLY for UI visibility (does not affect game loop)
+  const [isHoveredUI, setIsHoveredUI] = useState(false);
+  const FPS_CAP = 60;
   const FRAME_INTERVAL = 1000 / FPS_CAP;
 
   // Trigger loading when component becomes visible on screen + track visibility
@@ -91,9 +93,9 @@ const SpaceInvaders = () => {
           setTimeout(() => setIsLoading(false), 800); // Hold at 100% for drama
           return 100;
         }
-        return p + Math.floor(Math.random() * 20 + 2); // Random jump mapping
+        return p + Math.floor(Math.random() * 30 + 5); // Faster random jump
       });
-    }, 120);
+    }, 80); // Faster interval (was 120)
     
     return () => clearInterval(interval);
   }, [hasStartedLoading]);
@@ -108,7 +110,7 @@ const SpaceInvaders = () => {
     let frame = 0;
     
     const scale = 2; // Pixel art multiplier
-    let player = { x: w/2 - 11, y: h - 45, speed: 4, deadTime: 0, showGameOver: false }; 
+    let player = { x: w/2 - 11, y: h - 45, speed: 6, deadTime: 0, showGameOver: false, aiDir: 0, aiCooldown: 0 }; 
     let bullets = [];
     let enemyBullets = [];
     let enemies = [];
@@ -174,13 +176,13 @@ const SpaceInvaders = () => {
            player.showGameOver = false;
         }
       } else {
-        // Auto Fire (Slower)
-        if (frame % 40 === 0) {
-          bullets.push({ x: player.x + 10, y: player.y - 8, w: 2, h: 8, speed: -5 });
+        // Auto Fire (Faster)
+        if (frame % 30 === 0) {
+          bullets.push({ x: player.x + 10, y: player.y - 8, w: 2, h: 8, speed: -7 });
         }
         
-        // Infinite Retro Spawner (Slower)
-        if (frame % 80 === 0) {
+        // Infinite Retro Spawner (Faster)
+        if (frame % 60 === 0) {
           let isTypeA = Math.random() > 0.5;
           enemies.push({
             x: Math.random() * (w - 30) + 10,
@@ -188,42 +190,77 @@ const SpaceInvaders = () => {
             w: isTypeA ? 22 : 20,
             h: 16,
             type: isTypeA ? 'A' : 'B',
-            vx: Math.floor((Math.random() - 0.5) * 3), 
-            vy: 0.4 + Math.random() * 0.6,
+            vx: Math.floor((Math.random() - 0.5) * 4), 
+            vy: 0.8 + Math.random() * 1.2,
             offsetFrame: Math.floor(Math.random() * 10)
           });
         }
         
-        if (isHovered && mouseX.current !== null) {
-          // Pixel-perfect snap dragging (no smooth interpolated float coordinates)
+        if (isHoveredRef.current && mouseX.current !== null) {
+          // Manual Control: Snap to integer coordinates to avoid sub-pixel jitter
           let targetX = mouseX.current - 11;
-          if (targetX < player.x) player.x -= player.speed;
-          if (targetX > player.x) player.x += player.speed;
-          if (Math.abs(targetX - player.x) < player.speed) player.x = targetX;
+          let dist = targetX - player.x;
+          if (Math.abs(dist) <= 2) {
+            player.x = Math.round(targetX);
+          } else {
+            let moveAmount = dist * 0.4;
+            if (Math.abs(moveAmount) > player.speed) moveAmount = Math.sign(dist) * player.speed;
+            player.x += Math.round(moveAmount);
+          }
         } else {
-          // Retro jerky AI Auto-pilot (Skillful Dodging)
-          let danger = null;
-          [...enemyBullets, ...enemies].forEach(obj => {
+          // AI Auto-pilot with direction commitment to prevent jitter
+          player.aiCooldown = Math.max(0, player.aiCooldown - 1);
+
+          let dangers = [...enemyBullets, ...enemies].filter(obj => {
              let ow = obj.w || scale;
-             // Anticipate dangerous falling objects directly above player
-             if (obj.y < player.y + 16 && obj.y > player.y - 120 && obj.x + ow > player.x - 10 && obj.x < player.x + 32) {
-                 danger = obj;
-             }
+             return obj.y < player.y + 16 && obj.y > player.y - 150 && 
+                    obj.x + ow > player.x - 20 && obj.x < player.x + 42;
           });
           
-          if (danger) {
-             // DODGE PRIORITY
+          if (dangers.length > 0) {
+             // DODGE: recalculate direction immediately if in danger
+             let danger = dangers.reduce((closest, curr) => (curr.y > closest.y ? curr : closest), dangers[0]);
              let dCenter = danger.x + (danger.w || scale)/2;
-             if (dCenter < player.x + 11 && player.x < w - 22) player.x += player.speed * 0.8;
-             else if (player.x > 0) player.x -= player.speed * 0.8;
+             let pCenter = player.x + 11;
+             
+             // Only change direction if cooldown allows
+             if (player.aiCooldown === 0) {
+               player.aiDir = dCenter < pCenter ? 1 : -1; // move AWAY from danger
+               player.aiCooldown = 8; // commit for 8 frames
+             }
+             
+             let dodgeSpeed = Math.round(player.speed * 0.7);
+             player.x += player.aiDir * dodgeSpeed;
+             
           } else if (enemies.length > 0) {
-             // ATTACK PRIORITY
-             let target = enemies[0];
-             enemies.forEach(e => { if(e.y > target.y) target = e; });
-             if (player.x + 11 < target.x + target.w/2) player.x += player.speed * 0.4;
-             else if (player.x + 11 > target.x + target.w/2) player.x -= player.speed * 0.4;
+             // ATTACK: track the lowest enemy, only change direction if not committed
+             let target = enemies.reduce((lowest, curr) => (curr.y > lowest.y ? curr : lowest), enemies[0]);
+             let tCenter = target.x + target.w/2;
+             let pCenter = player.x + 11;
+             let dist = tCenter - pCenter;
+             
+             // Only update direction if cooldown expired and enemy is far enough
+             if (player.aiCooldown === 0 && Math.abs(dist) > 12) {
+               player.aiDir = Math.sign(dist);
+               player.aiCooldown = 12; // commit for 12 frames
+             } else if (Math.abs(dist) <= 8) {
+               player.aiDir = 0; // stop if close enough
+               player.aiCooldown = 0;
+             }
+             
+             if (player.aiDir !== 0) {
+               let attackSpeed = Math.max(1, Math.round(player.speed * 0.4));
+               player.x += player.aiDir * attackSpeed;
+             }
+          } else {
+             // No enemies: idle, reset
+             player.aiDir = 0;
+             player.aiCooldown = 0;
           }
         }
+        
+        // Ensure player.x is always an integer to prevent rendering artifacts
+        player.x = Math.round(player.x);
 
         // Restrict player 
         if (player.x < 0) player.x = 0;
@@ -269,7 +306,7 @@ const SpaceInvaders = () => {
       enemyBullets.forEach((b) => {
          if (player.deadTime === 0 && b.x < player.x + 22 && b.x + b.w > player.x && b.y < player.y + 16 && b.y + b.h > player.y) {
             b.y = h + 100;
-            if (isHovered) {
+            if (isHoveredRef.current) {
                createExplosion(player.x, player.y, '#ef4444');
                player.deadTime = 180; // Die for 3 seconds
                player.showGameOver = true;
@@ -285,7 +322,7 @@ const SpaceInvaders = () => {
          if (player.deadTime === 0 && e.x < player.x + 22 && e.x + e.w > player.x && e.y < player.y + 16 && e.y + e.h > player.y) {
             createExplosion(e.x, e.y, e.type === 'A' ? '#10b981' : '#f59e0b');
             enemies.splice(i, 1);
-            if (isHovered) {
+            if (isHoveredRef.current) {
                createExplosion(player.x, player.y, '#ef4444');
                player.deadTime = 180; // Die for 3 seconds
                player.showGameOver = true;
@@ -385,7 +422,7 @@ const SpaceInvaders = () => {
     // Start animation loop
     reqRef.current = requestAnimationFrame(update);
     return () => cancelAnimationFrame(reqRef.current);
-  }, [isHovered, isLoading]); // Re-run effect when loading finishes
+  }, [isLoading]); // Only re-run when loading finishes, NOT on hover
 
   const updateMouseX = (clientX) => {
     if (!canvasRef.current) return;
@@ -403,12 +440,12 @@ const SpaceInvaders = () => {
     <div 
       ref={containerRef}
       className="relative w-full h-full flex items-center justify-center bg-black overflow-hidden group cursor-crosshair touch-none border-[8px] border-double border-white/20 p-1"
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => { setIsHovered(false); mouseX.current = null; }}
+      onMouseEnter={() => { isHoveredRef.current = true; setIsHoveredUI(true); }}
+      onMouseLeave={() => { isHoveredRef.current = false; setIsHoveredUI(false); mouseX.current = null; }}
       onMouseMove={handleMouseMove}
-      onTouchStart={() => setIsHovered(true)}
+      onTouchStart={() => { isHoveredRef.current = true; setIsHoveredUI(true); }}
       onTouchMove={handleTouchMove}
-      onTouchEnd={() => { setIsHovered(false); mouseX.current = null; }}
+      onTouchEnd={() => { isHoveredRef.current = false; setIsHoveredUI(false); mouseX.current = null; }}
     >
       {/* ── Retro Loading Screen Overlay ── */}
       {isLoading && (
@@ -442,7 +479,7 @@ const SpaceInvaders = () => {
       
       {/* Overlay UI (Hidden while loading) */}
       {!isLoading && (
-        <div className={`absolute inset-x-0 bottom-4 flex justify-center pointer-events-none transition-opacity duration-500 ${isHovered ? 'opacity-0' : 'opacity-100'}`}>
+        <div className={`absolute inset-x-0 bottom-4 flex justify-center pointer-events-none transition-opacity duration-500 ${isHoveredUI ? 'opacity-0' : 'opacity-100'}`}>
           <p className="text-white/50 text-[8px] sm:text-[10px] font-mono uppercase tracking-[0.4em] font-bold bg-black/60 px-3 py-1 rounded-sm border border-white/10 shadow-lg">
             Hover to Control
           </p>
