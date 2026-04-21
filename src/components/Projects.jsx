@@ -195,8 +195,7 @@ const Projects = ({ active, assetsAllowed }) => {
               playsInline
               className="absolute inset-0 w-full h-full object-cover z-0 opacity-60"
             >
-              <source src="https://a7i5ct7oqefyp3zm.public.blob.vercel-storage.com/Video%20Project%2012.webm" type="video/webm" />
-              <source src="https://a7i5ct7oqefyp3zm.public.blob.vercel-storage.com/Video%20Project%2012.mp4" type="video/mp4" />
+              <source src="https://a7i5ct7oqefyp3zm.public.blob.vercel-storage.com/Video%20Project%2012%20%282%29.mp4" type="video/mp4" />
             </video>
           )}
         </div>
@@ -347,8 +346,7 @@ const Projects = ({ active, assetsAllowed }) => {
               playsInline
               className="absolute inset-0 w-full h-full object-cover opacity-60"
             >
-              <source src="https://a7i5ct7oqefyp3zm.public.blob.vercel-storage.com/Video%20Project%2012.webm" type="video/webm" />
-              <source src="https://a7i5ct7oqefyp3zm.public.blob.vercel-storage.com/Video%20Project%2012.mp4" type="video/mp4" />
+              <source src="https://a7i5ct7oqefyp3zm.public.blob.vercel-storage.com/Video%20Project%2012%20%282%29.mp4" type="video/mp4" />
             </video>
             {/* Smooth blend on the left edge of the video */}
             <div className="absolute inset-y-0 left-0 w-48 bg-gradient-to-r from-[#080810] to-transparent z-[2]" />
