@@ -187,8 +187,18 @@ const Projects = ({ active, assetsAllowed }) => {
       >
         {/* Background */}
         <div className="absolute inset-0 z-0 bg-[#080810] overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/60 z-[2]" />
-          <div className="absolute inset-0 bg-radial-vignette opacity-30 z-[3]" />
+          {assetsAllowed && (
+            <video
+              autoPlay
+              loop
+              muted
+              playsInline
+              className="absolute inset-0 w-full h-full object-cover z-0 opacity-60"
+            >
+              <source src="https://a7i5ct7oqefyp3zm.public.blob.vercel-storage.com/Video%20Project%2012.webm" type="video/webm" />
+              <source src="https://a7i5ct7oqefyp3zm.public.blob.vercel-storage.com/Video%20Project%2012.mp4" type="video/mp4" />
+            </video>
+          )}
         </div>
 
         {/* Header */}
@@ -221,16 +231,18 @@ const Projects = ({ active, assetsAllowed }) => {
                 {/* Square Card image container - Floating 3D */}
                 <div className="absolute top-[32%] left-1/2 -translate-x-1/2 w-[65vw] max-w-[240px] aspect-square z-0 flex items-center justify-center p-12 mt-4 overflow-visible">
                   {assetsAllowed && (
-                    <img
-                      src={p.image}
-                      alt={p.title}
-                      className={`w-full h-full object-contain relative z-10 ${p.invertLogo ? 'brightness-0 invert drop-shadow-[0_0_10px_rgba(255,255,255,0.4)] opacity-90' : 'drop-shadow-[0_20px_40px_rgba(0,0,0,0.5)]'}`}
-                      style={{
-                        filter: i === activeIndex ? 'grayscale(0) drop-shadow(0 20px 30px rgba(0,0,0,0.4))' : 'grayscale(1) opacity(0.3)',
-                        transform: i === activeIndex ? 'scale(1.2) translateY(-10px)' : 'scale(1)',
-                        transition: 'all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)',
-                      }}
-                    />
+                    <div className="w-full h-full flex items-center justify-center transition-transform duration-500" style={{ transform: `scale(${p.imageScale || 1})` }}>
+                      <img
+                        src={p.image}
+                        alt={p.title}
+                        className={`w-full h-full object-contain relative z-10 ${p.invertLogo ? 'brightness-0 invert drop-shadow-[0_0_10px_rgba(255,255,255,0.4)] opacity-90' : 'drop-shadow-[0_20px_40px_rgba(0,0,0,0.5)]'}`}
+                        style={{
+                          filter: i === activeIndex ? 'grayscale(0) drop-shadow(0 20px 30px rgba(0,0,0,0.4))' : 'grayscale(1) opacity(0.3)',
+                          transform: i === activeIndex ? 'scale(1.2) translate(32px, -10px)' : 'scale(1) translate(32px, 0)',
+                          transition: 'all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)',
+                        }}
+                      />
+                    </div>
                   )}
                 </div>
 
@@ -324,24 +336,37 @@ const Projects = ({ active, assetsAllowed }) => {
           </svg>
         </div>
       </div>
-      {/* Clean Dark Background */}
+      {/* Dynamic Video Background */}
       <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none bg-[#080810]">
+        {assetsAllowed && (
+          <div className="absolute top-0 right-0 h-full w-[75vw] z-[1] overflow-hidden">
+            <video
+              autoPlay
+              loop
+              muted
+              playsInline
+              className="absolute inset-0 w-full h-full object-cover opacity-60"
+            >
+              <source src="https://a7i5ct7oqefyp3zm.public.blob.vercel-storage.com/Video%20Project%2012.webm" type="video/webm" />
+              <source src="https://a7i5ct7oqefyp3zm.public.blob.vercel-storage.com/Video%20Project%2012.mp4" type="video/mp4" />
+            </video>
+            {/* Smooth blend on the left edge of the video */}
+            <div className="absolute inset-y-0 left-0 w-48 bg-gradient-to-r from-[#080810] to-transparent z-[2]" />
+          </div>
+        )}
+
         {/* Cursor Spotlight Overlay (Desktop only) */}
         {!isMobile && (
           <div
             className="absolute inset-0 z-[2]"
             style={{
-              background: `radial-gradient(circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(99, 102, 241, 0.08) 0%, transparent 40%)`,
+              background: `radial-gradient(circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(99, 102, 241, 0.15) 0%, transparent 40%)`,
             }}
           />
         )}
 
-        <div className="absolute inset-0 bg-black/5 mix-blend-multiply" />
-        <div className="project-grid-lines relative z-[1]" />
+        <div className="project-grid-lines relative z-[4] opacity-20" />
         <div className="absolute inset-0 pointer-events-none z-[5] opacity-5 mix-blend-overlay grain-overlay"></div>
-        <div className="absolute inset-0 bg-gradient-to-l from-black/30 via-transparent to-transparent z-[7]"></div>
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent z-[8]"></div>
-        <div className="absolute inset-0 bg-radial-vignette opacity-25 z-[9]"></div>
       </div>
 
       <div className="w-full h-full relative z-20 flex flex-col justify-center">
@@ -420,14 +445,16 @@ const Projects = ({ active, assetsAllowed }) => {
                   style={{ transition: 'transform 0.5s ease' }}>
 
                   {assetsAllowed && (
-                    <img
-                      src={p.image}
-                      alt={p.title}
-                      className={`w-full h-full object-contain grayscale-[0.05] group-hover:grayscale-0 relative z-10 
-                        scale-[1.3] group-hover:scale-[1.4] -translate-y-2 group-hover:-translate-y-4 ${p.invertLogo ? 'brightness-0 invert opacity-90 drop-shadow-[0_20px_30px_rgba(255,255,255,0.3)]' : 'drop-shadow-[0_30px_40px_rgba(0,0,0,0.6)]'}
-                      `}
-                      style={{ transition: 'filter 0.5s ease, transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)' }}
-                    />
+                    <div className="w-full h-full flex items-center justify-center transition-transform duration-500" style={{ transform: `scale(${p.imageScale || 1})` }}>
+                      <img
+                        src={p.image}
+                        alt={p.title}
+                        className={`w-full h-full object-contain grayscale-[0.05] group-hover:grayscale-0 relative z-10 
+                          scale-[1.3] group-hover:scale-[1.4] -translate-y-2 group-hover:-translate-y-4 translate-x-16 group-hover:translate-x-16 ${p.invertLogo ? 'brightness-0 invert opacity-90 drop-shadow-[0_20px_30px_rgba(255,255,255,0.3)]' : 'drop-shadow-[0_30px_40px_rgba(0,0,0,0.6)]'}
+                        `}
+                        style={{ transition: 'filter 0.5s ease, transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)' }}
+                      />
+                    </div>
                   )}
                 </div>
 

@@ -137,8 +137,7 @@ const Contact = ({ active, assetsAllowed }) => {
               opacity: 0.95,
             }}
           >
-            <source src="/Robot.webm" type="video/webm" />
-            <source src="/Robot.mp4" type="video/mp4" />
+            <source src="https://a7i5ct7oqefyp3zm.public.blob.vercel-storage.com/Robot.mp4" type="video/mp4" />
           </video>
         )}
       </div>

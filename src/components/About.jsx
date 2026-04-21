@@ -289,8 +289,7 @@ const About = React.memo(({ active, assetsAllowed, onScrollProgress }) => {
               opacity: videoLoaded ? 0.7 : 0,
             }}
           >
-            <source src="/skillvid.mp4" type="video/mp4" />
-            <source src="/skillvid.webm" type="video/webm" />
+            <source src="https://a7i5ct7oqefyp3zm.public.blob.vercel-storage.com/skillvid.mp4" type="video/mp4" />
           </video>
         )}
         <div className="absolute inset-0 bg-black/30 z-10"></div>

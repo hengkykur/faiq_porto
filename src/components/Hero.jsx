@@ -451,7 +451,7 @@ const Hero = React.memo(({ active, onReady }) => {
               }}
             >
               <HeroVideo
-                src="/vidiohomebulet.mp4"
+                src="https://a7i5ct7oqefyp3zm.public.blob.vercel-storage.com/vidiohomebulet.mp4"
                 active={active}
                 onReady={() => {
                   if (onReady) onReady();
@@ -559,7 +559,7 @@ const Hero = React.memo(({ active, onReady }) => {
               <RevealOnScroll delay={100} className="md:col-span-7 relative group">
                 <div className="aspect-square md:aspect-[4/5] w-full overflow-hidden bg-white/5 ring-1 ring-white/10 rounded-sm">
                   <LazyVideo
-                    src="/lukisan.mp4"
+                    src="https://a7i5ct7oqefyp3zm.public.blob.vercel-storage.com/lukisan.mp4"
                     className="w-full h-full object-cover opacity-60 grayscale-[50%] group-hover:opacity-100 group-hover:grayscale-0 group-hover:scale-[1.03] transition-all duration-[1.5s] ease-[cubic-bezier(0.19,1,0.22,1)]"
                   />
                 </div>
