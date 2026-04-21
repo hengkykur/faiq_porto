@@ -221,11 +221,13 @@ const Projects = ({ active, assetsAllowed }) => {
               loop
               muted
               playsInline
-              className="absolute inset-0 w-full h-full object-cover z-0 opacity-60"
+              className="absolute inset-0 w-full h-full object-cover z-0 opacity-30"
             >
               <source src="https://a7i5ct7oqefyp3zm.public.blob.vercel-storage.com/Video%20Project%2012%20%282%29.mp4" type="video/mp4" />
             </video>
           )}
+          {/* Extra dark overlay for readability */}
+          <div className="absolute inset-0 bg-gradient-to-b from-[#080810]/60 via-transparent to-[#080810]/90 z-[1]" />
         </div>
 
         {/* Header */}
@@ -251,31 +253,33 @@ const Projects = ({ active, assetsAllowed }) => {
             {projects.map((p, i) => (
               <div
                 key={i}
-                className={`relative flex flex-col justify-end ${i === activeIndex ? 'cursor-pointer' : ''}`}
+                className={`relative flex flex-col ${i === activeIndex ? 'cursor-pointer' : ''}`}
                 style={{ width: `${100 / projects.length}%`, height: '100%' }}
                 onClick={() => { if (i === activeIndex) setSelectedProject(p); }}
               >
-                {/* Square Card image container - Floating 3D */}
-                <div className="absolute top-[32%] left-1/2 -translate-x-1/2 w-[65vw] max-w-[240px] aspect-square z-0 flex items-center justify-center p-12 mt-4 overflow-visible">
+                {/* Logo - compact, centered at top */}
+                <div className="flex items-center justify-center pt-24 pb-4 px-6">
                   {assetsAllowed && (
-                    <div className="w-full h-full flex items-center justify-center transition-transform duration-500" style={{ transform: `scale(${p.imageScale || 1})` }}>
+                    <div 
+                      className="w-20 h-20 flex items-center justify-center transition-all duration-500" 
+                      style={{ 
+                        opacity: i === activeIndex ? 1 : 0.3,
+                        transform: i === activeIndex ? 'scale(1)' : 'scale(0.8)',
+                        transition: 'all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)',
+                      }}
+                    >
                       <img
                         src={p.image}
                         alt={p.title}
-                        className={`w-full h-full object-contain relative z-10 ${p.invertLogo ? 'brightness-0 invert drop-shadow-[0_0_10px_rgba(255,255,255,0.4)] opacity-90' : 'drop-shadow-[0_20px_40px_rgba(0,0,0,0.5)]'}`}
-                        style={{
-                          filter: i === activeIndex ? 'grayscale(0) drop-shadow(0 20px 30px rgba(0,0,0,0.4))' : 'grayscale(1) opacity(0.3)',
-                          transform: i === activeIndex ? 'scale(1.2) translate(32px, -10px)' : 'scale(1) translate(32px, 0)',
-                          transition: 'all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)',
-                        }}
+                        className={`w-full h-full object-contain ${p.invertLogo ? 'brightness-0 invert drop-shadow-[0_0_10px_rgba(255,255,255,0.4)] opacity-90' : 'drop-shadow-[0_10px_20px_rgba(0,0,0,0.5)]'}`}
                       />
                     </div>
                   )}
                 </div>
 
-                {/* Card content */}
+                {/* Card content - below the logo */}
                 <div
-                  className="relative z-10 px-6 pb-28"
+                  className="relative z-10 px-6 flex-1 flex flex-col"
                   style={{
                     opacity: i === activeIndex ? 1 : 0,
                     transform: i === activeIndex ? 'translateY(0)' : 'translateY(12px)',
@@ -283,18 +287,16 @@ const Projects = ({ active, assetsAllowed }) => {
                     pointerEvents: i === activeIndex ? 'auto' : 'none',
                   }}
                 >
-                  <div className="flex flex-col gap-3 mb-2">
-                    <h2 className="text-4xl sm:text-5xl font-display font-black text-white italic uppercase leading-none tracking-tight mb-1">
-                      {p.title}
-                    </h2>
-                  </div>
-                  <h3 className="text-base font-display font-light text-primary/70 italic uppercase tracking-[0.2em] mb-4">
+                  <h2 className="text-3xl sm:text-4xl font-display font-black text-white italic uppercase leading-none tracking-tight mb-2">
+                    {p.title}
+                  </h2>
+                  <h3 className="text-xs font-display font-light text-primary/70 italic uppercase tracking-[0.2em] mb-3">
                     {p.subtitle}
                   </h3>
-                  <p className="text-sm text-slate-400 font-body font-light leading-relaxed mb-5 max-w-xs">
+                  <p className="text-sm text-slate-400 font-body font-light leading-relaxed mb-4 max-w-xs">
                     {p.description}
                   </p>
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-wrap gap-2 mb-4">
                     {p.tags.map(tag => (
                       <span key={tag} className="text-[9px] font-mono border border-primary/30 px-3 py-1 rounded-sm text-primary/80 bg-primary/5 uppercase tracking-wider">
                         {tag}
@@ -304,7 +306,7 @@ const Projects = ({ active, assetsAllowed }) => {
 
                   <button
                     onClick={(e) => { e.stopPropagation(); setSelectedProject(p); }}
-                    className="mt-6 px-5 py-2 border border-primary/50 text-white font-mono text-xs uppercase tracking-wider hover:bg-primary/20 transition-colors w-full backdrop-blur-sm shadow-[0_0_15px_rgba(var(--color-primary),0.2)]"
+                    className="mt-auto mb-24 px-5 py-2.5 border border-primary/50 text-white font-mono text-xs uppercase tracking-wider hover:bg-primary/20 transition-colors w-full backdrop-blur-sm shadow-[0_0_15px_rgba(var(--color-primary),0.2)]"
                   >
                     Details
                   </button>
