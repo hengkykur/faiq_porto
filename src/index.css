@@ -506,3 +506,31 @@
   inset: 0;
   background: radial-gradient(ellipse 60% 50% at 50% 50%, transparent 40%, #080810 100%);
 }
+
+@keyframes crt-turn-on {
+  0% {
+    transform: scale(0.005, 0.005);
+    filter: brightness(3) drop-shadow(0 0 10px rgba(255,255,255,0.5));
+    opacity: 1;
+  }
+  20% {
+    transform: scale(1, 0.005);
+    filter: brightness(2) drop-shadow(0 0 10px rgba(255,255,255,0.5));
+    opacity: 1;
+  }
+  70% {
+    transform: scale(1, 1);
+    filter: brightness(1.2) contrast(1.1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1, 1);
+    filter: brightness(1) contrast(1);
+    opacity: 1;
+  }
+}
+
+.animate-crt-on {
+  animation: crt-turn-on 1.5s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+  transform-origin: center center;
+}

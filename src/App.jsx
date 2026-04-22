@@ -46,7 +46,7 @@ function App() {
   }, [loadStage]);
 
   return (
-    <div className={`h-screen w-screen bg-black overflow-hidden relative ${ready ? 'opacity-100' : 'opacity-0'} transition-opacity duration-300`}>
+    <div className={`h-screen w-screen bg-black overflow-hidden relative ${ready ? 'animate-crt-on' : 'opacity-0'}`}>
       {/* Fixed UI Elements */}
       <Navbar currentPage={currentPage} setCurrentPage={setCurrentPage} />
 
