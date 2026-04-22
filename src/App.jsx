@@ -1,4 +1,4 @@
-import React, { useState, useEffect, Suspense, lazy } from 'react';
+import React, { useState, useEffect, useRef, Suspense, lazy } from 'react';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
 import { Analytics } from "@vercel/analytics/react"
@@ -14,6 +14,11 @@ function App() {
   const [currentPage, setCurrentPage] = useState(0);
   const [loadStage, setLoadStage] = useState(0); // 0=Wait Hero, 1=Hero Ready/Projects, 2=About, 3=Contact
   const [aboutScrollProgress, setAboutScrollProgress] = useState(0);
+  const prevPageRef = useRef(0);
+
+  // Distance-aware transition duration
+  const pageDistance = Math.abs(currentPage - prevPageRef.current);
+  const transitionDuration = pageDistance <= 1 ? 0.65 : pageDistance === 2 ? 0.75 : 0.85;
 
   // Fallback timer: NEVER lock the screen forever
   useEffect(() => {
@@ -68,9 +73,10 @@ function App() {
         className="flex h-full w-full"
         style={{
           transform: `translate3d(-${currentPage * 100}%, 0, 0)`,
-          transition: 'transform 0.8s cubic-bezier(0.77, 0, 0.175, 1)',
+          transition: `transform ${transitionDuration}s cubic-bezier(0.4, 0, 0.2, 1)`,
           willChange: 'transform',
         }}
+        onTransitionEnd={() => { prevPageRef.current = currentPage; }}
       >
         <Hero active={currentPage === 0} onReady={() => setLoadStage(prev => prev === 0 ? 1 : prev)} />
         <Suspense fallback={null}>
