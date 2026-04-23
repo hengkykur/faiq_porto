@@ -20,7 +20,7 @@ const LazyVideo = ({ src, className }) => {
           observer.disconnect();
         }
       },
-      { rootMargin: '200px' }
+      { rootMargin: '0px' }  // Only load when actually in view
     );
     observer.observe(el);
     return () => observer.disconnect();
@@ -160,7 +160,7 @@ const HeroVideo = ({ src, onReady, active = true }) => {
           currentActiveVid.pause();
         }, CROSSFADE * 1000 + 50);
       }
-    }, 250);
+    }, 500); // 500ms is enough — video end is detectable within half-second
 
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);

@@ -46,7 +46,7 @@ function App() {
   }, [loadStage]);
 
   return (
-    <div className={`h-screen w-screen bg-black overflow-hidden relative ${ready ? 'animate-crt-on' : ''}`}>
+    <div className="h-screen w-screen bg-black overflow-hidden relative">
       {/* Fixed UI Elements */}
       <Navbar currentPage={currentPage} setCurrentPage={setCurrentPage} />
 

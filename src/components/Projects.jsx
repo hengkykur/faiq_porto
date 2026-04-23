@@ -179,14 +179,15 @@ const Projects = ({ active, assetsAllowed }) => {
     touchStartY.current = null;
   };
 
-  // ─── AUTO-PLAY LOGIC ───
+  // ─── AUTO-PLAY LOGIC ─── (100ms tick — 3× lighter than 30ms)
   useEffect(() => {
     if (!active || selectedProject) {
       setAutoPlayProgress(0);
       return;
     }
 
-    const step = 100 / (AUTO_PLAY_DURATION / 30); // Increment every 30ms
+    const TICK = 100;
+    const step = 100 / (AUTO_PLAY_DURATION / TICK);
     const interval = setInterval(() => {
       setAutoPlayProgress(prev => {
         if (prev >= 100) {
@@ -195,7 +196,7 @@ const Projects = ({ active, assetsAllowed }) => {
         }
         return prev + step;
       });
-    }, 30);
+    }, TICK);
 
     return () => clearInterval(interval);
   }, [active, selectedProject, projects.length]);
@@ -221,7 +222,10 @@ const Projects = ({ active, assetsAllowed }) => {
               loop
               muted
               playsInline
-              className="absolute inset-0 w-full h-full object-cover z-0 opacity-30"
+              preload="none"
+              onCanPlay={(e) => { e.target.style.opacity = '0.3'; }}
+              className="absolute inset-0 w-full h-full object-cover z-0"
+              style={{ opacity: 0, transition: 'opacity 1s ease' }}
             >
               <source src="https://a7i5ct7oqefyp3zm.public.blob.vercel-storage.com/Video%20Project%2012%20%282%29.mp4" type="video/mp4" />
             </video>
@@ -381,7 +385,10 @@ const Projects = ({ active, assetsAllowed }) => {
               loop
               muted
               playsInline
-              className="absolute inset-0 w-full h-full object-cover opacity-60"
+              preload="none"
+              onCanPlay={(e) => { e.target.style.opacity = '0.6'; }}
+              className="absolute inset-0 w-full h-full object-cover"
+              style={{ opacity: 0, transition: 'opacity 1.2s ease' }}
             >
               <source src="https://a7i5ct7oqefyp3zm.public.blob.vercel-storage.com/Video%20Project%2012%20%282%29.mp4" type="video/mp4" />
             </video>
