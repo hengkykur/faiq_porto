@@ -5,7 +5,10 @@ const ProjectDetail = ({ project, onClose, assetsAllowed = true }) => {
   const [isRendered, setIsRendered] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [mousePos, setMousePos] = useState({ x: 50, y: 50 });
+  const [activeSlide, setActiveSlide] = useState(0);
   const mouseRaf = useRef(null);
+
+
 
   const handleMouseMove = (e) => {
     if (mouseRaf.current || isMobile) return;
@@ -136,32 +139,97 @@ const ProjectDetail = ({ project, onClose, assetsAllowed = true }) => {
             </div>
           </div>
 
-          {/* RIGHT: PRESENTATION CARD */}
-          <div className="w-full md:w-[60%] h-[40vh] min-h-[300px] md:h-full relative z-20 flex items-center justify-center opacity-0 animate-[fade-in-up_0.7s_ease-out_0.5s_forwards]">
-             {/* Swipable Presentation Card Design */}
-             <div className="relative w-full h-full md:h-[85%] max-h-[650px] bg-gradient-to-br from-white/5 to-white/0 border border-white/10 rounded-[1.5rem] shadow-[0_30px_80px_rgba(0,0,0,0.8)] backdrop-blur-sm overflow-hidden flex items-center justify-center group transform transition-transform duration-700 hover:scale-[1.02]">
-                <div className="absolute inset-0 bg-radial-vignette opacity-50 z-0 pointer-events-none"></div>
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(99,102,241,0.05)_0%,transparent_70%)] pointer-events-none"></div>
-                
-                {assetsAllowed && (
-                  <img
-                    src={project.image}
-                    alt={project.title}
-                    className={`w-[80%] h-[80%] object-contain relative z-10 transition-transform duration-700 group-hover:scale-110 drop-shadow-[0_20px_40px_rgba(0,0,0,0.5)] ${project.invertLogo ? 'brightness-0 invert opacity-90' : ''}`}
-                  />
-                )}
-                
-                {/* Decorative UI elements on the card */}
-                <div className="absolute top-6 left-6 z-20 flex items-center gap-2 opacity-50">
-                   <div className="w-2 h-2 rounded-full bg-white"></div>
-                   <span className="text-[10px] font-mono text-white tracking-widest uppercase">Live Demo Asset</span>
-                </div>
-                <div className="absolute bottom-6 right-6 z-20">
-                   <span className="text-[10px] font-mono text-white/50 tracking-widest uppercase flex items-center gap-2">
-                     Explore Project
-                     <svg className="w-3 h-3 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
-                   </span>
-                </div>
+          {/* RIGHT: PRESENTATION SLIDESHOW */}
+          <div className="w-full md:w-[60%] h-[40vh] min-h-[300px] md:h-full relative z-20 flex items-center justify-center opacity-0 animate-[fade-in-up_0.7s_ease-out_0.5s_forwards] overflow-visible">
+             <div className="relative w-full h-full md:h-[85%] max-h-[650px] perspective-1000">
+               {[0, 1, 2].map((slideIndex) => {
+                 let isActive = activeSlide === slideIndex;
+                 let isPrev = activeSlide === (slideIndex + 1) % 3;
+                 
+                 // Calculate styles for a 3D deck effect or smooth horizontal slide
+                 let slideStyle = {
+                   opacity: isActive ? 1 : 0,
+                   transform: isActive 
+                     ? 'translateX(0) scale(1) rotateY(0deg)' 
+                     : isPrev 
+                       ? 'translateX(-10%) scale(0.95)' 
+                       : 'translateX(10%) scale(0.95)',
+                   transition: 'all 0.8s cubic-bezier(0.23, 1, 0.32, 1)',
+                   zIndex: isActive ? 30 : 10,
+                   pointerEvents: isActive ? 'auto' : 'none',
+                 };
+
+                 return (
+                   <div key={slideIndex} className="absolute inset-0 w-full h-full bg-gradient-to-br from-[#0a0a12]/80 to-white/5 border border-white/10 rounded-[1.5rem] shadow-[0_30px_80px_rgba(0,0,0,0.8)] backdrop-blur-md overflow-hidden flex items-center justify-center group" style={slideStyle}>
+                      <div className="absolute inset-0 bg-radial-vignette opacity-50 z-0 pointer-events-none"></div>
+                      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(99,102,241,0.05)_0%,transparent_70%)] pointer-events-none"></div>
+
+                      {slideIndex === 0 && assetsAllowed && (
+                        <img
+                          src={project.image}
+                          alt={project.title}
+                          className={`w-[80%] h-[80%] object-contain relative z-10 transition-transform duration-700 group-hover:scale-110 drop-shadow-[0_20px_40px_rgba(0,0,0,0.5)] ${project.invertLogo ? 'brightness-0 invert opacity-90' : ''}`}
+                        />
+                      )}
+
+                      {slideIndex === 1 && (
+                        project.slides?.[1] ? (
+                          <div className="absolute inset-0 w-full h-full z-10">
+                            <video
+                              autoPlay
+                              loop
+                              muted
+                              playsInline
+                              preload="auto"
+                              className="w-full h-full object-cover"
+                            >
+                              <source src={project.slides[1]} type="video/mp4" />
+                            </video>
+                            <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a12]/60 via-transparent to-transparent pointer-events-none z-10" />
+                          </div>
+                        ) : (
+                          <div className="relative z-10 flex flex-col items-center text-center p-8 animate-[fade-in-up_0.5s_ease-out_0.2s_forwards] opacity-0">
+                            <h4 className="text-primary font-mono text-xs tracking-[0.3em] uppercase mb-4">Core Objective</h4>
+                            <h2 className="text-3xl md:text-5xl font-display font-black text-white italic leading-tight uppercase max-w-sm drop-shadow-lg">
+                              {project.title}
+                            </h2>
+                            <div className="w-12 h-1 bg-primary mt-6 rounded-full shadow-[0_0_10px_rgba(99,102,241,0.5)]" />
+                          </div>
+                        )
+                      )}
+
+                      {slideIndex === 2 && (
+                        <div className="relative z-10 flex flex-col items-center text-center p-8 w-full animate-[fade-in-up_0.5s_ease-out_0.2s_forwards] opacity-0">
+                          <h4 className="text-primary font-mono text-xs tracking-[0.3em] uppercase mb-8">Technical Stack</h4>
+                          <div className="flex flex-wrap gap-4 justify-center max-w-md">
+                            {project.tags.map(tag => (
+                              <span key={tag} className="px-5 py-2 border border-white/20 rounded-full text-sm font-mono text-white/80 bg-white/5 uppercase tracking-widest shadow-lg hover:border-primary/50 hover:bg-primary/10 transition-colors">
+                                {tag}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Decorative UI elements on the card */}
+                      <div className="absolute top-6 left-6 z-20 flex items-center gap-2 opacity-50">
+                         <div className="w-2 h-2 rounded-full bg-white"></div>
+                         <span className="text-[10px] font-mono text-white tracking-widest uppercase">
+                           {slideIndex === 0 ? 'Live Demo Asset' : slideIndex === 1 ? 'Project Brief' : 'Tech Spec'}
+                         </span>
+                      </div>
+                      <div className="absolute bottom-6 left-0 right-0 flex justify-center gap-2 z-20">
+                         {[0, 1, 2].map(dot => (
+                           <button 
+                             key={dot}
+                             onClick={(e) => { e.stopPropagation(); setActiveSlide(dot); }}
+                             className={`h-1.5 rounded-full transition-all duration-300 ${dot === activeSlide ? 'w-6 bg-primary' : 'w-1.5 bg-white/20 hover:bg-white/40'}`}
+                           />
+                         ))}
+                      </div>
+                   </div>
+                 );
+               })}
              </div>
           </div>
         </div>
