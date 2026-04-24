@@ -77,22 +77,23 @@ const ProjectDetail = ({ project, onClose, assetsAllowed = true }) => {
 
       <div className="absolute inset-0 cursor-pointer" onClick={handleClose}></div>
 
+      {/* Header / Back Button (Outside scroll container) */}
+      <div className={`absolute top-6 left-6 md:top-8 md:left-12 z-[250] transition-all duration-700 ${isRendered ? 'translate-y-0 opacity-100' : '-translate-y-10 opacity-0'}`}>
+        <button
+          onClick={handleClose}
+          className="flex items-center gap-2 px-4 py-2 bg-white text-black font-mono text-[10px] font-bold uppercase tracking-widest rounded-full hover:bg-white/90 transition-all hover:scale-105 active:scale-95 shadow-[0_0_15px_rgba(255,255,255,0.2)]"
+        >
+          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+          BACK
+        </button>
+      </div>
+
       {/* FULL SCREEN CONTAINER */}
       <div
-        className={`relative w-full h-full overflow-hidden transition-all duration-700 ease-[cubic-bezier(0.23,1,0.32,1)] ${isRendered ? 'translate-y-0 scale-100 opacity-100' : 'translate-y-10 scale-105 opacity-0'}`}
+        className={`relative w-full h-full overflow-y-auto md:overflow-hidden transition-all duration-700 ease-[cubic-bezier(0.23,1,0.32,1)] ${isRendered ? 'translate-y-0 scale-100 opacity-100' : 'translate-y-10 scale-105 opacity-0'}`}
       >
-        {/* Header / Back Button */}
-        <div className="absolute top-6 left-6 md:top-8 md:left-12 z-50">
-          <button
-            onClick={handleClose}
-            className="flex items-center gap-2 px-4 py-2 bg-white text-black font-mono text-[10px] font-bold uppercase tracking-widest rounded-full hover:bg-white/90 transition-all hover:scale-105 active:scale-95 shadow-[0_0_15px_rgba(255,255,255,0.2)]"
-          >
-            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
-            BACK
-          </button>
-        </div>
 
-        <div className="flex flex-col md:flex-row h-full pt-24 pb-10 px-8 md:px-20 gap-8 max-w-[1600px] mx-auto items-center">
+        <div className="flex flex-col md:flex-row min-h-full md:h-full pt-24 pb-12 px-6 md:px-20 gap-8 max-w-[1600px] mx-auto md:items-center">
           {/* LEFT: TEXT CONTENT */}
           <div className="w-full md:w-[40%] flex flex-col justify-center relative z-30 opacity-0 animate-[fade-in-up_0.5s_ease-out_0.3s_forwards]">
             <span className="text-[9px] font-mono text-primary/70 border-l-2 border-primary/50 pl-3 uppercase tracking-[0.3em] mb-3 block">
@@ -136,9 +137,9 @@ const ProjectDetail = ({ project, onClose, assetsAllowed = true }) => {
           </div>
 
           {/* RIGHT: PRESENTATION CARD */}
-          <div className="w-full md:w-[60%] h-full relative z-20 flex items-center justify-center opacity-0 animate-[fade-in-up_0.7s_ease-out_0.5s_forwards]">
+          <div className="w-full md:w-[60%] h-[40vh] min-h-[300px] md:h-full relative z-20 flex items-center justify-center opacity-0 animate-[fade-in-up_0.7s_ease-out_0.5s_forwards]">
              {/* Swipable Presentation Card Design */}
-             <div className="relative w-full h-[85%] max-h-[650px] bg-gradient-to-br from-white/5 to-white/0 border border-white/10 rounded-[1.5rem] shadow-[0_30px_80px_rgba(0,0,0,0.8)] backdrop-blur-sm overflow-hidden flex items-center justify-center group transform transition-transform duration-700 hover:scale-[1.02]">
+             <div className="relative w-full h-full md:h-[85%] max-h-[650px] bg-gradient-to-br from-white/5 to-white/0 border border-white/10 rounded-[1.5rem] shadow-[0_30px_80px_rgba(0,0,0,0.8)] backdrop-blur-sm overflow-hidden flex items-center justify-center group transform transition-transform duration-700 hover:scale-[1.02]">
                 <div className="absolute inset-0 bg-radial-vignette opacity-50 z-0 pointer-events-none"></div>
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(99,102,241,0.05)_0%,transparent_70%)] pointer-events-none"></div>
                 

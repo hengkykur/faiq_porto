@@ -235,11 +235,11 @@ const Projects = ({ active, assetsAllowed }) => {
         </div>
 
         {/* Header */}
-        <div className="absolute top-14 left-0 right-0 z-30 px-5 flex items-center justify-between">
+        <div className="absolute top-14 left-0 right-0 z-30 px-5 flex flex-col items-start gap-2">
           <span className="text-[9px] font-mono text-primary/60 border-l-2 border-primary/40 pl-2 uppercase tracking-[0.25em]">
             Projects Ecosystem
           </span>
-          <span className="text-[9px] font-mono text-white/20 uppercase tracking-widest">
+          <span className="text-[9px] font-mono text-white/30 pl-[10px] uppercase tracking-widest">
             {String(activeIndex + 1).padStart(2, '0')} / {String(projects.length).padStart(2, '0')}
           </span>
         </div>
@@ -257,71 +257,50 @@ const Projects = ({ active, assetsAllowed }) => {
             {projects.map((p, i) => (
               <div
                 key={i}
-                className={`relative flex flex-col ${i === activeIndex ? 'cursor-pointer' : ''}`}
+                className={`relative flex flex-col items-center justify-center ${i === activeIndex ? 'cursor-pointer' : ''}`}
                 style={{ width: `${100 / projects.length}%`, height: '100%' }}
                 onClick={() => { if (i === activeIndex) setSelectedProject(p); }}
               >
-                {/* Logo - compact, centered at top */}
-                <div className="flex items-center justify-center pt-24 pb-4 px-6">
+
+
+                {/* Logo - Centered in middle but slightly higher */}
+                <div className="relative z-10 flex items-center justify-center w-full max-w-[220px] aspect-square -translate-y-16">
                   {assetsAllowed && (
                     <div 
-                      className="w-20 h-20 flex items-center justify-center transition-all duration-500" 
+                      className="w-full h-full flex items-center justify-center transition-all duration-700" 
                       style={{ 
-                        opacity: i === activeIndex ? 1 : 0.3,
-                        transform: i === activeIndex ? 'scale(1)' : 'scale(0.8)',
-                        transition: 'all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)',
+                        opacity: i === activeIndex ? 1 : 0.2,
+                        transform: i === activeIndex ? 'scale(1)' : 'scale(0.7)',
+                        transition: 'all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)',
                       }}
                     >
                       <img
                         src={p.image}
                         alt={p.title}
-                        className={`w-full h-full object-contain ${p.invertLogo ? 'brightness-0 invert drop-shadow-[0_0_10px_rgba(255,255,255,0.4)] opacity-90' : 'drop-shadow-[0_10px_20px_rgba(0,0,0,0.5)]'}`}
+                        className={`w-full h-full object-contain ${p.invertLogo ? 'brightness-0 invert drop-shadow-[0_0_20px_rgba(255,255,255,0.4)] opacity-90' : 'drop-shadow-[0_20px_30px_rgba(0,0,0,0.6)]'}`}
                       />
                     </div>
                   )}
                 </div>
 
-                {/* Card content - below the logo */}
-                <div
-                  className="relative z-10 px-6 flex-1 flex flex-col"
-                  style={{
-                    opacity: i === activeIndex ? 1 : 0,
-                    transform: i === activeIndex ? 'translateY(0)' : 'translateY(12px)',
-                    transition: 'opacity 0.4s ease 0.1s, transform 0.4s ease 0.1s',
-                    pointerEvents: i === activeIndex ? 'auto' : 'none',
-                  }}
-                >
-                  <h2 className="text-3xl sm:text-4xl font-display font-black text-white italic uppercase leading-none tracking-tight mb-2">
-                    {p.title}
-                  </h2>
-                  <h3 className="text-xs font-display font-light text-primary/70 italic uppercase tracking-[0.2em] mb-3">
-                    {p.subtitle}
-                  </h3>
-                  <p className="text-sm text-slate-400 font-body font-light leading-relaxed mb-4 max-w-xs">
-                    {p.description}
-                  </p>
-                  <div className="flex flex-wrap gap-2 mb-4">
-                    {p.tags.map(tag => (
-                      <span key={tag} className="text-[9px] font-mono border border-primary/30 px-3 py-1 rounded-sm text-primary/80 bg-primary/5 uppercase tracking-wider">
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
 
-                  <button
-                    onClick={(e) => { e.stopPropagation(); setSelectedProject(p); }}
-                    className="mt-auto mb-24 px-5 py-2.5 border border-primary/50 text-white font-mono text-xs uppercase tracking-wider hover:bg-primary/20 transition-colors w-full backdrop-blur-sm shadow-[0_0_15px_rgba(var(--color-primary),0.2)]"
-                  >
-                    Details
-                  </button>
-                </div>
               </div>
             ))}
           </div>
         </div>
 
+        {/* Title & Subtitle (Fixed position, with Typewriter) */}
+        <div className="absolute bottom-28 left-6 z-20 pointer-events-none text-left max-w-[80vw]">
+          <h2 className="text-2xl sm:text-3xl font-display font-black text-white italic uppercase leading-none tracking-[0.1em] drop-shadow-lg mb-1 min-h-[36px]">
+            <TypewriterText text={projects[activeIndex].title} speed={90} />
+          </h2>
+          <h3 className="text-[10px] font-mono text-primary/80 uppercase tracking-widest min-h-[16px]">
+            <TypewriterText text={projects[activeIndex].subtitle} speed={70} />
+          </h3>
+        </div>
+
         {/* Bottom navigation dots + swipe hint */}
-        <div className="absolute bottom-8 left-0 right-0 z-30 flex flex-col items-center gap-4">
+        <div className="absolute bottom-8 left-6 z-30 flex flex-col items-start gap-4">
           {/* Auto-play Progress Bar */}
           <div className="h-[2px] w-32 bg-white/10 relative overflow-hidden mb-1">
              <div 
