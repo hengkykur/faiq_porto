@@ -5,7 +5,7 @@ export const elearningProject = {
   image: '/stmi.png',
   noFrame: true,
   imageScale: 0.7,
-  tags: ['React', 'Node.js', 'Education'],
+  tags: ['Laravel', 'MySQL', 'Tailwind', 'Education'],
   year: '2024',
   status: 'Live',
 };
