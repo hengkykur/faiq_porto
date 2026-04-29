@@ -1,10 +1,11 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { createPortal } from 'react-dom';
 
-const SLIDE_COUNT = 3;
+
 const SLIDE_LABELS = ['Live Demo Asset', 'Project Brief', 'Tech Spec'];
 
 const ProjectDetail = ({ project, onClose, assetsAllowed = true }) => {
+  const slideCount = Math.max(3, project.slides?.length || 3);
   const [isRendered, setIsRendered] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [mousePos, setMousePos] = useState({ x: 50, y: 50 });
@@ -25,7 +26,7 @@ const ProjectDetail = ({ project, onClose, assetsAllowed = true }) => {
   }, [activeSlide]);
 
   const goToSlide = (index) => {
-    const clamped = Math.max(0, Math.min(SLIDE_COUNT - 1, index));
+    const clamped = Math.max(0, Math.min(slideCount - 1, index));
     setActiveSlide(clamped);
     setDragOffset(0);
   };
@@ -34,7 +35,7 @@ const ProjectDetail = ({ project, onClose, assetsAllowed = true }) => {
     if (isMobile || isScrollingRef.current) return;
     if (Math.abs(e.deltaY) < 10) return;
     const cur = activeSlideRef.current;
-    if (e.deltaY > 0 && cur < SLIDE_COUNT - 1) {
+    if (e.deltaY > 0 && cur < slideCount - 1) {
       goToSlide(cur + 1);
     } else if (e.deltaY < 0 && cur > 0) {
       goToSlide(cur - 1);
@@ -229,10 +230,10 @@ const ProjectDetail = ({ project, onClose, assetsAllowed = true }) => {
 
             <div className="w-full flex items-center justify-between mb-3 px-1">
               <span className="text-[10px] font-mono text-white/30 uppercase tracking-[0.3em]">
-                {SLIDE_LABELS[activeSlide]}
+                {SLIDE_LABELS[activeSlide] || `Gallery Asset ${activeSlide - 2}`}
               </span>
               <span className="text-[10px] font-mono text-white/20 uppercase tracking-widest">
-                {String(activeSlide + 1).padStart(2, '0')} / {String(SLIDE_COUNT).padStart(2, '0')}
+                {String(activeSlide + 1).padStart(2, '0')} / {String(slideCount).padStart(2, '0')}
               </span>
             </div>
 
@@ -250,7 +251,7 @@ const ProjectDetail = ({ project, onClose, assetsAllowed = true }) => {
                 className="absolute inset-0 flex items-center justify-center"
                 style={{ perspective: '1200px' }}
               >
-                {[0, 1, 2].map((slideIndex) => {
+                {Array.from({ length: slideCount }).map((_, slideIndex) => {
                   const offset = slideIndex - activeSlide;
 
                   let translateX = 0;
@@ -367,12 +368,31 @@ const ProjectDetail = ({ project, onClose, assetsAllowed = true }) => {
                         )
                       )}
 
-
+                      {slideIndex >= 3 && (
+                        project.slides?.[slideIndex] ? (
+                          <div className="absolute inset-0 w-full h-full z-10 flex items-center justify-center">
+                            {project.slides[slideIndex].endsWith('.mp4') ? (
+                              <video autoPlay loop muted playsInline preload="auto" className="w-full h-full object-contain p-4 md:p-8">
+                                <source src={project.slides[slideIndex]} type="video/mp4" />
+                              </video>
+                            ) : (
+                              <img src={project.slides[slideIndex]} alt={`Asset ${slideIndex}`} className="w-full h-full object-contain p-4 md:p-8 drop-shadow-[0_10px_20px_rgba(0,0,0,0.4)]" draggable="false" />
+                            )}
+                          </div>
+                        ) : (
+                          <div className="relative z-10 flex flex-col items-center text-center p-8 w-full animate-[fade-in-up_0.5s_ease-out_0.2s_forwards] opacity-0">
+                            <h4 className="text-primary font-mono text-xs tracking-[0.3em] uppercase mb-8">Gallery</h4>
+                            <h2 className="text-2xl font-display font-light text-white/40 italic uppercase drop-shadow-lg">
+                              Asset Not Provided
+                            </h2>
+                          </div>
+                        )
+                      )}
 
                       <div className="absolute top-6 left-6 z-20 flex items-center gap-2 opacity-50">
                         <div className="w-2 h-2 rounded-full bg-white" />
                         <span className="text-[10px] font-mono text-white tracking-widest uppercase">
-                          {SLIDE_LABELS[slideIndex]}
+                          {SLIDE_LABELS[slideIndex] || `Gallery Asset ${slideIndex - 2}`}
                         </span>
                       </div>
                     </div>
