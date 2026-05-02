@@ -197,12 +197,14 @@ const About = React.memo(({ active, assetsAllowed, onScrollProgress }) => {
       setScrollProgress(progress);
       if (onScrollProgress) onScrollProgress(progress);
 
+      const isMobile = window.innerWidth < 768;
+      
       // Contiguous thresholds to prevent "flickering" or "dead zones"
-      setIsZone2Active(progress > 0.08 && progress <= 0.38);
-      setIsZone3Active(progress > 0.38 && progress <= 0.55);
-      // Merged Zone 4 & 5
-      setIsZone4Active(progress > 0.55 && progress <= 0.88);
-      setIsZone6Active(progress > 0.88);
+      // Extended upper bounds for mobile to ensure content doesn't fade out too early
+      setIsZone2Active(progress > 0.08 && progress <= (isMobile ? 0.45 : 0.40));
+      setIsZone3Active(progress > (isMobile ? 0.30 : 0.35) && progress <= (isMobile ? 0.72 : 0.58));
+      setIsZone4Active(progress > (isMobile ? 0.58 : 0.55) && progress <= (isMobile ? 0.92 : 0.88));
+      setIsZone6Active(progress > (isMobile ? 0.88 : 0.85));
 
       scrollRafId.current = null;
     });
@@ -255,8 +257,8 @@ const About = React.memo(({ active, assetsAllowed, onScrollProgress }) => {
       <div
         className="sticky top-0 w-full h-full z-0 overflow-hidden bg-black transition-opacity duration-1000"
         style={{
-          opacity: scrollProgress > 0.38 && scrollProgress <= 0.62 ? 0 :
-            scrollProgress > 0.62 ? 0.4 : 1
+          opacity: (isZone3Active && !isZone4Active && !isZone6Active) ? 0 :
+                   (isZone4Active || isZone6Active) ? 0.4 : 1
         }}
       >
         {/* Visual Placeholder for About Video with Cinematic Shimmer */}
