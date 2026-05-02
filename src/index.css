@@ -164,20 +164,25 @@
 
 @keyframes float {
   0% {
-    transform: translateY(0px) rotate(0deg);
+    transform: translate3d(0, 0, 0);
   }
 
   50% {
-    transform: translateY(-20px) rotate(2deg);
+    transform: translate3d(0, -20px, 0);
   }
 
   100% {
-    transform: translateY(0px) rotate(0deg);
+    transform: translate3d(0, 0, 0);
   }
 }
 
 .animate-float {
   animation: float 6s ease-in-out infinite;
+  will-change: transform;
+}
+
+.animation-paused {
+  animation-play-state: paused !important;
 }
 
 @keyframes glitch {
@@ -514,4 +519,21 @@
 
 .animate-crt-on {
   animation: fade-in-app 0.5s ease-out forwards;
+}
+
+/* Respect user motion preferences — safety net for all devices */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .animate-float,
+  .animate-glitch,
+  .animate-glitch-heavy,
+  .animate-pulse,
+  .project-grid-lines {
+    animation: none !important;
+  }
 }

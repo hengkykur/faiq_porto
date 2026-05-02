@@ -45,6 +45,8 @@ const Projects = ({ active, assetsAllowed }) => {
   const resizeTimerRef = useRef(null);
   const [autoPlayProgress, setAutoPlayProgress] = useState(0);
   const AUTO_PLAY_DURATION = 6000; // 6 seconds per slide
+  const bgVideoRef = useRef(null);
+  const bgVideoMobileRef = useRef(null);
 
 
   const customCursorRef = useRef(null);
@@ -89,6 +91,17 @@ const Projects = ({ active, assetsAllowed }) => {
       if (mouseRaf.current) cancelAnimationFrame(mouseRaf.current);
     }
   }, []);
+
+  // Pause/resume background videos based on active state
+  useEffect(() => {
+    const vid = isMobile ? bgVideoMobileRef.current : bgVideoRef.current;
+    if (!vid) return;
+    if (active) {
+      vid.play().catch(() => {});
+    } else {
+      vid.pause();
+    }
+  }, [active, isMobile]);
 
 
   // Detect mobile viewport
@@ -218,6 +231,7 @@ const Projects = ({ active, assetsAllowed }) => {
         <div className="absolute inset-0 z-0 bg-[#080810] overflow-hidden">
           {assetsAllowed && (
             <video
+              ref={bgVideoMobileRef}
               autoPlay
               loop
               muted
@@ -349,7 +363,7 @@ const Projects = ({ active, assetsAllowed }) => {
         className="absolute top-0 left-0 z-[9999] pointer-events-none flex items-center justify-center transition-transform duration-75 ease-out"
         style={{ transform: 'translate3d(-100px, -100px, 0)' }}
       >
-        <div className="flex items-center justify-center text-white w-8 h-8 rounded-full border border-white/40 bg-white/20 backdrop-blur-md animate-pulse shadow-[0_0_15px_rgba(255,255,255,0.4)]">
+        <div className="flex items-center justify-center text-white w-8 h-8 rounded-full border border-white/40 bg-white/30 shadow-[0_0_15px_rgba(255,255,255,0.4)]">
           <svg className="w-4 h-4 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 12h14M12 5l7 7-7 7" />
           </svg>
@@ -360,6 +374,7 @@ const Projects = ({ active, assetsAllowed }) => {
         {assetsAllowed && (
           <div className="absolute top-0 right-0 h-full w-[75vw] z-[1] overflow-hidden">
             <video
+              ref={bgVideoRef}
               autoPlay
               loop
               muted
@@ -386,7 +401,7 @@ const Projects = ({ active, assetsAllowed }) => {
           />
         )}
 
-        <div className="project-grid-lines relative z-[4] opacity-20" />
+        <div className={`project-grid-lines relative z-[4] opacity-20 ${!active ? 'animation-paused' : ''} ${isMobile ? 'hidden' : ''}`} />
         <div className="absolute inset-0 pointer-events-none z-[5] opacity-5 mix-blend-overlay grain-overlay"></div>
       </div>
 

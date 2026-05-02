@@ -53,7 +53,7 @@ const ALIEN_SPRITE_B2 = [
   "   #  #   "
 ];
 
-const SpaceInvaders = () => {
+const SpaceInvaders = ({ active = true }) => {
   const canvasRef = useRef(null);
   const containerRef = useRef(null);
   const isHoveredRef = useRef(false);
@@ -102,7 +102,7 @@ const SpaceInvaders = () => {
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas || isLoading) return; // Only run engine if not loading
+    if (!canvas || isLoading || !active) return; // Only run engine if not loading and section is active
     const ctx = canvas.getContext('2d');
     
     let w = canvas.width;
@@ -422,7 +422,7 @@ const SpaceInvaders = () => {
     // Start animation loop
     reqRef.current = requestAnimationFrame(update);
     return () => cancelAnimationFrame(reqRef.current);
-  }, [isLoading]); // Only re-run when loading finishes, NOT on hover
+  }, [isLoading, active]); // Re-run when loading finishes or active changes
 
   const updateMouseX = (clientX) => {
     if (!canvasRef.current) return;

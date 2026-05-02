@@ -246,7 +246,7 @@ const About = React.memo(({ active, assetsAllowed, onScrollProgress }) => {
         className="absolute top-0 left-0 z-[9999] pointer-events-none flex items-center justify-center transition-transform duration-75 ease-out"
         style={{ transform: 'translate3d(-100px, -100px, 0)' }}
       >
-        <div className="flex items-center justify-center text-white w-8 h-8 rounded-full border border-white/40 bg-white/20 backdrop-blur-md animate-pulse shadow-[0_0_15px_rgba(255,255,255,0.4)]">
+        <div className="flex items-center justify-center text-white w-8 h-8 rounded-full border border-white/40 bg-white/30 shadow-[0_0_15px_rgba(255,255,255,0.4)]">
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
           </svg>
@@ -397,7 +397,7 @@ const About = React.memo(({ active, assetsAllowed, onScrollProgress }) => {
 
                   <div className="absolute bottom-10 left-16 group/hud" style={{ transform: 'translateZ(80px)' }}>
                     <div className="flex items-center gap-3 mb-2">
-                      <div className="w-2 h-2 rounded-full bg-primary animate-ping"></div>
+                      <div className="w-2 h-2 rounded-full bg-primary"></div>
                       <span className="text-[11px] font-[900] font-mono text-white tracking-[0.3em] uppercase drop-shadow-glow">Visual Schema v2.1</span>
                     </div>
                     <div className="h-[2px] w-32 bg-gradient-to-r from-primary to-transparent group-hover/hud:w-48 transition-all duration-700"></div>
@@ -443,10 +443,10 @@ const About = React.memo(({ active, assetsAllowed, onScrollProgress }) => {
                 THE <span className="text-glow animate-glitch-heavy">JOURNEY</span>
               </h2>
 
-              <div className="flex items-center justify-center flex-wrap gap-2 md:gap-4 bg-white/5 p-2 rounded-full border border-white/10 backdrop-blur-md w-max mx-auto relative z-30 shadow-[0_0_30px_rgba(0,0,0,0.5)]">
+              <div className="flex items-center justify-center flex-wrap gap-2 md:gap-4 bg-black/60 p-2 rounded-full border border-white/10 w-max mx-auto relative z-30 shadow-[0_0_30px_rgba(0,0,0,0.5)]">
                 <button
                   onClick={() => setJourneyTab('academic')}
-                  className={`px-4 sm:px-6 py-3 rounded-full text-[10px] md:text-sm font-mono tracking-widest uppercase font-bold transition-all duration-500 relative overflow-hidden ${journeyTab === 'academic' ? 'text-primary' : 'text-slate-400 hover:text-white'}`}
+                  className={`px-4 sm:px-6 py-3 rounded-full text-[10px] md:text-sm font-mono tracking-widest uppercase font-bold transition-colors duration-500 relative overflow-hidden ${journeyTab === 'academic' ? 'text-primary' : 'text-slate-400 hover:text-white'}`}
                 >
                   {journeyTab === 'academic' && <div className="absolute inset-0 bg-primary/10 -z-10 rounded-full animate-pulse"></div>}
                   Academic Background

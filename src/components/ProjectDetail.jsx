@@ -288,10 +288,10 @@ const ProjectDetail = ({ project, onClose, assetsAllowed = true }) => {
                   // Card ke-2 (offset 1): solid (block card 3)
                   // Card ke-3+: solid juga
                   const cardBackground = offset === 0
-                    ? 'rgba(10, 10, 18, 0.45)'
+                    ? 'rgba(10, 10, 18, 0.75)'
                     : 'rgba(10, 10, 18, 0.98)';
 
-                  const cardBackdropFilter = offset === 0 ? 'blur(20px)' : 'none';
+                  // Removed backdrop-filter blur for performance
 
                   return (
                     <div
@@ -299,8 +299,6 @@ const ProjectDetail = ({ project, onClose, assetsAllowed = true }) => {
                       className="absolute w-[90%] h-[90%] md:w-[85%] md:h-[85%] border border-white/10 rounded-[2rem] overflow-hidden flex items-center justify-center group"
                       style={{
                         background: cardBackground,
-                        backdropFilter: cardBackdropFilter,
-                        WebkitBackdropFilter: cardBackdropFilter,
                         transform: `translate3d(${translateX}px, ${translateY}px, ${-offset * 50}px) scale(${scale}) rotateZ(${rotateZ}deg)`,
                         opacity: opacity,
                         transition: isDragging.current

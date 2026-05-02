@@ -5,7 +5,7 @@ import SpaceInvaders from './SpaceInvaders';
  * LazyVideo Component
  * Only loads and plays the video when scrolled into viewport via IntersectionObserver.
  */
-const LazyVideo = ({ src, className }) => {
+const LazyVideo = ({ src, className, active = true }) => {
   const containerRef = useRef(null);
   const videoRef = useRef(null);
   const [shouldLoad, setShouldLoad] = useState(false);
@@ -26,12 +26,17 @@ const LazyVideo = ({ src, className }) => {
     return () => observer.disconnect();
   }, []);
 
-  // Pause/resume based on visibility
+  // Pause/resume based on visibility AND active prop
   useEffect(() => {
     if (!shouldLoad) return;
-    const el = containerRef.current;
     const vid = videoRef.current;
-    if (!el || !vid) return;
+    if (!vid) return;
+    if (!active) {
+      vid.pause();
+      return;
+    }
+    const el = containerRef.current;
+    if (!el) return;
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
@@ -44,7 +49,7 @@ const LazyVideo = ({ src, className }) => {
     );
     observer.observe(el);
     return () => observer.disconnect();
-  }, [shouldLoad]);
+  }, [shouldLoad, active]);
 
   return (
     <div ref={containerRef} className="w-full h-full bg-[#060608]">
@@ -173,7 +178,6 @@ const HeroVideo = ({ src, onReady, active = true }) => {
     width: '100%',
     height: '100%',
     objectFit: 'cover',
-    mixBlendMode: 'screen',
     opacity: 0,
   };
 
@@ -407,7 +411,7 @@ const Hero = React.memo(({ active, onReady }) => {
         className="absolute top-0 left-0 z-[9999] pointer-events-none flex items-center justify-center transition-transform duration-75 ease-out"
         style={{ transform: 'translate3d(-100px, -100px, 0)' }}
       >
-        <div className="flex items-center justify-center text-white w-8 h-8 rounded-full border border-white/40 bg-white/20 backdrop-blur-md animate-pulse shadow-[0_0_15px_rgba(255,255,255,0.4)]">
+        <div className="flex items-center justify-center text-white w-8 h-8 rounded-full border border-white/40 bg-white/30 shadow-[0_0_15px_rgba(255,255,255,0.4)]">
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
           </svg>
@@ -548,7 +552,7 @@ const Hero = React.memo(({ active, onReady }) => {
               </RevealOnScroll>
               <RevealOnScroll delay={300} className="md:col-span-7 relative group order-1 md:order-2">
                 <div className="aspect-[4/3] w-full overflow-hidden bg-[#060608] ring-1 ring-white/10 rounded-sm relative">
-                  <SpaceInvaders />
+                  <SpaceInvaders active={active} />
                 </div>
                 <div className="absolute -inset-4 border border-primary/20 scale-95 opacity-0 group-hover:scale-100 group-hover:opacity-100 transition-all duration-1000 pointer-events-none rounded-sm"></div>
               </RevealOnScroll>
@@ -560,7 +564,8 @@ const Hero = React.memo(({ active, onReady }) => {
                 <div className="aspect-square md:aspect-[4/5] w-full overflow-hidden bg-white/5 ring-1 ring-white/10 rounded-sm">
                   <LazyVideo
                     src="https://a7i5ct7oqefyp3zm.public.blob.vercel-storage.com/lukisan.mp4"
-                    className="w-full h-full object-cover opacity-60 grayscale-[50%] group-hover:opacity-100 group-hover:grayscale-0 group-hover:scale-[1.03] transition-all duration-[1.5s] ease-[cubic-bezier(0.19,1,0.22,1)]"
+                    active={active}
+                    className="w-full h-full object-cover opacity-60 grayscale-[50%] group-hover:opacity-100 group-hover:grayscale-0 group-hover:scale-[1.03] transition-[opacity,filter,transform] duration-[1.5s] ease-[cubic-bezier(0.19,1,0.22,1)]"
                   />
                 </div>
               </RevealOnScroll>
