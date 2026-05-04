@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, Suspense, lazy } from 'react';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
+import PageTransition from './components/PageTransition';
 import { Analytics } from "@vercel/analytics/react"
 import { SpeedInsights } from "@vercel/speed-insights/react"
 
@@ -49,6 +50,9 @@ function App() {
     <div className="h-screen w-screen bg-black overflow-hidden relative">
       {/* Fixed UI Elements */}
       <Navbar currentPage={currentPage} setCurrentPage={setCurrentPage} />
+
+      {/* Page transition overlay */}
+      <PageTransition currentPage={currentPage} />
 
       {/* About Scroll Progress Bar — rendered at viewport level to escape translate3d */}
       <div

@@ -293,22 +293,17 @@ const ProjectDetail = ({ project, onClose, assetsAllowed = true }) => {
                     ? 'transparent'
                     : (offset === 0 ? 'rgba(10, 10, 18, 0.75)' : 'rgba(10, 10, 18, 0.98)');
 
-                  const cardWidth = applyPortraitStyle ? '50%' : '85%';
-                  const cardHeight = applyPortraitStyle ? '100%' : '85%';
-
                   return (
                     <div
                       key={slideIndex}
-                      className={`absolute ${applyPortraitStyle ? 'border-none' : 'border border-white/10'} rounded-[2rem] overflow-hidden flex items-center justify-center group`}
+                      className={`absolute ${applyPortraitStyle ? 'w-[98%] h-[98%] md:w-[95%] md:h-[95%]' : 'w-[90%] h-[90%] md:w-[85%] md:h-[85%]'} ${applyPortraitStyle ? '' : 'border border-white/10'} rounded-[2rem] overflow-hidden flex items-center justify-center group`}
                       style={{
                         background: cardBackground,
-                        width: cardWidth,
-                        height: cardHeight,
                         transform: `translate3d(${translateX}px, ${translateY}px, ${-offset * 50}px) scale(${scale}) rotateZ(${rotateZ}deg)`,
                         opacity: opacity,
                         transition: isDragging.current
                           ? 'opacity 0.2s ease, transform 0s linear'
-                          : 'transform 0.6s cubic-bezier(0.23, 1, 0.32, 1), opacity 0.5s ease, width 0.6s cubic-bezier(0.23, 1, 0.32, 1), height 0.6s cubic-bezier(0.23, 1, 0.32, 1), background 0.4s ease',
+                          : 'transform 0.6s cubic-bezier(0.23, 1, 0.32, 1), opacity 0.5s ease',
                         zIndex: zIndex,
                         pointerEvents: offset === 0 ? 'auto' : 'none',
                         boxShadow: applyPortraitStyle ? 'none' : (offset === 0
