@@ -261,6 +261,8 @@ const ProjectDetail = ({ project, onClose, assetsAllowed = true }) => {
                   let opacity = 0;
                   let zIndex = 30 - Math.abs(offset);
 
+                  const activeIsPortrait = typeof project.slides?.[activeSlide] === 'string' && project.slides[activeSlide].toLowerCase().includes('poster');
+
                   if (offset === 0) {
                     translateX = isDragging.current ? dragOffset : 0;
                     translateY = isDragging.current ? Math.abs(dragOffset) * -0.05 : 0;
@@ -273,7 +275,7 @@ const ProjectDetail = ({ project, onClose, assetsAllowed = true }) => {
                     translateY = (offset * 10);
                     scale = 1 - (offset * 0.06);
                     rotateZ = offset * 1.5;
-                    opacity = 1 - (offset * 0.3);
+                    opacity = activeIsPortrait ? 0 : 1 - (offset * 0.3);
                     zIndex = 30 - offset;
                   } else {
                     translateX = -window.innerWidth;
@@ -284,31 +286,34 @@ const ProjectDetail = ({ project, onClose, assetsAllowed = true }) => {
                     zIndex = 10;
                   }
 
-                  // Card aktif: semi-transparan (tembus ke card 2)
-                  // Card ke-2 (offset 1): solid (block card 3)
-                  // Card ke-3+: solid juga
-                  const cardBackground = offset === 0
-                    ? 'rgba(10, 10, 18, 0.75)'
-                    : 'rgba(10, 10, 18, 0.98)';
+                  const isPortraitSlide = typeof project.slides?.[slideIndex] === 'string' && project.slides[slideIndex].toLowerCase().includes('poster');
+                  const applyPortraitStyle = isPortraitSlide && offset === 0;
 
-                  // Removed backdrop-filter blur for performance
+                  const cardBackground = applyPortraitStyle
+                    ? 'transparent'
+                    : (offset === 0 ? 'rgba(10, 10, 18, 0.75)' : 'rgba(10, 10, 18, 0.98)');
+
+                  const cardWidth = applyPortraitStyle ? '50%' : '85%';
+                  const cardHeight = applyPortraitStyle ? '100%' : '85%';
 
                   return (
                     <div
                       key={slideIndex}
-                      className="absolute w-[90%] h-[90%] md:w-[85%] md:h-[85%] border border-white/10 rounded-[2rem] overflow-hidden flex items-center justify-center group"
+                      className={`absolute ${applyPortraitStyle ? 'border-none' : 'border border-white/10'} rounded-[2rem] overflow-hidden flex items-center justify-center group`}
                       style={{
                         background: cardBackground,
+                        width: cardWidth,
+                        height: cardHeight,
                         transform: `translate3d(${translateX}px, ${translateY}px, ${-offset * 50}px) scale(${scale}) rotateZ(${rotateZ}deg)`,
                         opacity: opacity,
                         transition: isDragging.current
                           ? 'opacity 0.2s ease, transform 0s linear'
-                          : 'transform 0.6s cubic-bezier(0.23, 1, 0.32, 1), opacity 0.5s ease',
+                          : 'transform 0.6s cubic-bezier(0.23, 1, 0.32, 1), opacity 0.5s ease, width 0.6s cubic-bezier(0.23, 1, 0.32, 1), height 0.6s cubic-bezier(0.23, 1, 0.32, 1), background 0.4s ease',
                         zIndex: zIndex,
                         pointerEvents: offset === 0 ? 'auto' : 'none',
-                        boxShadow: offset === 0
+                        boxShadow: applyPortraitStyle ? 'none' : (offset === 0
                           ? '0 50px 120px rgba(0,0,0,0.9), 0 0 40px rgba(99, 102, 241, 0.1)'
-                          : '0 20px 50px rgba(0,0,0,0.7)',
+                          : '0 20px 50px rgba(0,0,0,0.7)'),
                       }}
                     >
                       <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(99,102,241,0.05)_0%,transparent_70%)] pointer-events-none" />
@@ -325,9 +330,13 @@ const ProjectDetail = ({ project, onClose, assetsAllowed = true }) => {
                       {slideIndex === 1 && (
                         project.slides?.[1] ? (
                           <div className="absolute inset-0 w-full h-full z-10 flex items-center justify-center">
-                            <video autoPlay loop muted playsInline preload="auto" className="w-full h-full object-contain p-4 md:p-8">
-                              <source src={project.slides[1]} type="video/mp4" />
-                            </video>
+                            {project.slides[1].endsWith('.mp4') ? (
+                              <video autoPlay loop muted playsInline preload="auto" className="w-full h-full object-contain p-4 md:p-8">
+                                <source src={project.slides[1]} type="video/mp4" />
+                              </video>
+                            ) : (
+                              <img src={project.slides[1]} alt="Project Brief" className="w-full h-full object-contain p-4 md:p-8 drop-shadow-[0_10px_20px_rgba(0,0,0,0.4)]" draggable="false" />
+                            )}
                             <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a12]/60 via-transparent to-transparent pointer-events-none z-10" />
                           </div>
                         ) : (
@@ -349,7 +358,7 @@ const ProjectDetail = ({ project, onClose, assetsAllowed = true }) => {
                                 <source src={project.slides[2]} type="video/mp4" />
                               </video>
                             ) : (
-                              <img src={project.slides[2]} alt="Technical Spec" className="w-full h-full object-contain p-4 md:p-8 drop-shadow-[0_10px_20px_rgba(0,0,0,0.4)]" draggable="false" />
+                              <img src={project.slides[2]} alt="Technical Spec" className={`w-full h-full object-contain drop-shadow-[0_10px_20px_rgba(0,0,0,0.4)] transition-all duration-500 ${applyPortraitStyle ? '' : 'p-4 md:p-8'}`} draggable="false" />
                             )}
                           </div>
                         ) : (
