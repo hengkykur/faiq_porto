@@ -158,7 +158,7 @@ const Contact = ({ active, assetsAllowed }) => {
           <div className="max-w-5xl">
             <p className="text-primary font-mono text-[10px] tracking-[0.4em] uppercase mb-4">Get in touch</p>
             <a
-              href="mailto:adimulyo2005@gmail.com"
+              href="mailto:@gmail.com"
               className="block text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-display font-bold text-primary leading-[0.9] tracking-tighter italic uppercase transition-all duration-300 drop-shadow-[0_0_20px_rgba(129,140,248,0.4)]"
             >
               <span className="glitch-text block mb-2" data-text="ADIMULYO2005">
