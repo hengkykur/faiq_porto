@@ -1,5 +1,6 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useEffect, useCallback, Suspense } from 'react';
 import SpaceInvaders from './SpaceInvaders';
+import NetworkSphere from './NetworkSphere';
 
 /**
  * LazyVideo Component
@@ -366,6 +367,14 @@ const Hero = React.memo(({ active, onReady }) => {
   const customCursorRef = useRef(null);
   const lastMousePos = useRef({ x: -100, y: -100 });
 
+  // Trigger onReady shortly after mount since there is no video to wait for anymore
+  useEffect(() => {
+    if (onReady) {
+      const timer = setTimeout(() => onReady(), 500);
+      return () => clearTimeout(timer);
+    }
+  }, [onReady]);
+
   useEffect(() => {
     const updateCursor = () => {
       if (customCursorRef.current && containerRef.current) {
@@ -437,33 +446,35 @@ const Hero = React.memo(({ active, onReady }) => {
           <div className="absolute inset-0 bg-gradient-to-t from-[#060608] via-[#060608]/40 to-transparent z-10" />
         </div>
 
-        {/* ── Seamless Looping Video (right half) ── */}
+        {/* ── 3D Network Sphere (right half) ── */}
+        {/* pointer-events-auto here so drag/orbit works on the Canvas */}
         <div className="absolute top-0 right-0 w-full md:w-[55%] h-full z-10 pointer-events-none flex items-center justify-center overflow-hidden">
           <div
-            className="relative"
             style={{
-              width: 'min(75vw, 480px)',
-              height: 'min(75vw, 480px)',
+              position: 'relative',
+              width: 'min(80vw, 520px)',
+              height: 'min(80vw, 520px)',
+              flexShrink: 0,
+              pointerEvents: 'auto',
             }}
+            onClick={(e) => e.stopPropagation()}
           >
-            {/* Circular mask wrapper */}
+            {/* Mask wrapper — Canvas fills this div absolutely */}
             <div
-              className="absolute inset-0 rounded-full overflow-hidden"
               style={{
-                WebkitMaskImage: 'radial-gradient(circle at center, black 45%, transparent 75%)',
-                maskImage: 'radial-gradient(circle at center, black 45%, transparent 75%)',
+                position: 'absolute',
+                inset: 0,
+                WebkitMaskImage: 'radial-gradient(circle at center, black 48%, transparent 76%)',
+                maskImage: 'radial-gradient(circle at center, black 48%, transparent 76%)',
+                overflow: 'hidden',
               }}
             >
-              <HeroVideo
-                src="https://a7i5ct7oqefyp3zm.public.blob.vercel-storage.com/vidiohomebulet.mp4"
-                active={active}
-                onReady={() => {
-                  if (onReady) onReady();
-                }}
-              />
+              <Suspense fallback={null}>
+                <NetworkSphere />
+              </Suspense>
             </div>
-            {/* Glow ring behind video */}
-            <div className="absolute inset-[-20px] rounded-full bg-primary/10 blur-3xl -z-10" />
+            {/* Very subtle glow ring behind sphere */}
+            <div className="absolute inset-0 rounded-full bg-primary/8 blur-2xl -z-10 pointer-events-none" />
           </div>
         </div>
 

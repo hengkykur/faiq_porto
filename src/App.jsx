@@ -87,7 +87,12 @@ function App() {
           <Projects active={currentPage === 1} assetsAllowed={loadStage >= 1} />
         </Suspense>
         <Suspense fallback={null}>
-          <About active={currentPage === 2} assetsAllowed={loadStage >= 2} onScrollProgress={setAboutScrollProgress} />
+          <About 
+            active={currentPage === 2} 
+            assetsAllowed={loadStage >= 2} 
+            onScrollProgress={setAboutScrollProgress} 
+            onNavigateNext={() => setCurrentPage(3)}
+          />
         </Suspense>
         <Suspense fallback={null}>
           <Contact active={currentPage === 3} assetsAllowed={loadStage >= 3} />

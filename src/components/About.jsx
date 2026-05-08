@@ -38,10 +38,11 @@ const Icons = {
   )
 };
 
-const About = React.memo(({ active, assetsAllowed, onScrollProgress }) => {
+const About = React.memo(({ active, assetsAllowed, onScrollProgress, onNavigateNext }) => {
   const containerRef = useRef(null);
   const videoRef = useRef(null);
   const [scrollProgress, setScrollProgress] = useState(0);
+  const [footerProgress, setFooterProgress] = useState(0);
   const videoOpacityRef = useRef(1);
   const [isZone2Active, setIsZone2Active] = useState(false);
   const [isZone3Active, setIsZone3Active] = useState(false);
@@ -80,6 +81,121 @@ const About = React.memo(({ active, assetsAllowed, onScrollProgress }) => {
       window.removeEventListener('mousemove', handleGlobalMouseMove);
     };
   }, []);
+
+  // Overscroll logic for footer progress
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    let pullAmount = 0;
+    const maxPull = 1200; // Effort required (higher = more effort)
+    let decayRafId = null;
+    let isDecaying = false;
+    let lastPullTime = 0;
+
+    const startDecay = () => {
+      if (isDecaying) return;
+      isDecaying = true;
+      const decay = () => {
+        if (Date.now() - lastPullTime > 300) { // wait 300ms after last scroll before decaying
+          if (pullAmount > 0) {
+            pullAmount *= 0.985; // smooth exponential decay (much slower)
+            if (pullAmount < 5) pullAmount = 0;
+            setFooterProgress(pullAmount / maxPull);
+          }
+        }
+        if (pullAmount > 0) {
+          decayRafId = requestAnimationFrame(decay);
+        } else {
+          isDecaying = false;
+        }
+      };
+      decayRafId = requestAnimationFrame(decay);
+    };
+
+    const handleWheel = (e) => {
+      const { scrollTop, scrollHeight, clientHeight } = container;
+      const isAtBottom = Math.ceil(scrollTop + clientHeight) >= scrollHeight - 2;
+
+      if (isAtBottom && e.deltaY > 0) {
+        pullAmount += e.deltaY;
+        if (pullAmount > maxPull) pullAmount = maxPull;
+        lastPullTime = Date.now();
+        startDecay();
+
+        const p = pullAmount / maxPull;
+        setFooterProgress(p);
+
+        if (p >= 0.99 && onNavigateNext) {
+          onNavigateNext();
+          pullAmount = 0;
+        }
+      } else {
+        if (pullAmount > 0 && e.deltaY < 0) {
+          pullAmount += e.deltaY;
+          if (pullAmount < 0) pullAmount = 0;
+          lastPullTime = Date.now();
+          startDecay();
+          setFooterProgress(pullAmount / maxPull);
+        } else if (!isAtBottom) {
+          pullAmount = 0;
+          setFooterProgress(0);
+        }
+      }
+    };
+
+    let touchStartY = 0;
+    let lastTouchY = 0;
+    const handleTouchStart = (e) => {
+      touchStartY = e.touches[0].clientY;
+      lastTouchY = touchStartY;
+    };
+
+    const handleTouchMove = (e) => {
+      const { scrollTop, scrollHeight, clientHeight } = container;
+      const isAtBottom = Math.ceil(scrollTop + clientHeight) >= scrollHeight - 2;
+      const currentY = e.touches[0].clientY;
+      const deltaY = lastTouchY - currentY;
+      lastTouchY = currentY;
+
+      if (isAtBottom && deltaY > 0) {
+        pullAmount += deltaY * 3; // multiplier for touch
+        if (pullAmount > maxPull) pullAmount = maxPull;
+        lastPullTime = Date.now();
+        startDecay();
+
+        const p = pullAmount / maxPull;
+        setFooterProgress(p);
+
+        if (p >= 0.99 && onNavigateNext) {
+          onNavigateNext();
+          pullAmount = 0;
+        }
+      } else {
+        if (pullAmount > 0 && deltaY < 0) {
+          pullAmount += deltaY * 3;
+          if (pullAmount < 0) pullAmount = 0;
+          lastPullTime = Date.now();
+          startDecay();
+          setFooterProgress(pullAmount / maxPull);
+        } else if (!isAtBottom) {
+          pullAmount = 0;
+          setFooterProgress(0);
+        }
+      }
+    };
+
+    container.addEventListener('wheel', handleWheel, { passive: true });
+    container.addEventListener('touchstart', handleTouchStart, { passive: true });
+    container.addEventListener('touchmove', handleTouchMove, { passive: true });
+
+    return () => {
+      if (decayRafId) cancelAnimationFrame(decayRafId);
+      container.removeEventListener('wheel', handleWheel);
+      container.removeEventListener('touchstart', handleTouchStart);
+      container.removeEventListener('touchmove', handleTouchMove);
+    };
+  }, [onNavigateNext]);
 
   const handleGlobalClick = (e) => {
     if (e.target.closest('button') || e.target.closest('a')) return;
@@ -198,7 +314,7 @@ const About = React.memo(({ active, assetsAllowed, onScrollProgress }) => {
       if (onScrollProgress) onScrollProgress(progress);
 
       const isMobile = window.innerWidth < 768;
-      
+
       // Contiguous thresholds to prevent "flickering" or "dead zones"
       // Extended upper bounds for mobile to ensure content doesn't fade out too early
       setIsZone2Active(progress > 0.08 && progress <= (isMobile ? 0.45 : 0.40));
@@ -241,8 +357,8 @@ const About = React.memo(({ active, assetsAllowed, onScrollProgress }) => {
       className="w-screen h-screen flex-shrink-0 relative overflow-y-auto no-scrollbar select-none snap-y snap-proximity cursor-none"
     >
       {/* Custom Scroll Cursor */}
-      <div 
-        ref={customCursorRef} 
+      <div
+        ref={customCursorRef}
         className="absolute top-0 left-0 z-[9999] pointer-events-none flex items-center justify-center transition-transform duration-75 ease-out"
         style={{ transform: 'translate3d(-100px, -100px, 0)' }}
       >
@@ -258,7 +374,7 @@ const About = React.memo(({ active, assetsAllowed, onScrollProgress }) => {
         className="sticky top-0 w-full h-full z-0 overflow-hidden bg-black transition-opacity duration-1000"
         style={{
           opacity: (isZone3Active && !isZone4Active && !isZone6Active) ? 0 :
-                   (isZone4Active || isZone6Active) ? 0.4 : 1
+            (isZone4Active || isZone6Active) ? 0.4 : 1
         }}
       >
         {/* Visual Placeholder for About Video with Cinematic Shimmer */}
@@ -612,9 +728,17 @@ const About = React.memo(({ active, assetsAllowed, onScrollProgress }) => {
               </div>
               <div className="flex flex-col items-start md:items-end justify-end">
                 <div className="text-white font-display font-black text-4xl italic tracking-tighter opacity-10 hover:opacity-100 hover:animate-glitch-heavy transition-all cursor-default">Faiq_a.m</div>
-                <div className="flex gap-4 mt-2">
-                  <span className="text-[10px] text-white/20 font-mono tracking-widest uppercase animate-pulse">Swipe to Connect</span>
-                  <Icons.ChevronRight />
+                <div className="flex flex-col items-start md:items-end gap-2 mt-4 w-full md:w-auto">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] text-white/50 font-mono tracking-widest uppercase animate-pulse">Scroll to Connect</span>
+                    <Icons.ChevronRight />
+                  </div>
+                  <div className="w-32 h-[2px] bg-white/10 rounded-full overflow-hidden mt-1">
+                    <div
+                      className="h-full bg-primary shadow-[0_0_10px_var(--color-primary)] transition-all duration-75"
+                      style={{ width: `${footerProgress * 100}%` }}
+                    ></div>
+                  </div>
                 </div>
               </div>
             </div>
