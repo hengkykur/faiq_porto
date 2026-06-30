@@ -430,6 +430,11 @@ const Hero = React.memo(({ active, onReady, onNavigateNext }) => {
   // ── Portal scroll state ──
   const [portalProgress, setPortalProgress] = useState(0);
   const portalCompleteRef = useRef(false);
+  const targetProgressRef = useRef(0);
+  const smoothedProgressRef = useRef(0);
+  const animationFrameIdRef = useRef(null);
+  const isLockedRef = useRef(false);
+  const touchStartYRef = useRef(0);
 
   // Trigger onReady shortly after mount since there is no video to wait for anymore
   useEffect(() => {
@@ -465,50 +470,136 @@ const Hero = React.memo(({ active, onReady, onNavigateNext }) => {
     };
   }, []);
 
-  // ── Portal scroll logic (offset-based, no IntersectionObserver) ──
+  // ── Portal scroll logic (offset-based with requestAnimationFrame smoothing and scroll locking) ──
   useEffect(() => {
     const container = containerRef.current;
     const portalWrapper = portalWrapperRef.current;
     if (!container || !portalWrapper) return;
 
-    const PORTAL_SCROLL_DISTANCE = 2500; // px of extra scroll to complete the portal
+    const PORTAL_SCROLL_DISTANCE = 1800; // virtual distance for progress
 
+    // Wheel event handler (non-passive to allow preventDefault)
+    const handleWheel = (e) => {
+      if (isLockedRef.current && !portalCompleteRef.current) {
+        e.preventDefault(); // Stop native viewport scrolling
+
+        // Adjust target progress based on scroll wheel delta Y
+        const delta = e.deltaY * 1.5; // sensitivity adjustment
+        const newProgress = Math.min(
+          Math.max(targetProgressRef.current + delta / PORTAL_SCROLL_DISTANCE, 0),
+          1
+        );
+
+        targetProgressRef.current = newProgress;
+
+        // If user scrolls all the way back up, unlock scroll
+        if (newProgress <= 0 && e.deltaY < 0) {
+          isLockedRef.current = false;
+          // Push back up slightly to clear the trigger point
+          container.scrollBy({ top: -15, behavior: 'auto' });
+        }
+      }
+    };
+
+    // Touch event handlers for mobile
+    const handleTouchStart = (e) => {
+      touchStartYRef.current = e.touches[0].clientY;
+    };
+
+    const handleTouchMove = (e) => {
+      if (!isLockedRef.current || portalCompleteRef.current) return;
+
+      const touchY = e.touches[0].clientY;
+      const deltaY = touchStartYRef.current - touchY; // Positive = scrolling down
+      touchStartYRef.current = touchY;
+
+      e.preventDefault(); // Stop native viewport scrolling
+
+      const newProgress = Math.min(
+        Math.max(targetProgressRef.current + deltaY * 2.5 / PORTAL_SCROLL_DISTANCE, 0),
+        1
+      );
+
+      targetProgressRef.current = newProgress;
+
+      if (newProgress <= 0 && deltaY < 0) {
+        isLockedRef.current = false;
+        container.scrollBy({ top: -15, behavior: 'auto' });
+      }
+    };
+
+    // Passive scroll listener for when we are NOT locked
     const handleScroll = () => {
       if (portalCompleteRef.current) return;
 
-      // How far the user has scrolled past the top of the portal wrapper
-      const wrapperTop = portalWrapper.offsetTop;
-      const scrolled = container.scrollTop - wrapperTop;
+      const containerRect = container.getBoundingClientRect();
+      const wrapperRect = portalWrapper.getBoundingClientRect();
+      const scrolled = containerRect.top - wrapperRect.top;
 
-      if (scrolled < 0) {
-        // Haven't reached the portal yet
-        if (portalProgress !== 0) setPortalProgress(0);
-        return;
+      // Lock scroll and center viewport if scrolled past top boundary
+      if (scrolled >= 0 && !isLockedRef.current) {
+        container.scrollTop += (wrapperRect.top - containerRect.top);
+        isLockedRef.current = true;
+        targetProgressRef.current = 0;
+      }
+    };
+
+    // Smooth loop that lerps portalProgress toward targetProgressRef
+    const updateProgress = () => {
+      // 1. Enforce scroll lock position to hide the footer and prevent scroll leak
+      if (isLockedRef.current && !portalCompleteRef.current) {
+        const containerRect = container.getBoundingClientRect();
+        const wrapperRect = portalWrapper.getBoundingClientRect();
+        const offset = wrapperRect.top - containerRect.top;
+        if (Math.abs(offset) > 1) {
+          container.scrollTop += offset;
+        }
       }
 
-      // Progress: 0 at wrapperTop, 1 after PORTAL_SCROLL_DISTANCE more px
-      const progress = Math.min(scrolled / PORTAL_SCROLL_DISTANCE, 1);
-      setPortalProgress(progress);
+      const diff = targetProgressRef.current - smoothedProgressRef.current;
 
-      // When fully zoomed in, trigger navigation
-      if (progress >= 1 && !portalCompleteRef.current) {
+      if (Math.abs(diff) > 0.001) {
+        smoothedProgressRef.current += diff * 0.025; // Slower, more cinematic tempo
+        setPortalProgress(smoothedProgressRef.current);
+      } else if (smoothedProgressRef.current !== targetProgressRef.current) {
+        smoothedProgressRef.current = targetProgressRef.current;
+        setPortalProgress(smoothedProgressRef.current);
+      }
+
+      // Check for navigation inside the loop when smoothed zoom is fully complete
+      if (smoothedProgressRef.current >= 0.99 && !portalCompleteRef.current && targetProgressRef.current >= 1.0) {
         portalCompleteRef.current = true;
         setTimeout(() => {
           if (onNavigateNext) onNavigateNext();
-          // Reset after navigation
+          // Reset portal state after page transitions
           setTimeout(() => {
             portalCompleteRef.current = false;
+            isLockedRef.current = false;
+            targetProgressRef.current = 0;
+            smoothedProgressRef.current = 0;
             setPortalProgress(0);
-            // Scroll back to top for when user returns
             if (container) container.scrollTop = 0;
           }, 800);
         }, 600);
       }
+
+      animationFrameIdRef.current = requestAnimationFrame(updateProgress);
     };
 
+    container.addEventListener('wheel', handleWheel, { passive: false });
+    container.addEventListener('touchstart', handleTouchStart, { passive: true });
+    container.addEventListener('touchmove', handleTouchMove, { passive: false });
     container.addEventListener('scroll', handleScroll, { passive: true });
-    return () => container.removeEventListener('scroll', handleScroll);
-  }, [onNavigateNext, portalProgress]);
+    animationFrameIdRef.current = requestAnimationFrame(updateProgress);
+
+    return () => {
+      container.removeEventListener('wheel', handleWheel);
+      container.removeEventListener('touchstart', handleTouchStart);
+      container.removeEventListener('touchmove', handleTouchMove);
+      container.removeEventListener('scroll', handleScroll);
+      if (animationFrameIdRef.current) cancelAnimationFrame(animationFrameIdRef.current);
+    };
+  }, [onNavigateNext]);
 
   const handleGlobalClick = (e) => {
     if (e.target.closest('button') || e.target.closest('a')) return;
@@ -717,7 +808,7 @@ const Hero = React.memo(({ active, onReady, onNavigateNext }) => {
         </div> {/* Close max-w-6xl early */}
 
         {/* ── Portal Wrapper (provides scroll room for the sticky banner) ── */}
-        <div ref={portalWrapperRef} className="relative mt-80 md:mt-[24rem]" style={{ height: 'calc(100vh + 2500px)' }}>
+        <div ref={portalWrapperRef} className="relative mt-80 md:mt-[24rem]" style={{ height: 'calc(100vh + 1800px)' }}>
           {/* The banner is sticky: it fills the screen and stays pinned while user scrolls through the spacer */}
           <div
             ref={bannerRef}
@@ -733,6 +824,16 @@ const Hero = React.memo(({ active, onReady, onNavigateNext }) => {
             >
               MANTAP
             </span>
+            {/* Soft background glow to ease contrast behind the 3D Torus Knot */}
+            <div 
+              className="absolute z-0 w-[550px] h-[550px] rounded-full pointer-events-none"
+              style={{
+                background: 'radial-gradient(circle, rgba(0, 240, 255, 0.06) 0%, rgba(129, 140, 248, 0.03) 50%, transparent 75%)',
+                filter: 'blur(70px)',
+                opacity: 1 - portalProgress,
+                transition: 'opacity 0.25s ease-out',
+              }}
+            />
             {/* Interactive 3D Monolith Object */}
             <Suspense fallback={null}>
               <InteractiveMonolith scrollProgress={portalProgress} />

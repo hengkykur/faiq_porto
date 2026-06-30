@@ -5,16 +5,18 @@ import * as THREE from 'three';
 /* ── Camera Controller — zooms in based on scrollProgress ── */
 const CameraController = ({ scrollProgress }) => {
   const { camera } = useThree();
-  const startZ = 11.0;
+  const startZ = 15.0;
   const endZ = 0.15;
 
   useFrame(() => {
     const p = scrollProgress.current;
-    const targetZ = THREE.MathUtils.lerp(startZ, endZ, p);
-    camera.position.z = THREE.MathUtils.lerp(camera.position.z, targetZ, 0.04);
+    // Ease-out curve to counteract perspective zoom acceleration
+    const easedP = Math.sin(p * Math.PI / 2);
+    const targetZ = THREE.MathUtils.lerp(startZ, endZ, easedP);
+    camera.position.z = THREE.MathUtils.lerp(camera.position.z, targetZ, 0.025);
 
-    // Slight FOV shift for dramatic tunnel feel
-    camera.fov = THREE.MathUtils.lerp(45, 75, p * p);
+    // Eased FOV shift for dramatic tunnel feel
+    camera.fov = THREE.MathUtils.lerp(45, 75, easedP * easedP);
     camera.updateProjectionMatrix();
   });
 
@@ -24,30 +26,40 @@ const CameraController = ({ scrollProgress }) => {
 /* ── Central Torus Knot with glowing edges ── */
 const CentralShape = ({ scrollProgress }) => {
   const groupRef = useRef(null);
+  const rotationGroupRef = useRef(null);
   const knotRef = useRef(null);
 
   useFrame((state, delta) => {
     const p = scrollProgress.current;
+    const easedP = Math.sin(p * Math.PI / 2);
 
-    if (groupRef.current) {
-      // Rotation speed ramps up as portal progresses
-      const rotSpeed = 0.15 + p * 2.5;
-      groupRef.current.rotation.y += delta * rotSpeed;
-      groupRef.current.rotation.x += delta * (0.05 + p * 0.8);
-
-      // Mouse-reactive tilt — diminishes as portal takes over
-      const mouseInfluence = 1 - p;
-      const tx = state.pointer.y * 0.4 * mouseInfluence;
-      groupRef.current.rotation.x = THREE.MathUtils.lerp(groupRef.current.rotation.x, groupRef.current.rotation.x + tx * 0.01, 0.06);
-      groupRef.current.position.x = THREE.MathUtils.lerp(groupRef.current.position.x, state.pointer.x * 0.5 * mouseInfluence, 0.06);
-      groupRef.current.position.y = THREE.MathUtils.lerp(groupRef.current.position.y, state.pointer.y * 0.3 * mouseInfluence, 0.06);
+    // 1. Auto-rotation on the inner rotation group (all children rotate together)
+    if (rotationGroupRef.current) {
+      const rotSpeed = 0.15 + easedP * 2.5;
+      rotationGroupRef.current.rotation.y += delta * rotSpeed;
+      rotationGroupRef.current.rotation.x += delta * (0.05 + easedP * 0.8);
     }
 
-    // Scale up as camera approaches
-    if (knotRef.current) {
+    // 2. Slow, heavy mouse tracking on the outer group
+    if (groupRef.current) {
+      const mouseInfluence = 1 - easedP;
+      // Scale mouse position and rotation bounds up to match the 24.0 starting camera distance
+      const targetPosX = state.pointer.x * 2.0 * mouseInfluence;
+      const targetPosY = state.pointer.y * 1.2 * mouseInfluence;
+      const targetRotX = state.pointer.y * -0.32 * mouseInfluence;
+      const targetRotY = state.pointer.x * 0.32 * mouseInfluence;
+
+      groupRef.current.position.x = THREE.MathUtils.lerp(groupRef.current.position.x, targetPosX, 0.03);
+      groupRef.current.position.y = THREE.MathUtils.lerp(groupRef.current.position.y, targetPosY, 0.03);
+      groupRef.current.rotation.x = THREE.MathUtils.lerp(groupRef.current.rotation.x, targetRotX, 0.03);
+      groupRef.current.rotation.y = THREE.MathUtils.lerp(groupRef.current.rotation.y, targetRotY, 0.03);
+    }
+
+    // 3. Scale up as camera approaches
+    if (knotRef.current && rotationGroupRef.current) {
       const basePulse = 1 + Math.sin(state.clock.elapsedTime * 1.2) * 0.03;
-      const portalScale = 1 + p * 1.5;
-      knotRef.current.scale.setScalar(basePulse * portalScale);
+      const portalScale = 1 + easedP * 1.5;
+      rotationGroupRef.current.scale.setScalar(basePulse * portalScale);
     }
   });
 
@@ -58,26 +70,28 @@ const CentralShape = ({ scrollProgress }) => {
 
   return (
     <group ref={groupRef}>
-      {/* Main Torus Knot — Piano Black Reflective */}
-      <mesh ref={knotRef}>
-        <torusKnotGeometry args={[0.85, 0.28, 128, 16, 2, 3]} />
-        <meshPhysicalMaterial
-          color="#020203"
-          roughness={0.08}
-          metalness={0.95}
-          clearcoat={1.0}
-          clearcoatRoughness={0.02}
-          reflectivity={1.0}
-        />
-      </mesh>
+      <group ref={rotationGroupRef}>
+        {/* Main Torus Knot — Piano Black Reflective */}
+        <mesh ref={knotRef}>
+          <torusKnotGeometry args={[0.85, 0.28, 128, 16, 2, 3]} />
+          <meshPhysicalMaterial
+            color="#020203"
+            roughness={0.08}
+            metalness={0.95}
+            clearcoat={1.0}
+            clearcoatRoughness={0.02}
+            reflectivity={1.0}
+          />
+        </mesh>
 
-      {/* Wireframe overlay — Cyan glow */}
-      <WireframeOverlay scrollProgress={scrollProgress} />
+        {/* Wireframe overlay — Cyan glow */}
+        <WireframeOverlay scrollProgress={scrollProgress} />
 
-      {/* Sharp outline edges — Crisp White/Silver for high-tech look */}
-      <lineSegments geometry={edgesGeom}>
-        <lineBasicMaterial color="#ffffff" transparent opacity={0.8} />
-      </lineSegments>
+        {/* Sharp outline edges — Crisp White/Silver for high-tech look */}
+        <lineSegments geometry={edgesGeom}>
+          <lineBasicMaterial color="#ffffff" transparent opacity={0.8} />
+        </lineSegments>
+      </group>
     </group>
   );
 };
@@ -89,7 +103,8 @@ const WireframeOverlay = ({ scrollProgress }) => {
   useFrame(() => {
     if (matRef.current) {
       const p = scrollProgress.current;
-      matRef.current.opacity = 0.2 + p * 0.55;
+      const easedP = Math.sin(p * Math.PI / 2);
+      matRef.current.opacity = 0.2 + easedP * 0.55;
     }
   });
 
@@ -198,7 +213,7 @@ const InteractiveMonolith = ({ scrollProgress = 0 }) => {
   return (
     <div className="absolute inset-0 w-full h-full z-10 pointer-events-none">
       <Canvas
-        camera={{ position: [0, 0, 11.0], fov: 45 }}
+        camera={{ position: [0, 0, 15.0], fov: 45 }}
         style={{
           width: '100%',
           height: '100%',
