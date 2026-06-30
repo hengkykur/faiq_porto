@@ -678,7 +678,7 @@ const Hero = React.memo(({ active, onReady, onNavigateNext }) => {
               </Suspense>
             </div>
             {/* Very subtle glow ring behind sphere */}
-            <div className="absolute inset-0 rounded-full bg-primary/8 blur-2xl -z-10 pointer-events-none" />
+            <div className="absolute inset-0 rounded-full bg-white/[0.05] blur-3xl -z-10 pointer-events-none" />
           </div>
         </div>
 
@@ -812,7 +812,10 @@ const Hero = React.memo(({ active, onReady, onNavigateNext }) => {
           {/* The banner is sticky: it fills the screen and stays pinned while user scrolls through the spacer */}
           <div
             ref={bannerRef}
-            className="sticky top-0 w-full bg-[#0c0c0e] border-t border-b border-white/[0.05] h-screen relative overflow-hidden flex items-center justify-center pointer-events-auto"
+            className="sticky top-0 w-full h-screen relative overflow-hidden flex items-center justify-center pointer-events-auto"
+            style={{
+              background: 'linear-gradient(to bottom, #060608 0%, #0e0e11 25%, #0e0e11 75%, #000000 100%)',
+            }}
           >
             {/* Faded Watermark Text */}
             <span

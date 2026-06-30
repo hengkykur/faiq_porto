@@ -7,9 +7,29 @@ import { OrbitControls, useGLTF } from '@react-three/drei';
  * Loads the GLB file from the public folder.
  */
 const Model = ({ isUserInteracting }) => {
-  // Ganti 'network_sphere.glb' dengan nama file Anda di dalam folder public/
   const { scene } = useGLTF('/network_sphere.glb');
   const groupRef = useRef(null);
+
+  // Force all model materials to use clean white color
+  React.useEffect(() => {
+    if (scene) {
+      scene.traverse((child) => {
+        if (child.isMesh || child.isLine || child.isPoints || child.isLineSegments) {
+          if (child.material) {
+            const overrideColor = (mat) => {
+              if (mat.color) mat.color.set('#ffffff');
+              if (mat.emissive) mat.emissive.set('#000000'); // Disable colored emissive glow
+            };
+            if (Array.isArray(child.material)) {
+              child.material.forEach(overrideColor);
+            } else {
+              overrideColor(child.material);
+            }
+          }
+        }
+      });
+    }
+  }, [scene]);
 
   useFrame((_, delta) => {
     // Only auto-rotate when user isn't manually dragging
