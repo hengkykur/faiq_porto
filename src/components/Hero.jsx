@@ -1,6 +1,8 @@
 import React, { useState, useRef, useEffect, useCallback, Suspense } from 'react';
 import SpaceInvaders from './SpaceInvaders';
 import NetworkSphere from './NetworkSphere';
+import HeroBackground from './HeroBackground';
+import InteractiveMonolith from './InteractiveMonolith';
 
 /**
  * LazyVideo Component
@@ -271,7 +273,7 @@ const RevealOnScroll = ({ children, delay = 0, className = '' }) => {
   return (
     <div
       ref={domRef}
-      className={className}
+      className={`${className} group/reveal ${isVisible ? 'is-visible' : ''}`}
       style={{
         opacity: isVisible ? 1 : 0,
         transform: isVisible ? 'translateY(0)' : 'translateY(50px)',
@@ -284,6 +286,30 @@ const RevealOnScroll = ({ children, delay = 0, className = '' }) => {
   );
 };
 
+const TextAnimate = React.memo(({ text, italic, delay = 0 }) => {
+  const characters = text.split('');
+  return (
+    <span className={`inline-block ${italic ? 'italic font-light' : 'font-normal'}`}>
+      {characters.map((char, index) => {
+        if (char === ' ') {
+          return <span key={index}>&nbsp;</span>;
+        }
+        return (
+          <span
+            key={index}
+            className="reveal-char"
+            style={{
+              transitionDelay: `${delay + index * 40}ms`,
+            }}
+          >
+            {char}
+          </span>
+        );
+      })}
+    </span>
+  );
+});
+
 const TypewriterText = React.memo(() => {
   const [wordIndex, setWordIndex] = useState(0);
   const [currentText, setCurrentText] = useState('');
@@ -291,10 +317,32 @@ const TypewriterText = React.memo(() => {
   const [typeSpeed, setTypeSpeed] = useState(150);
 
   const wordConfigs = React.useMemo(() => [
-    { text: 'Digital Art', font: "'Cormorant Garamond', serif", italic: true, weight: 300 },
-    { text: 'Sleek Code', font: "'Space Grotesk', sans-serif", italic: false, weight: 400 },
-    { text: 'Architecture', font: "'Outfit', sans-serif", italic: true, weight: 600 },
-    { text: 'Simplicity', font: "'Plus Jakarta Sans', sans-serif", italic: false, weight: 300 },
+    {
+      text: 'Sleek Code',
+      segments: [
+        { text: 'Sleek', italic: true },
+        { text: ' Code', italic: false }
+      ]
+    },
+    {
+      text: 'Digital Art',
+      segments: [
+        { text: 'Digital', italic: true },
+        { text: ' Art', italic: false }
+      ]
+    },
+    {
+      text: 'Architecture',
+      segments: [
+        { text: 'Architecture', italic: true }
+      ]
+    },
+    {
+      text: 'Simplicity',
+      segments: [
+        { text: 'Simplicity', italic: false }
+      ]
+    }
   ], []);
 
   useEffect(() => {
@@ -323,49 +371,65 @@ const TypewriterText = React.memo(() => {
   }, [currentText, isDeleting, wordIndex, typeSpeed, wordConfigs]);
 
   const config = wordConfigs[wordIndex];
+  let remainingChars = currentText.length;
 
   return (
     <span className="relative inline-block align-middle overflow-hidden pr-4 sm:pr-8" style={{ contain: 'layout paint' }}>
-      {/* ── Ghost Loader (Pre-measures widest word across all fonts to prevent CLS) ── */}
+      {/* ── Ghost Loader (Pre-measures widest word to prevent CLS) ── */}
       <span className="invisible h-0 block overflow-hidden select-none pointer-events-none" aria-hidden="true" style={{ fontSize: 'inherit' }}>
         {wordConfigs.map((w, i) => (
-          <span
-            key={i}
-            className="block"
-            style={{
-              fontFamily: w.font,
-              fontStyle: w.italic ? 'italic' : 'normal',
-              fontWeight: w.weight,
-              height: 0,
-            }}
-          >
-            {w.text}
+          <span key={i} className="block" style={{ height: 0 }}>
+            {w.segments.map((seg, sIdx) => (
+              <span
+                key={sIdx}
+                className={seg.italic ? 'italic font-light' : 'font-normal'}
+              >
+                {seg.text}
+              </span>
+            ))}
           </span>
         ))}
       </span>
 
       {/* ── Actual Typewriter ── */}
       <span
-        className="text-glow inline-block transition-[font-family,font-weight,font-style] duration-500 ease-in-out"
+        className="inline-block transition-all duration-500 ease-in-out text-[#00f0ff]"
         style={{
-          fontFamily: config.font,
-          fontStyle: config.italic ? 'italic' : 'normal',
-          fontWeight: config.weight,
-          whiteSpace: 'nowrap'
+          fontFamily: "'Cormorant Garamond', serif",
+          whiteSpace: 'nowrap',
+          textShadow: '0 0 20px rgba(0, 240, 255, 0.6), 0 0 40px rgba(0, 240, 255, 0.3)'
         }}
       >
-        {currentText}
+        {config.segments.map((seg, sIdx) => {
+          if (remainingChars <= 0) return null;
+          const segmentText = seg.text.substring(0, remainingChars);
+          remainingChars -= seg.text.length;
+          return (
+            <span
+              key={sIdx}
+              className={seg.italic ? 'italic font-light' : 'font-normal'}
+            >
+              {segmentText}
+            </span>
+          );
+        })}
         {/* Blinking Cursor */}
-        <span className="animate-pulse border-r-[3px] border-primary ml-0.5 inline-block h-[0.85em] align-middle" />
+        <span className="animate-pulse border-r-[3px] border-[#00f0ff] ml-0.5 inline-block h-[0.85em] align-middle" />
       </span>
     </span>
   );
 });
 
-const Hero = React.memo(({ active, onReady }) => {
+const Hero = React.memo(({ active, onReady, onNavigateNext }) => {
   const containerRef = useRef(null);
   const customCursorRef = useRef(null);
   const lastMousePos = useRef({ x: -100, y: -100 });
+  const bannerRef = useRef(null);
+  const portalWrapperRef = useRef(null);
+
+  // ── Portal scroll state ──
+  const [portalProgress, setPortalProgress] = useState(0);
+  const portalCompleteRef = useRef(false);
 
   // Trigger onReady shortly after mount since there is no video to wait for anymore
   useEffect(() => {
@@ -401,22 +465,69 @@ const Hero = React.memo(({ active, onReady }) => {
     };
   }, []);
 
+  // ── Portal scroll logic (offset-based, no IntersectionObserver) ──
+  useEffect(() => {
+    const container = containerRef.current;
+    const portalWrapper = portalWrapperRef.current;
+    if (!container || !portalWrapper) return;
+
+    const PORTAL_SCROLL_DISTANCE = 2500; // px of extra scroll to complete the portal
+
+    const handleScroll = () => {
+      if (portalCompleteRef.current) return;
+
+      // How far the user has scrolled past the top of the portal wrapper
+      const wrapperTop = portalWrapper.offsetTop;
+      const scrolled = container.scrollTop - wrapperTop;
+
+      if (scrolled < 0) {
+        // Haven't reached the portal yet
+        if (portalProgress !== 0) setPortalProgress(0);
+        return;
+      }
+
+      // Progress: 0 at wrapperTop, 1 after PORTAL_SCROLL_DISTANCE more px
+      const progress = Math.min(scrolled / PORTAL_SCROLL_DISTANCE, 1);
+      setPortalProgress(progress);
+
+      // When fully zoomed in, trigger navigation
+      if (progress >= 1 && !portalCompleteRef.current) {
+        portalCompleteRef.current = true;
+        setTimeout(() => {
+          if (onNavigateNext) onNavigateNext();
+          // Reset after navigation
+          setTimeout(() => {
+            portalCompleteRef.current = false;
+            setPortalProgress(0);
+            // Scroll back to top for when user returns
+            if (container) container.scrollTop = 0;
+          }, 800);
+        }, 600);
+      }
+    };
+
+    container.addEventListener('scroll', handleScroll, { passive: true });
+    return () => container.removeEventListener('scroll', handleScroll);
+  }, [onNavigateNext, portalProgress]);
+
   const handleGlobalClick = (e) => {
     if (e.target.closest('button') || e.target.closest('a')) return;
+    // Don't jump-scroll if we're in the portal zone
+    if (portalProgress > 0) return;
     if (containerRef.current) {
       containerRef.current.scrollBy({ top: window.innerHeight, behavior: 'smooth' });
     }
   };
 
   return (
-    <div 
+    <div
       ref={containerRef}
       onClick={handleGlobalClick}
       className="w-screen h-screen relative overflow-y-auto overflow-x-hidden bg-[#060608] flex-shrink-0 no-scrollbar scroll-smooth cursor-none"
     >
       {/* Custom Scroll Cursor */}
-      <div 
-        ref={customCursorRef} 
+      <div
+        ref={customCursorRef}
         className="absolute top-0 left-0 z-[9999] pointer-events-none flex items-center justify-center transition-transform duration-75 ease-out"
         style={{ transform: 'translate3d(-100px, -100px, 0)' }}
       >
@@ -436,6 +547,8 @@ const Hero = React.memo(({ active, onReady }) => {
           <div className="absolute inset-0 bg-[#060608]"
             style={{ backgroundImage: 'radial-gradient(ellipse at 75% 40%, rgba(99,102,241,0.12) 0%, transparent 65%)' }}
           />
+          {/* WebGL Shader Background */}
+          <HeroBackground />
           {/* Grain overlay */}
           <div className="absolute inset-0 pointer-events-none opacity-20 mix-blend-overlay grain-overlay" />
           {/* Scanlines */}
@@ -486,16 +599,18 @@ const Hero = React.memo(({ active, onReady }) => {
               Creative Technical Craft
             </p>
 
-            <h1 className="text-3xl sm:text-4xl md:text-6xl font-display font-bold leading-[1.1] mb-5 text-white tracking-tight">
-              <span className="italic">Engineering </span>
-              <span className="text-white italic">Sleek</span>
-              <span className="italic"> Digital</span>
+            <h1
+              className="text-3xl sm:text-4xl md:text-[4.5rem] leading-[1.15] mb-5 text-white tracking-tight font-normal"
+              style={{ fontFamily: "'Cormorant Garamond', serif" }}
+            >
+              Engineering
+              <br />
+              <span className="italic font-light">Sleek</span> Digital
               <br />
               <TypewriterText />
-              <span className="text-white font-light">.</span>
             </h1>
 
-            <p className="text-sm md:text-[15px] text-slate-400 max-w-md mb-8 leading-relaxed font-light font-body">
+            <p className="text-[13px] md:text-[14px] text-slate-400 max-w-xl mb-8 leading-relaxed font-light font-body">
               I craft high-performance code and intelligent digital architecture.{' '}
               Connecting{' '}
               <span className="text-white font-medium border-b border-primary/40">
@@ -538,12 +653,19 @@ const Hero = React.memo(({ active, onReady }) => {
 
           {/* Section Header */}
           <RevealOnScroll className="mb-32 flex flex-col items-center text-center">
-            <p className="text-primary tracking-[0.3em] text-[10px] uppercase font-medium mb-4">Exhibition</p>
-            <h2 className="text-4xl md:text-6xl font-display font-light text-white mb-6">
-              Visual <span className="italic text-slate-300">Symphony</span>
+            <p className="text-[#00f0ff] tracking-[0.3em] text-[10px] md:text-[11px] uppercase font-medium font-mono mb-4">
+              Exhibition
+            </p>
+            <h2
+              className="text-4xl md:text-6xl text-white mb-6 font-normal tracking-tight"
+              style={{ fontFamily: "'Cormorant Garamond', serif" }}
+            >
+              <TextAnimate text="Visual" delay={100} />{' '}
+              <TextAnimate text="Symphony" italic delay={350} />
             </h2>
-            <p className="text-slate-400 max-w-xl font-light leading-relaxed text-sm md:text-base">
-              A curated expression of digital esthetics. Where rigid logic gracefully transitions into boundless visual form.
+            <p className="text-slate-400 max-w-xl font-light leading-relaxed text-[13px] md:text-[14px] font-body">
+              A curated expression of digital esthetics. Where rigid logic gracefully transitions into
+              <br className="hidden sm:inline" /> boundless visual form.
             </p>
           </RevealOnScroll>
 
@@ -590,31 +712,121 @@ const Hero = React.memo(({ active, onReady }) => {
               </RevealOnScroll>
             </div>
 
-            {/* Gallery Item 3 */}
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-12 md:gap-8 items-center">
-              <RevealOnScroll delay={100} className="md:col-span-4 space-y-6 order-2 md:order-1 pt-8 md:pt-0">
-                <span className="text-white/40 tracking-[0.2em] text-[10px] uppercase font-medium line-through decoration-primary/50">03</span>
-                <h3 className="text-3xl md:text-5xl font-display text-white">Sleek Automata</h3>
-                <div className="w-12 h-[1px] bg-primary/50 my-6"></div>
-                <p className="text-slate-400 font-light leading-relaxed text-sm md:text-base">
-                  Embracing the cold, calculated precision of interfaces. Translating raw brutalist concepts into elegant, functional digital surfaces that demand attention.
-                </p>
-              </RevealOnScroll>
-              <RevealOnScroll delay={300} className="md:col-span-8 relative group order-1 md:order-2">
-                <div className="aspect-[16/9] w-full overflow-hidden bg-white/5 ring-1 ring-white/10 rounded-sm">
-                  <img src="https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=700&auto=format&fit=crop" alt="Retro Tech" className="w-full h-full object-cover opacity-60 grayscale-[50%] group-hover:opacity-100 group-hover:grayscale-0 group-hover:scale-[1.02] transition-all duration-[1.5s] ease-[cubic-bezier(0.19,1,0.22,1)]" loading="lazy" />
-                </div>
-                <div className="absolute -inset-4 border border-primary/20 scale-95 opacity-0 group-hover:scale-100 group-hover:opacity-100 transition-all duration-1000 pointer-events-none rounded-sm"></div>
-              </RevealOnScroll>
-            </div>
-
           </div>
 
-          {/* Footer of Gallery to provide spacing */}
-          <RevealOnScroll delay={200} className="h-32 w-full flex items-center justify-center mt-32">
-            <div className="w-[1px] h-32 bg-gradient-to-t from-primary/50 to-transparent"></div>
-          </RevealOnScroll>
+        </div> {/* Close max-w-6xl early */}
 
+        {/* ── Portal Wrapper (provides scroll room for the sticky banner) ── */}
+        <div ref={portalWrapperRef} className="relative mt-80 md:mt-[24rem]" style={{ height: 'calc(100vh + 2500px)' }}>
+          {/* The banner is sticky: it fills the screen and stays pinned while user scrolls through the spacer */}
+          <div
+            ref={bannerRef}
+            className="sticky top-0 w-full bg-[#0c0c0e] border-t border-b border-white/[0.05] h-screen relative overflow-hidden flex items-center justify-center pointer-events-auto"
+          >
+            {/* Faded Watermark Text */}
+            <span
+              className="text-[#4c4c54] text-6xl sm:text-8xl md:text-[9.5rem] font-bold tracking-[0.25em] uppercase font-display select-none pointer-events-none z-0"
+              style={{
+                fontFamily: "'Cormorant Garamond', serif",
+                opacity: Math.max(1 - portalProgress * 0.7, 0),
+              }}
+            >
+              MANTAP
+            </span>
+            {/* Interactive 3D Monolith Object */}
+            <Suspense fallback={null}>
+              <InteractiveMonolith scrollProgress={portalProgress} />
+            </Suspense>
+
+            {/* Vignette overlay — darkens edges as portal progresses */}
+            <div
+              className="absolute inset-0 z-20 pointer-events-none"
+              style={{
+                background: `radial-gradient(circle at center, transparent ${60 - portalProgress * 55}%, black ${100 - portalProgress * 30}%)`,
+                opacity: portalProgress,
+                transition: 'opacity 0.15s ease-out',
+              }}
+            />
+
+            {/* Full blackout overlay — appears at end of portal */}
+            <div
+              className="absolute inset-0 z-30 pointer-events-none bg-black"
+              style={{
+                opacity: portalProgress > 0.8 ? (portalProgress - 0.8) * 5 : 0,
+                transition: 'opacity 0.3s ease-out',
+              }}
+            />
+
+            {/* Scroll hint at bottom of banner */}
+            {portalProgress < 0.1 && (
+              <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-2 animate-pulse">
+                <span className="text-[9px] font-mono tracking-[0.2em] text-white/30 uppercase">Scroll to enter</span>
+                <svg className="w-4 h-4 text-white/30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7" />
+                </svg>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* ── Footer Section (Full Width Background, Centered Content) ── */}
+        <div className="w-full bg-black py-16 px-6">
+          <div className="container mx-auto max-w-6xl">
+            <footer className="w-full space-y-12">
+              <div className="flex flex-col md:flex-row md:items-start justify-between gap-8">
+                {/* Left Side Logo */}
+                <div className="text-left">
+                  <h3
+                    className="text-xl md:text-2xl font-bold tracking-[0.2em] text-white uppercase"
+                    style={{ fontFamily: "'Cormorant Garamond', serif" }}
+                  >
+                    MONOLITH
+                  </h3>
+                  <p className="text-[9px] tracking-[0.2em] font-mono text-slate-500 mt-2 text-left">
+                    ARCHITECTURAL SOLUTIONS FOR THE DIGITAL FRONTIER.
+                  </p>
+                </div>
+
+                {/* Right Side Links */}
+                <div className="flex flex-wrap gap-x-8 gap-y-2 md:pt-2">
+                  {['Legal', 'Privacy', 'Press', 'Intelligence'].map((link) => (
+                    <a
+                      key={link}
+                      href={`#${link.toLowerCase()}`}
+                      className="text-[10px] font-mono uppercase tracking-[0.2em] text-slate-400 hover:text-white transition-colors cursor-pointer"
+                    >
+                      {link}
+                    </a>
+                  ))}
+                </div>
+              </div>
+
+              {/* Bottom Copyright and Icons */}
+              <div className="border-t border-white/[0.03] pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+                <span className="text-[9px] font-mono tracking-wider text-slate-600">
+                  © 2026 MONOLITH ARCHITECTURAL SOLUTIONS. ALL RIGHTS RESERVED.
+                </span>
+
+                {/* Footer Icons */}
+                <div className="flex items-center gap-5 text-slate-500">
+                  {/* Share Icon */}
+                  <button className="hover:text-white transition-colors cursor-pointer" aria-label="Share">
+                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92c0-1.61-1.31-2.92-2.92-2.92z" />
+                    </svg>
+                  </button>
+
+                  {/* Terminal / Code Icon */}
+                  <button className="hover:text-white transition-colors cursor-pointer" aria-label="Console">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                      <polyline points="9 17 14 12 9 7" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </footer>
+          </div>
         </div>
       </div>
 

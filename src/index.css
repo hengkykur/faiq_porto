@@ -521,6 +521,21 @@
   animation: fade-in-app 0.5s ease-out forwards;
 }
 
+/* Text reveal blur in up animation */
+.reveal-char {
+  display: inline-block;
+  opacity: 0;
+  filter: blur(8px);
+  transform: translateY(16px);
+  transition: opacity 0.8s ease-out, filter 0.8s ease-out, transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.is-visible .reveal-char {
+  opacity: 1;
+  filter: blur(0px);
+  transform: translateY(0);
+}
+
 /* Respect user motion preferences — safety net for all devices */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {

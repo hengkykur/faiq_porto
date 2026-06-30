@@ -82,7 +82,7 @@ function App() {
         }}
         onTransitionEnd={() => { prevPageRef.current = currentPage; }}
       >
-        <Hero active={currentPage === 0} onReady={() => setLoadStage(prev => prev === 0 ? 1 : prev)} />
+        <Hero active={currentPage === 0} onReady={() => setLoadStage(prev => prev === 0 ? 1 : prev)} onNavigateNext={() => setCurrentPage(1)} />
         <Suspense fallback={null}>
           <Projects active={currentPage === 1} assetsAllowed={loadStage >= 1} />
         </Suspense>
