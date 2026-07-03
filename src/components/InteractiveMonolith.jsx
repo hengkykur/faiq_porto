@@ -13,18 +13,26 @@ const CameraController = ({ scrollProgress }) => {
     // Ease-out curve to counteract perspective zoom acceleration
     const easedP = Math.sin(p * Math.PI / 2);
     const targetZ = THREE.MathUtils.lerp(startZ, endZ, easedP);
-    camera.position.z = THREE.MathUtils.lerp(camera.position.z, targetZ, 0.025);
+    
+    // Only update position if it changes significantly to prevent useless calculations
+    const newZ = THREE.MathUtils.lerp(camera.position.z, targetZ, 0.025);
+    if (Math.abs(camera.position.z - newZ) > 0.0001) {
+      camera.position.z = newZ;
+    }
 
-    // Eased FOV shift for dramatic tunnel feel
-    camera.fov = THREE.MathUtils.lerp(45, 75, easedP * easedP);
-    camera.updateProjectionMatrix();
+    // Eased FOV shift for dramatic tunnel feel - only update projection matrix when fov actually changes
+    const targetFov = THREE.MathUtils.lerp(45, 75, easedP * easedP);
+    if (Math.abs(camera.fov - targetFov) > 0.01) {
+      camera.fov = targetFov;
+      camera.updateProjectionMatrix();
+    }
   });
 
   return null;
  };
 
 /* ── Central Torus Knot with glowing edges ── */
-const CentralShape = ({ scrollProgress }) => {
+const CentralShape = ({ scrollProgress, torusGeom }) => {
   const groupRef = useRef(null);
   const rotationGroupRef = useRef(null);
   const knotRef = useRef(null);
@@ -64,16 +72,14 @@ const CentralShape = ({ scrollProgress }) => {
   });
 
   const edgesGeom = useMemo(() => {
-    const geom = new THREE.TorusKnotGeometry(0.85, 0.28, 128, 16, 2, 3);
-    return new THREE.EdgesGeometry(geom, 15);
-  }, []);
+    return new THREE.EdgesGeometry(torusGeom, 15);
+  }, [torusGeom]);
 
   return (
     <group ref={groupRef}>
       <group ref={rotationGroupRef}>
         {/* Main Torus Knot — Piano Black Reflective */}
-        <mesh ref={knotRef}>
-          <torusKnotGeometry args={[0.85, 0.28, 128, 16, 2, 3]} />
+        <mesh ref={knotRef} geometry={torusGeom}>
           <meshPhysicalMaterial
             color="#020203"
             roughness={0.08}
@@ -85,7 +91,7 @@ const CentralShape = ({ scrollProgress }) => {
         </mesh>
 
         {/* Wireframe overlay — Cyan glow */}
-        <WireframeOverlay scrollProgress={scrollProgress} />
+        <WireframeOverlay scrollProgress={scrollProgress} torusGeom={torusGeom} />
 
         {/* Sharp outline edges — Crisp White/Silver for high-tech look */}
         <lineSegments geometry={edgesGeom}>
@@ -97,7 +103,7 @@ const CentralShape = ({ scrollProgress }) => {
 };
 
 /* ── Wireframe that brightens during scroll ── */
-const WireframeOverlay = ({ scrollProgress }) => {
+const WireframeOverlay = ({ scrollProgress, torusGeom }) => {
   const matRef = useRef(null);
 
   useFrame(() => {
@@ -109,8 +115,7 @@ const WireframeOverlay = ({ scrollProgress }) => {
   });
 
   return (
-    <mesh scale={[1.003, 1.003, 1.003]}>
-      <torusKnotGeometry args={[0.85, 0.28, 128, 16, 2, 3]} />
+    <mesh geometry={torusGeom} scale={[1.003, 1.003, 1.003]}>
       <meshBasicMaterial ref={matRef} color="#00f0ff" wireframe transparent opacity={0.2} />
     </mesh>
   );
@@ -151,6 +156,7 @@ const OrbitRing = ({ radius, speed, tilt, color, opacity, scrollProgress }) => {
 /* ── Floating Particles — White stars ── */
 const Particles = ({ scrollProgress }) => {
   const pointsRef = useRef(null);
+  const lastPRef = useRef(-1);
   const count = 120;
 
   const { basePositions } = useMemo(() => {
@@ -173,18 +179,22 @@ const Particles = ({ scrollProgress }) => {
     pointsRef.current.rotation.y += delta * (0.03 + p * 0.5);
     pointsRef.current.rotation.x += delta * (0.008 + p * 0.2);
 
-    const geom = pointsRef.current.geometry;
-    const posAttr = geom.attributes.position;
-    if (posAttr) {
-      for (let i = 0; i < count; i++) {
-        const bx = basePositions[i * 3];
-        const by = basePositions[i * 3 + 1];
-        const bz = basePositions[i * 3 + 2];
-        posAttr.array[i * 3] = THREE.MathUtils.lerp(bx, bx * 0.05, p);
-        posAttr.array[i * 3 + 1] = THREE.MathUtils.lerp(by, by * 0.05, p);
-        posAttr.array[i * 3 + 2] = THREE.MathUtils.lerp(bz, bz * 0.05 - 2, p);
+    // Only update buffer attributes if p has changed to avoid heavy CPU-GPU syncs
+    if (Math.abs(p - lastPRef.current) > 0.0001) {
+      lastPRef.current = p;
+      const geom = pointsRef.current.geometry;
+      const posAttr = geom.attributes.position;
+      if (posAttr) {
+        for (let i = 0; i < count; i++) {
+          const bx = basePositions[i * 3];
+          const by = basePositions[i * 3 + 1];
+          const bz = basePositions[i * 3 + 2];
+          posAttr.array[i * 3] = THREE.MathUtils.lerp(bx, bx * 0.05, p);
+          posAttr.array[i * 3 + 1] = THREE.MathUtils.lerp(by, by * 0.05, p);
+          posAttr.array[i * 3 + 2] = THREE.MathUtils.lerp(bz, bz * 0.05 - 2, p);
+        }
+        posAttr.needsUpdate = true;
       }
-      posAttr.needsUpdate = true;
     }
   });
 
@@ -207,8 +217,17 @@ const Particles = ({ scrollProgress }) => {
 
 /* ── Main Component ── */
 const InteractiveMonolith = ({ scrollProgress = 0 }) => {
-  const progressRef = useRef(0);
-  progressRef.current = scrollProgress;
+  const internalRef = useRef(0);
+  const progressRef = scrollProgress && typeof scrollProgress === 'object' && 'current' in scrollProgress
+    ? scrollProgress
+    : internalRef;
+
+  // Keep fallback internalRef in sync if simple number is passed
+  if (!(scrollProgress && typeof scrollProgress === 'object' && 'current' in scrollProgress)) {
+    internalRef.current = scrollProgress;
+  }
+
+  const torusGeom = useMemo(() => new THREE.TorusKnotGeometry(0.85, 0.28, 128, 16, 2, 3), []);
 
   return (
     <div className="absolute inset-0 w-full h-full z-10 pointer-events-none">
@@ -230,7 +249,7 @@ const InteractiveMonolith = ({ scrollProgress = 0 }) => {
         <pointLight position={[-5, -5, -2]} intensity={2.5} color="#00f0ff" />
         <pointLight position={[5, -5, 2]} intensity={2.0} color="#00f0ff" />
 
-        <CentralShape scrollProgress={progressRef} />
+        <CentralShape scrollProgress={progressRef} torusGeom={torusGeom} />
 
         {/* Unified Cyan and White Orbiting rings */}
         <OrbitRing radius={1.8} speed={0.2} tilt={0.5} color="#00f0ff" opacity={0.2} scrollProgress={progressRef} />

@@ -427,14 +427,40 @@ const Hero = React.memo(({ active, onReady, onNavigateNext }) => {
   const bannerRef = useRef(null);
   const portalWrapperRef = useRef(null);
 
-  // ── Portal scroll state ──
-  const [portalProgress, setPortalProgress] = useState(0);
+  // ── Portal scroll elements Refs (direct DOM manipulation for performance) ──
+  const watermarkRef = useRef(null);
+  const bgGlowRef = useRef(null);
+  const vignetteRef = useRef(null);
+  const blackoutRef = useRef(null);
+  const scrollHintRef = useRef(null);
+
   const portalCompleteRef = useRef(false);
   const targetProgressRef = useRef(0);
   const smoothedProgressRef = useRef(0);
   const animationFrameIdRef = useRef(null);
   const isLockedRef = useRef(false);
   const touchStartYRef = useRef(0);
+
+  // Helper to apply visual styles directly to the DOM to avoid re-rendering the entire Hero component
+  const applyPortalStyles = (val) => {
+    if (watermarkRef.current) {
+      watermarkRef.current.style.opacity = Math.max(1 - val * 0.7, 0);
+    }
+    if (bgGlowRef.current) {
+      bgGlowRef.current.style.opacity = 1 - val;
+    }
+    if (vignetteRef.current) {
+      vignetteRef.current.style.background = `radial-gradient(circle at center, rgba(0, 0, 0, 0) ${60 - val * 55}%, rgba(0, 0, 0, 0.4) ${80 - val * 40}%, rgba(0, 0, 0, 1) ${100 - val * 20}%)`;
+      vignetteRef.current.style.opacity = val;
+    }
+    if (blackoutRef.current) {
+      blackoutRef.current.style.opacity = val > 0.8 ? (val - 0.8) * 5 : 0;
+    }
+    if (scrollHintRef.current) {
+      scrollHintRef.current.style.opacity = val < 0.1 ? 1 : 0;
+      scrollHintRef.current.style.pointerEvents = val < 0.1 ? 'auto' : 'none';
+    }
+  };
 
   // Trigger onReady shortly after mount since there is no video to wait for anymore
   useEffect(() => {
@@ -560,10 +586,10 @@ const Hero = React.memo(({ active, onReady, onNavigateNext }) => {
 
       if (Math.abs(diff) > 0.001) {
         smoothedProgressRef.current += diff * 0.025; // Slower, more cinematic tempo
-        setPortalProgress(smoothedProgressRef.current);
+        applyPortalStyles(smoothedProgressRef.current);
       } else if (smoothedProgressRef.current !== targetProgressRef.current) {
         smoothedProgressRef.current = targetProgressRef.current;
-        setPortalProgress(smoothedProgressRef.current);
+        applyPortalStyles(smoothedProgressRef.current);
       }
 
       // Check for navigation inside the loop when smoothed zoom is fully complete
@@ -577,7 +603,7 @@ const Hero = React.memo(({ active, onReady, onNavigateNext }) => {
             isLockedRef.current = false;
             targetProgressRef.current = 0;
             smoothedProgressRef.current = 0;
-            setPortalProgress(0);
+            applyPortalStyles(0);
             if (container) container.scrollTop = 0;
           }, 800);
         }, 600);
@@ -604,7 +630,7 @@ const Hero = React.memo(({ active, onReady, onNavigateNext }) => {
   const handleGlobalClick = (e) => {
     if (e.target.closest('button') || e.target.closest('a')) return;
     // Don't jump-scroll if we're in the portal zone
-    if (portalProgress > 0) return;
+    if (targetProgressRef.current > 0 || smoothedProgressRef.current > 0) return;
     if (containerRef.current) {
       containerRef.current.scrollBy({ top: window.innerHeight, behavior: 'smooth' });
     }
@@ -614,7 +640,7 @@ const Hero = React.memo(({ active, onReady, onNavigateNext }) => {
     <div
       ref={containerRef}
       onClick={handleGlobalClick}
-      className="w-screen h-screen relative overflow-y-auto overflow-x-hidden bg-[#060608] flex-shrink-0 no-scrollbar scroll-smooth cursor-none"
+      className="w-screen h-screen relative overflow-y-auto overflow-x-hidden bg-black flex-shrink-0 no-scrollbar scroll-smooth cursor-none"
     >
       {/* Custom Scroll Cursor */}
       <div
@@ -635,7 +661,7 @@ const Hero = React.memo(({ active, onReady, onNavigateNext }) => {
         {/* ── Background ── */}
         <div className="absolute inset-0 z-0 pointer-events-none">
           {/* Base dark gradient */}
-          <div className="absolute inset-0 bg-[#060608]"
+          <div className="absolute inset-0 bg-black"
             style={{ backgroundImage: 'radial-gradient(ellipse at 75% 40%, rgba(99,102,241,0.12) 0%, transparent 65%)' }}
           />
           {/* WebGL Shader Background */}
@@ -647,7 +673,7 @@ const Hero = React.memo(({ active, onReady, onNavigateNext }) => {
           {/* Left vignette */}
           <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-transparent to-transparent z-10" />
           {/* Bottom vignette */}
-          <div className="absolute inset-0 bg-gradient-to-t from-[#060608] via-[#060608]/40 to-transparent z-10" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent z-10" />
         </div>
 
         {/* ── 3D Network Sphere (right half) ── */}
@@ -735,7 +761,7 @@ const Hero = React.memo(({ active, onReady, onNavigateNext }) => {
       </div>
 
       {/* ── Aesthetic Gallery Section (Scrollable Area) ── */}
-      <div className="w-full relative z-10 bg-gradient-to-b from-black to-[#060608] py-32 px-6">
+      <div className="w-full relative z-10 bg-black py-32 px-6">
 
         {/* Subdued grain overlay for gallery */}
         <div className="absolute inset-0 pointer-events-none opacity-10 mix-blend-overlay grain-overlay" />
@@ -806,72 +832,83 @@ const Hero = React.memo(({ active, onReady, onNavigateNext }) => {
           </div>
 
         </div> {/* Close max-w-6xl early */}
+      </div> {/* Close Aesthetic Gallery Section */}
 
-        {/* ── Portal Wrapper (provides scroll room for the sticky banner) ── */}
-        <div ref={portalWrapperRef} className="relative mt-80 md:mt-[24rem]" style={{ height: 'calc(100vh + 1800px)' }}>
-          {/* The banner is sticky: it fills the screen and stays pinned while user scrolls through the spacer */}
-          <div
-            ref={bannerRef}
-            className="sticky top-0 w-full h-screen relative overflow-hidden flex items-center justify-center pointer-events-auto"
+      {/* ── Portal Wrapper (provides scroll room for the sticky banner) ── */}
+      <div ref={portalWrapperRef} className="relative mt-80 md:mt-[24rem]" style={{ height: 'calc(100vh + 1800px)' }}>
+        {/* The banner is sticky: it fills the screen and stays pinned while user scrolls through the spacer */}
+        <div
+          ref={bannerRef}
+          className="sticky top-0 w-full h-screen relative overflow-hidden flex items-center justify-center pointer-events-auto"
+          style={{
+            background: '#000000',
+          }}
+        >
+          {/* Faded Watermark Text */}
+          <span
+            ref={watermarkRef}
+            className="text-[#4c4c54] text-6xl sm:text-8xl md:text-[9.5rem] font-bold tracking-[0.25em] uppercase font-display select-none pointer-events-none z-0"
             style={{
-              background: 'linear-gradient(to bottom, #060608 0%, #0e0e11 25%, #0e0e11 75%, #000000 100%)',
+              fontFamily: "'Cormorant Garamond', serif",
+              opacity: 1,
             }}
           >
-            {/* Faded Watermark Text */}
-            <span
-              className="text-[#4c4c54] text-6xl sm:text-8xl md:text-[9.5rem] font-bold tracking-[0.25em] uppercase font-display select-none pointer-events-none z-0"
-              style={{
-                fontFamily: "'Cormorant Garamond', serif",
-                opacity: Math.max(1 - portalProgress * 0.7, 0),
-              }}
-            >
-              MANTAP
-            </span>
-            {/* Soft background glow to ease contrast behind the 3D Torus Knot */}
-            <div 
-              className="absolute z-0 w-[550px] h-[550px] rounded-full pointer-events-none"
-              style={{
-                background: 'radial-gradient(circle, rgba(0, 240, 255, 0.06) 0%, rgba(129, 140, 248, 0.03) 50%, transparent 75%)',
-                filter: 'blur(70px)',
-                opacity: 1 - portalProgress,
-                transition: 'opacity 0.25s ease-out',
-              }}
-            />
-            {/* Interactive 3D Monolith Object */}
-            <Suspense fallback={null}>
-              <InteractiveMonolith scrollProgress={portalProgress} />
-            </Suspense>
+            MANTAP
+          </span>
+          {/* Soft background glow to ease contrast behind the 3D Torus Knot */}
+          <div
+            ref={bgGlowRef}
+            className="absolute z-0 w-[550px] h-[550px] rounded-full pointer-events-none"
+            style={{
+              background: 'radial-gradient(circle, rgba(0, 240, 255, 0.06) 0%, rgba(129, 140, 248, 0.03) 50%, transparent 75%)',
+              filter: 'blur(70px)',
+              opacity: 1,
+              transition: 'opacity 0.25s ease-out',
+            }}
+          />
+          {/* Interactive 3D Monolith Object */}
+          <Suspense fallback={null}>
+            <InteractiveMonolith scrollProgress={smoothedProgressRef} />
+          </Suspense>
 
-            {/* Vignette overlay — darkens edges as portal progresses */}
-            <div
-              className="absolute inset-0 z-20 pointer-events-none"
-              style={{
-                background: `radial-gradient(circle at center, transparent ${60 - portalProgress * 55}%, black ${100 - portalProgress * 30}%)`,
-                opacity: portalProgress,
-                transition: 'opacity 0.15s ease-out',
-              }}
-            />
+          {/* Vignette overlay — darkens edges as portal progresses */}
+          <div
+            ref={vignetteRef}
+            className="absolute inset-0 z-20 pointer-events-none"
+            style={{
+              background: 'radial-gradient(circle at center, rgba(0, 0, 0, 0) 60%, rgba(0, 0, 0, 0.4) 80%, rgba(0, 0, 0, 1) 100%)',
+              opacity: 0,
+              transition: 'opacity 0.15s ease-out',
+            }}
+          />
 
-            {/* Full blackout overlay — appears at end of portal */}
-            <div
-              className="absolute inset-0 z-30 pointer-events-none bg-black"
-              style={{
-                opacity: portalProgress > 0.8 ? (portalProgress - 0.8) * 5 : 0,
-                transition: 'opacity 0.3s ease-out',
-              }}
-            />
+          {/* Full blackout overlay — appears at end of portal */}
+          <div
+            ref={blackoutRef}
+            className="absolute inset-0 z-30 pointer-events-none bg-black"
+            style={{
+              opacity: 0,
+              transition: 'opacity 0.3s ease-out',
+            }}
+          />
 
-            {/* Scroll hint at bottom of banner */}
-            {portalProgress < 0.1 && (
-              <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-2 animate-pulse">
-                <span className="text-[9px] font-mono tracking-[0.2em] text-white/30 uppercase">Scroll to enter</span>
-                <svg className="w-4 h-4 text-white/30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7" />
-                </svg>
-              </div>
-            )}
+          {/* Scroll hint at bottom of banner */}
+          <div
+            ref={scrollHintRef}
+            className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-2 animate-pulse"
+            style={{
+              opacity: 1,
+              pointerEvents: 'auto',
+              transition: 'opacity 0.25s ease-out',
+            }}
+          >
+            <span className="text-[9px] font-mono tracking-[0.2em] text-white/30 uppercase">Scroll to enter</span>
+            <svg className="w-4 h-4 text-white/30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7" />
+            </svg>
           </div>
         </div>
+      </div>
 
         {/* ── Footer Section (Full Width Background, Centered Content) ── */}
         <div className="w-full bg-black py-16 px-6">
@@ -933,9 +970,15 @@ const Hero = React.memo(({ active, onReady, onNavigateNext }) => {
           </div>
         </div>
       </div>
-
-    </div>
-  );
-});
+    );
+  });
 
 export default Hero;
+
+
+
+
+
+
+
+
