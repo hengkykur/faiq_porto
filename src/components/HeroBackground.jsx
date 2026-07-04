@@ -1,9 +1,11 @@
 import React, { useEffect, useRef } from 'react';
 
-const HeroBackground = () => {
+const HeroBackground = ({ active = true }) => {
   const canvasRef = useRef(null);
 
   useEffect(() => {
+    if (!active) return;
+
     const canvas = canvasRef.current;
     if (!canvas) return;
 
@@ -74,12 +76,12 @@ void main() {
     float rightFade = smoothstep(1.0, 0.4, uv.x);
     
     // Compute wave colors (cyan theme)
-    vec3 waveColor = colorCyan * 0.12 * colorMix;
-    vec3 highlightColor = colorCyan * highlight * 0.3;
+    vec3 waveColor = colorCyan * 0.08 * colorMix;
+    vec3 highlightColor = colorCyan * highlight * 0.15;
     vec3 finalColor = waveColor + highlightColor;
     
     // Compute alpha (transparency) - makes the canvas overlay transparent instead of solid dark
-    float alpha = (colorMix * 0.15 + highlight * 0.35) * rightFade;
+    float alpha = (colorMix * 0.10 + highlight * 0.20) * rightFade;
     
     gl_FragColor = vec4(finalColor, alpha);
 }`;
@@ -166,7 +168,7 @@ void main() {
         gl.deleteShader(fragmentShader);
       }
     };
-  }, []);
+  }, [active]);
 
   return (
     <div className="absolute inset-0 w-full h-full overflow-hidden pointer-events-none z-0">

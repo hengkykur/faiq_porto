@@ -5,6 +5,8 @@ export const elearningProject = {
   image: '/stmi.png',
   noFrame: true,
   imageScale: 0.7,
+  heroTheme: 'dark-blueprint',
+  heroAsset: 'https://rpnuh6fycqz4knnh.public.blob.vercel-storage.com/elerning/elerning.png',
   tags: ['Laravel', 'MySQL', 'Tailwind', 'Education'],
   year: '2024',
   status: 'Live',

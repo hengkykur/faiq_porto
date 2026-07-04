@@ -665,7 +665,7 @@ const Hero = React.memo(({ active, onReady, onNavigateNext }) => {
             style={{ backgroundImage: 'radial-gradient(ellipse at 75% 40%, rgba(99,102,241,0.12) 0%, transparent 65%)' }}
           />
           {/* WebGL Shader Background */}
-          <HeroBackground />
+          <HeroBackground active={active} />
           {/* Grain overlay */}
           <div className="absolute inset-0 pointer-events-none opacity-20 mix-blend-overlay grain-overlay" />
           {/* Scanlines */}
@@ -712,9 +712,7 @@ const Hero = React.memo(({ active, onReady, onNavigateNext }) => {
         <div className="container mx-auto px-6 relative z-20 pointer-events-none">
           <div className="max-w-2xl text-left pointer-events-auto">
 
-            <p className="text-primary font-semibold mb-4 tracking-[0.25em] uppercase text-[10px] animate-glitch-heavy inline-block">
-              Creative Technical Craft
-            </p>
+
 
             <h1
               className="text-3xl sm:text-4xl md:text-[4.5rem] leading-[1.15] mb-5 text-white tracking-tight font-normal"
@@ -727,14 +725,7 @@ const Hero = React.memo(({ active, onReady, onNavigateNext }) => {
               <TypewriterText />
             </h1>
 
-            <p className="text-[13px] md:text-[14px] text-slate-400 max-w-xl mb-8 leading-relaxed font-light font-body">
-              I craft high-performance code and intelligent digital architecture.{' '}
-              Connecting{' '}
-              <span className="text-white font-medium border-b border-primary/40">
-                Web, Mobile, and Intelligence
-              </span>{' '}
-              through creative technical craft.
-            </p>
+
           </div>
         </div>
 
@@ -910,68 +901,68 @@ const Hero = React.memo(({ active, onReady, onNavigateNext }) => {
         </div>
       </div>
 
-        {/* ── Footer Section (Full Width Background, Centered Content) ── */}
-        <div className="w-full bg-black py-16 px-6">
-          <div className="container mx-auto max-w-6xl">
-            <footer className="w-full space-y-12">
-              <div className="flex flex-col md:flex-row md:items-start justify-between gap-8">
-                {/* Left Side Logo */}
-                <div className="text-left">
-                  <h3
-                    className="text-xl md:text-2xl font-bold tracking-[0.2em] text-white uppercase"
-                    style={{ fontFamily: "'Cormorant Garamond', serif" }}
+      {/* ── Footer Section (Full Width Background, Centered Content) ── */}
+      <div className="w-full bg-black py-16 px-6">
+        <div className="container mx-auto max-w-6xl">
+          <footer className="w-full space-y-12">
+            <div className="flex flex-col md:flex-row md:items-start justify-between gap-8">
+              {/* Left Side Logo */}
+              <div className="text-left">
+                <h3
+                  className="text-xl md:text-2xl font-bold tracking-[0.2em] text-white uppercase"
+                  style={{ fontFamily: "'Cormorant Garamond', serif" }}
+                >
+                  MONOLITH
+                </h3>
+                <p className="text-[9px] tracking-[0.2em] font-mono text-slate-500 mt-2 text-left">
+                  ARCHITECTURAL SOLUTIONS FOR THE DIGITAL FRONTIER.
+                </p>
+              </div>
+
+              {/* Right Side Links */}
+              <div className="flex flex-wrap gap-x-8 gap-y-2 md:pt-2">
+                {['Legal', 'Privacy', 'Press', 'Intelligence'].map((link) => (
+                  <a
+                    key={link}
+                    href={`#${link.toLowerCase()}`}
+                    className="text-[10px] font-mono uppercase tracking-[0.2em] text-slate-400 hover:text-white transition-colors cursor-pointer"
                   >
-                    MONOLITH
-                  </h3>
-                  <p className="text-[9px] tracking-[0.2em] font-mono text-slate-500 mt-2 text-left">
-                    ARCHITECTURAL SOLUTIONS FOR THE DIGITAL FRONTIER.
-                  </p>
-                </div>
-
-                {/* Right Side Links */}
-                <div className="flex flex-wrap gap-x-8 gap-y-2 md:pt-2">
-                  {['Legal', 'Privacy', 'Press', 'Intelligence'].map((link) => (
-                    <a
-                      key={link}
-                      href={`#${link.toLowerCase()}`}
-                      className="text-[10px] font-mono uppercase tracking-[0.2em] text-slate-400 hover:text-white transition-colors cursor-pointer"
-                    >
-                      {link}
-                    </a>
-                  ))}
-                </div>
+                    {link}
+                  </a>
+                ))}
               </div>
+            </div>
 
-              {/* Bottom Copyright and Icons */}
-              <div className="border-t border-white/[0.03] pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-                <span className="text-[9px] font-mono tracking-wider text-slate-600">
-                  © 2026 MONOLITH ARCHITECTURAL SOLUTIONS. ALL RIGHTS RESERVED.
-                </span>
+            {/* Bottom Copyright and Icons */}
+            <div className="border-t border-white/[0.03] pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+              <span className="text-[9px] font-mono tracking-wider text-slate-600">
+                © 2026 MONOLITH ARCHITECTURAL SOLUTIONS. ALL RIGHTS RESERVED.
+              </span>
 
-                {/* Footer Icons */}
-                <div className="flex items-center gap-5 text-slate-500">
-                  {/* Share Icon */}
-                  <button className="hover:text-white transition-colors cursor-pointer" aria-label="Share">
-                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92c0-1.61-1.31-2.92-2.92-2.92z" />
-                    </svg>
-                  </button>
+              {/* Footer Icons */}
+              <div className="flex items-center gap-5 text-slate-500">
+                {/* Share Icon */}
+                <button className="hover:text-white transition-colors cursor-pointer" aria-label="Share">
+                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92c0-1.61-1.31-2.92-2.92-2.92z" />
+                  </svg>
+                </button>
 
-                  {/* Terminal / Code Icon */}
-                  <button className="hover:text-white transition-colors cursor-pointer" aria-label="Console">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round">
-                      <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
-                      <polyline points="9 17 14 12 9 7" />
-                    </svg>
-                  </button>
-                </div>
+                {/* Terminal / Code Icon */}
+                <button className="hover:text-white transition-colors cursor-pointer" aria-label="Console">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                    <polyline points="9 17 14 12 9 7" />
+                  </svg>
+                </button>
               </div>
-            </footer>
-          </div>
+            </div>
+          </footer>
         </div>
       </div>
-    );
-  });
+    </div>
+  );
+});
 
 export default Hero;
 
