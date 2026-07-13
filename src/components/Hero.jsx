@@ -1,8 +1,10 @@
 import React, { useState, useRef, useEffect, useCallback, Suspense } from 'react';
+import { Canvas } from '@react-three/fiber';
 import SpaceInvaders from './SpaceInvaders';
 import NetworkSphere from './NetworkSphere';
 import HeroBackground from './HeroBackground';
 import InteractiveMonolith from './InteractiveMonolith';
+import PaperPlane from './PaperPlane';
 
 /**
  * LazyVideo Component
@@ -393,11 +395,10 @@ const TypewriterText = React.memo(() => {
 
       {/* ── Actual Typewriter ── */}
       <span
-        className="inline-block transition-all duration-500 ease-in-out text-[#00f0ff]"
+        className="inline-block transition-all duration-500 ease-in-out text-white"
         style={{
           fontFamily: "'Cormorant Garamond', serif",
-          whiteSpace: 'nowrap',
-          textShadow: '0 0 20px rgba(0, 240, 255, 0.6), 0 0 40px rgba(0, 240, 255, 0.3)'
+          whiteSpace: 'nowrap'
         }}
       >
         {config.segments.map((seg, sIdx) => {
@@ -414,7 +415,7 @@ const TypewriterText = React.memo(() => {
           );
         })}
         {/* Blinking Cursor */}
-        <span className="animate-pulse border-r-[3px] border-[#00f0ff] ml-0.5 inline-block h-[0.85em] align-middle" />
+        <span className="animate-pulse border-r-[3px] border-white ml-0.5 inline-block h-[0.85em] align-middle" />
       </span>
     </span>
   );
@@ -426,6 +427,8 @@ const Hero = React.memo(({ active, onReady, onNavigateNext }) => {
   const lastMousePos = useRef({ x: -100, y: -100 });
   const bannerRef = useRef(null);
   const portalWrapperRef = useRef(null);
+  const scrollVelocityRef = useRef(0); // mutable ref: normalized scroll velocity for nose-tilt
+  const lastScrollTopRef = useRef(0);  // tracks previous scrollTop for delta calculation
 
   // ── Portal scroll elements Refs (direct DOM manipulation for performance) ──
   const watermarkRef = useRef(null);
@@ -440,6 +443,30 @@ const Hero = React.memo(({ active, onReady, onNavigateNext }) => {
   const animationFrameIdRef = useRef(null);
   const isLockedRef = useRef(false);
   const touchStartYRef = useRef(0);
+
+  // Sync scroll velocity for PaperPlane nose-tilt effect
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+    let decayTimer = null;
+    const handleScroll = () => {
+      const currentTop = container.scrollTop;
+      const delta = currentTop - lastScrollTopRef.current;
+      lastScrollTopRef.current = currentTop;
+      // Normalize velocity: clamp to [-1, 1] range
+      scrollVelocityRef.current = Math.max(-1, Math.min(1, delta / 80));
+      // Decay velocity back to 0 after scrolling stops
+      clearTimeout(decayTimer);
+      decayTimer = setTimeout(() => {
+        scrollVelocityRef.current = 0;
+      }, 120);
+    };
+    container.addEventListener('scroll', handleScroll, { passive: true });
+    return () => {
+      container.removeEventListener('scroll', handleScroll);
+      clearTimeout(decayTimer);
+    };
+  }, []);
 
   // Helper to apply visual styles directly to the DOM to avoid re-rendering the entire Hero component
   const applyPortalStyles = (val) => {
@@ -655,6 +682,28 @@ const Hero = React.memo(({ active, onReady, onNavigateNext }) => {
         </div>
       </div>
 
+      {/* Fullscreen Flying Paper Plane */}
+      <div className="fixed inset-0 z-[5] pointer-events-none">
+        <Canvas
+          camera={{ position: [0, 0, 5], fov: 45 }}
+          style={{ width: '100%', height: '100%', display: 'block', pointerEvents: 'none' }}
+        >
+          <ambientLight intensity={1.5} />
+          <directionalLight position={[5, 5, 5]} intensity={1.0} />
+          <Suspense fallback={null}>
+            <PaperPlane
+              pathType="figure8"
+              speed={0.22}
+              trailLength={80}
+              color="#ffffff"
+              fillColor="#ffffff"
+              trailColor="#ffffff"
+              scrollVelocityRef={scrollVelocityRef}
+            />
+          </Suspense>
+        </Canvas>
+      </div>
+
       {/* ── Hero First Fold (100vh) ── */}
       <div className="w-full h-screen flex items-center relative overflow-hidden bg-black flex-shrink-0">
 
@@ -678,7 +727,7 @@ const Hero = React.memo(({ active, onReady, onNavigateNext }) => {
 
         {/* ── 3D Network Sphere (right half) ── */}
         {/* pointer-events-auto here so drag/orbit works on the Canvas */}
-        <div className="absolute top-0 right-0 w-full md:w-[55%] h-full z-10 pointer-events-none flex items-center justify-center overflow-hidden">
+        <div className="absolute top-0 right-0 w-full md:w-[55%] h-full z-20 pointer-events-none flex items-center justify-center overflow-hidden">
           <div
             style={{
               position: 'relative',
@@ -710,7 +759,7 @@ const Hero = React.memo(({ active, onReady, onNavigateNext }) => {
 
         {/* ── Hero Text ── */}
         <div className="container mx-auto px-6 relative z-20 pointer-events-none">
-          <div className="max-w-2xl text-left pointer-events-auto">
+          <div className="max-w-2xl text-left pointer-events-auto pl-6 md:pl-16">
 
 
 
@@ -752,7 +801,7 @@ const Hero = React.memo(({ active, onReady, onNavigateNext }) => {
       </div>
 
       {/* ── Aesthetic Gallery Section (Scrollable Area) ── */}
-      <div className="w-full relative z-10 bg-black py-32 px-6">
+      <div className="w-full relative bg-black py-32 px-6">
 
         {/* Subdued grain overlay for gallery */}
         <div className="absolute inset-0 pointer-events-none opacity-10 mix-blend-overlay grain-overlay" />
@@ -761,7 +810,7 @@ const Hero = React.memo(({ active, onReady, onNavigateNext }) => {
 
           {/* Section Header */}
           <RevealOnScroll className="mb-32 flex flex-col items-center text-center">
-            <p className="text-[#00f0ff] tracking-[0.3em] text-[10px] md:text-[11px] uppercase font-medium font-mono mb-4">
+            <p className="text-slate-400 tracking-[0.3em] text-[10px] md:text-[11px] uppercase font-medium font-mono mb-4">
               Exhibition
             </p>
             <h2
@@ -791,8 +840,8 @@ const Hero = React.memo(({ active, onReady, onNavigateNext }) => {
                   The synthesis of light and shadow defines the invisible weight of a minimalist digital workspace.
                 </p>
               </RevealOnScroll>
-              <RevealOnScroll delay={300} className="md:col-span-7 relative group order-1 md:order-2">
-                <div className="aspect-[4/3] w-full overflow-hidden bg-[#060608] ring-1 ring-white/10 rounded-sm relative">
+              <RevealOnScroll delay={300} className="md:col-span-7 relative group order-1 md:order-2 z-20">
+                <div className="aspect-[4/3] w-full overflow-hidden bg-[#060608] ring-1 ring-white/10 rounded-sm relative z-20">
                   <SpaceInvaders active={active} />
                 </div>
                 <div className="absolute -inset-4 border border-primary/20 scale-95 opacity-0 group-hover:scale-100 group-hover:opacity-100 transition-all duration-1000 pointer-events-none rounded-sm"></div>
@@ -801,8 +850,8 @@ const Hero = React.memo(({ active, onReady, onNavigateNext }) => {
 
             {/* Gallery Item 2 */}
             <div className="grid grid-cols-1 md:grid-cols-12 gap-12 md:gap-8 items-center">
-              <RevealOnScroll delay={100} className="md:col-span-7 relative group">
-                <div className="aspect-square md:aspect-[4/5] w-full overflow-hidden bg-white/5 ring-1 ring-white/10 rounded-sm">
+              <RevealOnScroll delay={100} className="md:col-span-7 relative group z-20">
+                <div className="aspect-square md:aspect-[4/5] w-full overflow-hidden bg-white/5 ring-1 ring-white/10 rounded-sm relative z-20">
                   <LazyVideo
                     src="https://a7i5ct7oqefyp3zm.public.blob.vercel-storage.com/lukisan.mp4"
                     active={active}
@@ -830,7 +879,7 @@ const Hero = React.memo(({ active, onReady, onNavigateNext }) => {
         {/* The banner is sticky: it fills the screen and stays pinned while user scrolls through the spacer */}
         <div
           ref={bannerRef}
-          className="sticky top-0 w-full h-screen relative overflow-hidden flex items-center justify-center pointer-events-auto"
+          className="sticky top-0 w-full h-screen relative overflow-hidden flex items-center justify-center pointer-events-auto z-20"
           style={{
             background: '#000000',
           }}

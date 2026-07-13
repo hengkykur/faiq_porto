@@ -32,7 +32,7 @@ const Navbar = ({ currentPage, setCurrentPage }) => {
                 onClick={() => navigate(index)}
                 className={`text-[10px] font-mono uppercase tracking-[0.2em] transition-all duration-300 pb-1 cursor-pointer border-b-2 ${
                   isActive 
-                    ? 'text-[#00f0ff] border-[#00f0ff] font-semibold' 
+                    ? 'text-white border-white font-semibold' 
                     : 'text-slate-400 border-transparent hover:text-white'
                 }`}
               >
