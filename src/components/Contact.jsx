@@ -2,10 +2,9 @@ import React, { useState, useEffect, useRef } from 'react';
 
 const Contact = ({ active, assetsAllowed }) => {
   const currentYear = new Date().getFullYear();
-  const [isMobile, setIsMobile] = useState(false);
+  const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' ? window.innerWidth < 768 : false);
   const [isFooterActive, setIsFooterActive] = useState(false);
   const [isAutoGlitching, setIsAutoGlitching] = useState(false);
-  const videoRef = useRef(null);
   const containerRef = useRef(null);
   const resizeTimerRef = useRef(null);
   const scrollRafId = useRef(null);
@@ -32,24 +31,12 @@ const Contact = ({ active, assetsAllowed }) => {
       clearTimeout(resizeTimerRef.current);
       resizeTimerRef.current = setTimeout(() => setIsMobile(window.innerWidth < 768), 150);
     };
-    setIsMobile(window.innerWidth < 768);
     window.addEventListener('resize', check);
     return () => {
       window.removeEventListener('resize', check);
       clearTimeout(resizeTimerRef.current);
     };
   }, []);
-
-  // Pause/resume robot video based on active state
-  useEffect(() => {
-    const vid = videoRef.current;
-    if (!vid) return;
-    if (active) {
-      vid.play().catch(() => { });
-    } else {
-      vid.pause();
-    }
-  }, [active]);
 
   const handleScroll = () => {
     if (scrollRafId.current) return;
@@ -62,6 +49,49 @@ const Contact = ({ active, assetsAllowed }) => {
     });
   };
 
+  const spotlightRef = useRef(null);
+  const maskRafRef = useRef(null);
+
+  const updateMask = (x, y) => {
+    if (!spotlightRef.current) return;
+    const size = isMobile ? 120 : 170;
+    const mask = `radial-gradient(ellipse ${size * 1.4}px ${size}px at ${x}px ${y}px, black 0%, rgba(0,0,0,0.7) 40%, transparent 75%)`;
+    spotlightRef.current.style.WebkitMaskImage = mask;
+    spotlightRef.current.style.maskImage = mask;
+    spotlightRef.current.style.opacity = '1';
+  };
+
+  const handleMouseMove = (e) => {
+    if (maskRafRef.current) return;
+    maskRafRef.current = requestAnimationFrame(() => {
+      maskRafRef.current = null;
+      if (!spotlightRef.current) return;
+      const rect = spotlightRef.current.getBoundingClientRect();
+      updateMask(e.clientX - rect.left, e.clientY - rect.top);
+    });
+  };
+
+  const handleTouchMove = (e) => {
+    if (!spotlightRef.current) return;
+    const rect = spotlightRef.current.getBoundingClientRect();
+    const touch = e.touches[0];
+    updateMask(touch.clientX - rect.left, touch.clientY - rect.top);
+  };
+
+  const handleMouseEnter = () => {
+    if (spotlightRef.current) {
+      spotlightRef.current.style.transition = 'opacity 0.3s ease';
+      spotlightRef.current.style.opacity = '0';
+    }
+  };
+
+  const handleMouseLeave = () => {
+    if (spotlightRef.current) {
+      spotlightRef.current.style.transition = 'opacity 0.4s ease';
+      spotlightRef.current.style.opacity = '0';
+    }
+  };
+
   return (
     <div
       ref={containerRef}
@@ -69,37 +99,62 @@ const Contact = ({ active, assetsAllowed }) => {
       className="w-screen h-screen flex-shrink-0 relative overflow-y-auto no-scrollbar select-none"
     >
       {/* ===== ZONE 1: Hero sticky (stays behind) ===== */}
-      <div className="sticky top-0 w-full h-screen flex items-center justify-center overflow-hidden bg-black" style={{ zIndex: 1 }}>
+      <div
+        onMouseMove={handleMouseMove}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        onTouchMove={handleTouchMove}
+        onTouchStart={handleMouseEnter}
+        onTouchEnd={handleMouseLeave}
+        className="sticky top-0 w-full h-screen flex items-center justify-center overflow-hidden bg-black"
+        style={{ zIndex: 1 }}
+      >
 
         {/* Background Aura */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/10 blur-[120px] rounded-full pointer-events-none" />
 
-        {/* Robot — centered, behind text */}
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none" style={{ zIndex: 5 }}>
+        {/* Robot — centered, in front of text */}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none" style={{ zIndex: 15 }}>
           {(active || assetsAllowed) && (
-            <video
-              ref={videoRef}
-              autoPlay
-              loop
-              muted
-              playsInline
-              preload="metadata"
-              style={{
-                width: isMobile ? '380px' : '600px',
-                height: isMobile ? '500px' : '750px',
-                objectFit: 'contain',
-                objectPosition: 'center',
-                opacity: 1,
-                mixBlendMode: 'screen',
-                filter: 'contrast(1.1) brightness(1.25)',
-                WebkitMaskImage: 'radial-gradient(ellipse at center, black 75%, transparent 100%)',
-                maskImage: 'radial-gradient(ellipse at center, black 75%, transparent 100%)',
-                clipPath: 'inset(0px 0px 6% 0px)',
-                animation: 'robotFloat 6s ease-in-out infinite',
-              }}
-            >
-              <source src="https://a7i5ct7oqefyp3zm.public.blob.vercel-storage.com/Robot.mp4" type="video/mp4" />
-            </video>
+            <div className="relative" style={{ width: isMobile ? '380px' : '600px', height: isMobile ? '500px' : '750px' }}>
+              {/* Layer 1: Original character — always visible */}
+              <img
+                src="https://rpnuh6fycqz4knnh.public.blob.vercel-storage.com/Gemini_Generated_Image_5582qq5582qq5582-removebg-preview.png"
+                alt="Robot Art Base"
+                className="absolute inset-0"
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'contain',
+                  objectPosition: 'center',
+                  opacity: 1,
+                  filter: 'contrast(1.05) brightness(0.9)',
+                  clipPath: 'inset(0px 0px 6% 0px)',
+                  animation: 'robotFloat 6s ease-in-out infinite',
+                }}
+              />
+
+              {/* Layer 2: New Gemini image — fluid mask reveal on cursor */}
+              <img
+                ref={spotlightRef}
+                src="https://rpnuh6fycqz4knnh.public.blob.vercel-storage.com/Gemini_Generated_Image_umsmlqumsmlqumsm-removebg-preview.png"
+                alt="Robot Art Revealed"
+                className="absolute inset-0"
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'contain',
+                  objectPosition: 'center',
+                  opacity: 0,
+                  filter: 'contrast(1.05) brightness(1.1) drop-shadow(0 0 25px rgba(99, 102, 241, 0.3))',
+                  WebkitMaskImage: 'radial-gradient(ellipse 170px 130px at 50% 50%, black 0%, transparent 75%)',
+                  maskImage: 'radial-gradient(ellipse 170px 130px at 50% 50%, black 0%, transparent 75%)',
+                  animation: 'robotFloat 6s ease-in-out infinite',
+                  transition: 'opacity 0.3s ease',
+                  willChange: 'mask-image, -webkit-mask-image',
+                }}
+              />
+            </div>
           )}
         </div>
 
@@ -117,13 +172,63 @@ const Contact = ({ active, assetsAllowed }) => {
 
         {/* Centered Heading */}
         <div className="absolute inset-0 z-10 flex flex-col items-center justify-center pointer-events-none px-6">
-          <h2
-            className={`glitch-text text-5xl md:text-7xl lg:text-8xl font-display font-light text-white tracking-tighter uppercase leading-[0.9] pointer-events-auto text-center ${isAutoGlitching ? 'glitch-active' : ''}`}
-            data-text="Let's connect and work together"
-            style={{ textShadow: '-2px -2px 12px rgba(0,0,0,0.9), 2px -2px 12px rgba(0,0,0,0.9), -2px 2px 12px rgba(0,0,0,0.9), 2px 2px 12px rgba(0,0,0,0.9), 0 0 40px rgba(0,0,0,0.8)' }}
-          >
-            Let's connect and<br /> work together
-          </h2>
+          <div className="w-full max-w-7xl relative flex flex-col items-center justify-center">
+
+            {/* Layer 1: Solid White Base with Shadow */}
+            <h2
+              className="w-full flex flex-col items-center font-display font-light text-white tracking-tighter uppercase leading-[0.9] pointer-events-auto"
+              style={{ textShadow: '-2px -2px 12px rgba(0,0,0,0.9), 2px -2px 12px rgba(0,0,0,0.9), -2px 2px 12px rgba(0,0,0,0.9), 2px 2px 12px rgba(0,0,0,0.9), 0 0 40px rgba(0,0,0,0.8)' }}
+            >
+              {/* Line 1 */}
+              <div className="flex items-center justify-center text-4xl md:text-6xl lg:text-7xl w-full whitespace-nowrap">
+                <span className={`glitch-text text-right flex-1 pr-6 md:pr-10 ${isAutoGlitching ? 'glitch-active' : ''}`} data-text="Get in touch">
+                  Get in touch
+                </span>
+                <div className="w-[130px] sm:w-[180px] md:w-[240px] flex-shrink-0" />
+                <span className={`glitch-text text-left flex-1 pl-1 md:pl-2 ${isAutoGlitching ? 'glitch-active' : ''}`} data-text="with me">
+                  with me
+                </span>
+              </div>
+              {/* Line 2 */}
+              <div className="flex items-center justify-center text-4xl md:text-6xl lg:text-7xl w-full whitespace-nowrap mt-3">
+                <span className={`glitch-text text-right flex-1 pr-4 md:pr-6 ${isAutoGlitching ? 'glitch-active' : ''}`} data-text="Let's work">
+                  Let's work
+                </span>
+                <div className="w-[110px] sm:w-[150px] md:w-[200px] flex-shrink-0" />
+                <span className={`glitch-text text-left flex-1 pl-4 md:pl-6 ${isAutoGlitching ? 'glitch-active' : ''}`} data-text="together">
+                  together
+                </span>
+              </div>
+            </h2>
+
+            {/* Layer 2: Duplicated Outline Style (Overlaying Layer 1 exactly, clean monochrome) */}
+            <h2
+              className="absolute inset-0 w-full flex flex-col items-center font-display font-light text-transparent tracking-tighter uppercase leading-[0.9] pointer-events-none select-none"
+              style={{ mixBlendMode: 'screen' }}
+            >
+              {/* Line 1 */}
+              <div className="flex items-center justify-center text-4xl md:text-6xl lg:text-7xl w-full whitespace-nowrap">
+                <span className="text-right flex-1 pr-6 md:pr-10 [-webkit-text-stroke:1px_rgba(255,255,255,0.7)] drop-shadow-[0_0_8px_rgba(255,255,255,0.2)]">
+                  Get in touch
+                </span>
+                <div className="w-[130px] sm:w-[180px] md:w-[240px] flex-shrink-0" />
+                <span className="text-left flex-1 pl-1 md:pl-2 [-webkit-text-stroke:1px_rgba(255,255,255,0.7)] drop-shadow-[0_0_8px_rgba(255,255,255,0.2)]">
+                  with me
+                </span>
+              </div>
+              {/* Line 2 */}
+              <div className="flex items-center justify-center text-4xl md:text-6xl lg:text-7xl w-full whitespace-nowrap mt-3">
+                <span className="text-right flex-1 pr-4 md:pr-6 [-webkit-text-stroke:1px_rgba(255,255,255,0.7)] drop-shadow-[0_0_8px_rgba(255,255,255,0.2)]">
+                  Let's work
+                </span>
+                <div className="w-[110px] sm:w-[150px] md:w-[200px] flex-shrink-0" />
+                <span className="text-left flex-1 pl-4 md:pl-6 [-webkit-text-stroke:1px_rgba(255,255,255,0.7)] drop-shadow-[0_0_8px_rgba(255,255,255,0.2)]">
+                  together
+                </span>
+              </div>
+            </h2>
+
+          </div>
         </div>
 
         {/* Scroll hint */}
@@ -249,11 +354,11 @@ const Contact = ({ active, assetsAllowed }) => {
           pointer-events: none;
         }
         .glitch-text::before {
-          color: #ff00ea;
+          color: rgba(255, 255, 255, 0.85);
           clip-path: polygon(0 20%, 100% 20%, 100% 40%, 0 40%);
         }
         .glitch-text::after {
-          color: #00f7ff;
+          color: rgba(255, 255, 255, 0.35);
           clip-path: polygon(0 60%, 100% 60%, 100% 80%, 0 80%);
         }
         .glitch-text:hover::before,
