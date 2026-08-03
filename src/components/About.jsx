@@ -381,7 +381,7 @@ const About = React.memo(({ active, assetsAllowed, onScrollProgress, onNavigateN
         <div
           className={`absolute inset-0 bg-[#0a0a0c] transition-opacity duration-1000 ${videoLoaded ? 'opacity-0' : 'opacity-100'}`}
           style={{
-            backgroundImage: 'radial-gradient(circle at 30% 70%, rgba(129, 140, 248, 0.05) 0%, transparent 50%)',
+            backgroundImage: 'radial-gradient(circle at 30% 70%, rgba(255, 255, 255, 0.03) 0%, transparent 50%)',
           }}
         >
           {/* Shimmer Effect */}
@@ -423,7 +423,7 @@ const About = React.memo(({ active, assetsAllowed, onScrollProgress, onNavigateN
         <div className="h-screen w-full flex items-center justify-center relative snap-start">
           <div className="absolute bottom-10 left-1/2 -translate-x-1/2 animate-bounce flex flex-col items-center gap-2 transition-all duration-1000" style={{ opacity: scrollProgress < 0.1 ? 1 : 0, visibility: scrollProgress < 0.1 ? 'visible' : 'hidden' }}>
             <span className="text-[11px] uppercase tracking-[0.4em] text-white/50 font-medium">Scroll to explore</span>
-            <div className="w-px h-16 bg-gradient-to-b from-primary to-transparent"></div>
+            <div className="w-px h-16 bg-gradient-to-b from-white/50 to-transparent"></div>
           </div>
         </div>
 
@@ -431,9 +431,9 @@ const About = React.memo(({ active, assetsAllowed, onScrollProgress, onNavigateN
         <div className="h-[200vh] w-full relative">
           <div className="sticky top-0 h-screen w-full flex items-center justify-center px-6 pointer-events-none">
             <div className="text-center w-full max-w-5xl">
-              <h2 className={`text-primary font-semibold mb-8 tracking-[0.5em] uppercase text-xs transition-all duration-1000 ${isZone2Active ? 'opacity-100 translate-y-0 blur-none' : 'opacity-0 translate-y-5 blur-md'}`}>Mastering the Craft</h2>
+              <h2 className={`text-zinc-400 font-semibold mb-8 tracking-[0.5em] uppercase text-xs transition-all duration-1000 ${isZone2Active ? 'opacity-100 translate-y-0 blur-none' : 'opacity-0 translate-y-5 blur-md'}`}>Mastering the Craft</h2>
               <svg viewBox="0 0 1000 300" className={`w-full h-auto drop-shadow-[0_0_30px_rgba(255,255,255,0.05)] transition-all duration-1000 ease-out ${isZone2Active ? 'opacity-100 scale-100 translate-y-0 blur-none' : 'opacity-0 scale-95 -translate-y-5 blur-xl'}`}>
-                <defs><linearGradient id="textGradient" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stopColor="var(--color-primary)" /><stop offset="100%" stopColor="#818cf8" /></linearGradient></defs>
+                <defs><linearGradient id="textGradient" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stopColor="#ffffff" /><stop offset="100%" stopColor="#71717a" /></linearGradient></defs>
                 <text x="50%" y="35%" textAnchor="middle" className="font-display font-black italic tracking-tighter" style={{ fontSize: '120px', fill: 'white', fillOpacity: isZone2Active ? 1 : 0, stroke: 'white', strokeWidth: '1.2', strokeDasharray: '1000', strokeDashoffset: isZone2Active ? 0 : 1000, transition: isZone2Active ? 'stroke-dashoffset 2.5s cubic-bezier(0.4, 0, 0.2, 1), fill-opacity 1s ease-out 1.5s' : 'stroke-dashoffset 1.2s ease-in, fill-opacity 0.5s ease-in' }}>FAIQ</text>
                 <text x="50%" y="75%" textAnchor="middle" className="font-display font-black italic tracking-tighter" style={{ fontSize: '120px', fill: 'url(#textGradient)', fillOpacity: isZone2Active ? 1 : 0, stroke: 'url(#textGradient)', strokeWidth: '1.2', strokeDasharray: '1000', strokeDashoffset: isZone2Active ? 0 : 1000, transition: isZone2Active ? 'stroke-dashoffset 2.5s cubic-bezier(0.4, 0, 0.2, 1) 0.5s, fill-opacity 1s ease-out 1.8s' : 'stroke-dashoffset 1.2s ease-in, fill-opacity 0.5s ease-in' }}>ADIMULYO</text>
               </svg>
@@ -470,7 +470,7 @@ const About = React.memo(({ active, assetsAllowed, onScrollProgress, onNavigateN
                   }}
                 >
                   {/* Layer 0: Deep Glow */}
-                  <div className="absolute -inset-4 bg-primary/20 blur-[60px] opacity-0 group-hover:opacity-100 transition-opacity duration-700"
+                  <div className="absolute -inset-4 bg-white/10 blur-[60px] opacity-0 group-hover:opacity-100 transition-opacity duration-700"
                     style={{ transform: 'translateZ(-50px) skewX(-16deg) rotate(-4deg)' }}></div>
 
                   {/* Layer 1: The Glass Frame */}
@@ -506,17 +506,17 @@ const About = React.memo(({ active, assetsAllowed, onScrollProgress, onNavigateN
                   </div>
 
                   {/* Layer 3: Floating UI HUD */}
-                  <div className="absolute top-8 right-12 text-[11px] font-mono font-bold text-primary tracking-[0.2em] uppercase opacity-40 group-hover:opacity-100 group-hover:text-glow transition-all"
+                  <div className="absolute top-8 right-12 text-[11px] font-mono font-bold text-zinc-400 tracking-[0.2em] uppercase opacity-40 group-hover:opacity-100 group-hover:text-glow transition-all"
                     style={{ transform: 'translateZ(60px)' }}>
                     sys.3D_render_active
                   </div>
 
                   <div className="absolute bottom-10 left-16 group/hud" style={{ transform: 'translateZ(80px)' }}>
                     <div className="flex items-center gap-3 mb-2">
-                      <div className="w-2 h-2 rounded-full bg-primary"></div>
+                      <div className="w-2 h-2 rounded-full bg-white"></div>
                       <span className="text-[11px] font-[900] font-mono text-white tracking-[0.3em] uppercase drop-shadow-glow">Visual Schema v2.1</span>
                     </div>
-                    <div className="h-[2px] w-32 bg-gradient-to-r from-primary to-transparent group-hover/hud:w-48 transition-all duration-700"></div>
+                    <div className="h-[2px] w-32 bg-gradient-to-r from-white/70 to-transparent group-hover/hud:w-48 transition-all duration-700"></div>
                   </div>
 
                   {/* Decorative Tech Corners */}
@@ -533,12 +533,12 @@ const About = React.memo(({ active, assetsAllowed, onScrollProgress, onNavigateN
               ].map((cap) => (
                 <div key={cap.num} className="group flex items-start gap-5 py-5 relative cursor-default transition-all duration-300 hover:pl-3">
                   {/* accent bar */}
-                  <div className="absolute left-0 top-0 bottom-0 w-[2px] bg-primary scale-y-0 group-hover:scale-y-100 transition-transform duration-300 origin-top" />
-                  <span className="text-[11px] font-mono text-white/20 group-hover:text-primary transition-colors duration-300 mt-1 w-6 shrink-0">{cap.num}</span>
+                  <div className="absolute left-0 top-0 bottom-0 w-[2px] bg-white scale-y-0 group-hover:scale-y-100 transition-transform duration-300 origin-top" />
+                  <span className="text-[11px] font-mono text-white/20 group-hover:text-white transition-colors duration-300 mt-1 w-6 shrink-0">{cap.num}</span>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-baseline gap-3 mb-1 flex-wrap">
                       <h3 className="text-white font-bold text-lg tracking-tight leading-none">{cap.title}</h3>
-                      <span className="text-[9px] font-mono text-primary/60 uppercase tracking-[0.2em] border border-primary/20 px-1.5 py-0.5 rounded">{cap.tag}</span>
+                      <span className="text-[9px] font-mono text-white/60 uppercase tracking-[0.2em] border border-white/20 px-1.5 py-0.5 rounded">{cap.tag}</span>
                     </div>
                     <p className="text-slate-500 text-sm font-light leading-snug group-hover:text-slate-300 transition-colors duration-300">{cap.desc}</p>
                   </div>
@@ -562,17 +562,17 @@ const About = React.memo(({ active, assetsAllowed, onScrollProgress, onNavigateN
               <div className="flex items-center justify-center flex-wrap gap-2 md:gap-4 bg-black/60 p-2 rounded-full border border-white/10 w-max mx-auto relative z-30 shadow-[0_0_30px_rgba(0,0,0,0.5)]">
                 <button
                   onClick={() => setJourneyTab('academic')}
-                  className={`px-4 sm:px-6 py-3 rounded-full text-[10px] md:text-sm font-mono tracking-widest uppercase font-bold transition-colors duration-500 relative overflow-hidden ${journeyTab === 'academic' ? 'text-primary' : 'text-slate-400 hover:text-white'}`}
+                  className={`px-4 sm:px-6 py-3 rounded-full text-[10px] md:text-sm font-mono tracking-widest uppercase font-bold transition-colors duration-500 relative overflow-hidden ${journeyTab === 'academic' ? 'text-white' : 'text-slate-400 hover:text-white'}`}
                 >
-                  {journeyTab === 'academic' && <div className="absolute inset-0 bg-primary/10 -z-10 rounded-full animate-pulse"></div>}
+                  {journeyTab === 'academic' && <div className="absolute inset-0 bg-white/10 -z-10 rounded-full animate-pulse"></div>}
                   Academic Background
                 </button>
                 <div className="w-[1px] h-6 bg-white/20 hidden md:block"></div>
                 <button
                   onClick={() => setJourneyTab('experience')}
-                  className={`px-4 sm:px-6 py-3 rounded-full text-[10px] md:text-sm font-mono tracking-widest uppercase font-bold transition-all duration-500 relative overflow-hidden ${journeyTab === 'experience' ? 'text-primary' : 'text-slate-400 hover:text-white'}`}
+                  className={`px-4 sm:px-6 py-3 rounded-full text-[10px] md:text-sm font-mono tracking-widest uppercase font-bold transition-all duration-500 relative overflow-hidden ${journeyTab === 'experience' ? 'text-white' : 'text-slate-400 hover:text-white'}`}
                 >
-                  {journeyTab === 'experience' && <div className="absolute inset-0 bg-primary/10 -z-10 rounded-full animate-pulse"></div>}
+                  {journeyTab === 'experience' && <div className="absolute inset-0 bg-white/10 -z-10 rounded-full animate-pulse"></div>}
                   Experience Log
                 </button>
               </div>
@@ -585,16 +585,16 @@ const About = React.memo(({ active, assetsAllowed, onScrollProgress, onNavigateN
               <div className={`absolute inset-0 w-full transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${journeyTab === 'academic' ? 'opacity-100 translate-y-0 pointer-events-auto scale-100' : 'opacity-0 translate-y-12 pointer-events-none scale-95'}`}>
                 <div className="grid grid-cols-1 lg:grid-cols-[1.2fr_0.8fr] gap-12 lg:gap-20 items-center justify-center pt-4 md:pt-8 w-full max-w-5xl mx-auto">
                   <div>
-                    <div className="flex items-center gap-3 mb-6"><Icons.Ribbon /><span className="text-primary font-bold tracking-[0.4em] uppercase text-[10px] md:text-xs">Foundation</span></div>
+                    <div className="flex items-center gap-3 mb-6"><Icons.Ribbon /><span className="text-zinc-400 font-bold tracking-[0.4em] uppercase text-[10px] md:text-xs">Foundation</span></div>
                     <h1 className="text-3xl md:text-5xl lg:text-7xl font-display font-black text-white mb-8 md:mb-10 leading-none tracking-tight uppercase italic drop-shadow-2xl">POLITEKNIK STMI <br /> <span className="text-glow">JAKARTA</span></h1>
                     <div className="flex flex-col md:flex-row md:items-center gap-6 md:gap-8 mb-8 md:mb-12">
-                      <div className="pl-4 md:pl-6 border-l-2 border-primary/40"><h3 className="text-white font-bold text-xl md:text-2xl uppercase tracking-tighter mb-1">Information System</h3></div>
+                      <div className="pl-4 md:pl-6 border-l-2 border-white/40"><h3 className="text-white font-bold text-xl md:text-2xl uppercase tracking-tighter mb-1">Information System</h3></div>
                       <div className="flex gap-4 md:gap-8 text-slate-400 font-medium text-[10px] md:text-sm uppercase tracking-[0.2em]"><div className="whitespace-nowrap">GPA: <span className="text-white">- / 4.00</span></div><div className="whitespace-nowrap">Class of <span className="text-white">2023</span></div></div>
                     </div>
                   </div>
                   <div className="flex justify-center mt-4 lg:mt-0">
                     <div className="relative w-48 h-48 md:w-64 lg:w-96 md:h-64 lg:h-96 group animate-float">
-                      <div className="absolute inset-0 rounded-full bg-primary/20 blur-[100px] group-hover:bg-primary/30 transition-all duration-1000"></div>
+                      <div className="absolute inset-0 rounded-full bg-white/10 blur-[100px] group-hover:bg-white/20 transition-all duration-1000"></div>
                       <div className="relative w-full h-full flex items-center justify-center p-4">
                         {assetsAllowed && <img src={academic3d} alt="Graduate" className="w-full h-full object-contain scale-125 select-none pointer-events-none" style={{ mixBlendMode: 'screen', maskImage: 'radial-gradient(circle, black 50%, transparent 95%)', WebkitMaskImage: 'radial-gradient(circle, black 50%, transparent 95%)' }} />}
                       </div>
@@ -611,7 +611,7 @@ const About = React.memo(({ active, assetsAllowed, onScrollProgress, onNavigateN
                     <div className="absolute -left-4 sm:-left-12 md:-left-20 top-1/2 -translate-y-1/2 z-[100] pointer-events-auto">
                       <button
                         onClick={() => handleNavigate((expIndex - 1 + experiences.length) % experiences.length)}
-                        className="w-8 h-8 sm:w-12 sm:h-12 rounded-full glass border border-white/10 flex items-center justify-center text-white/50 hover:text-white hover:border-primary/50 hover:bg-primary/10 transition-all active:scale-95 shadow-xl backdrop-blur-xl"
+                        className="w-8 h-8 sm:w-12 sm:h-12 rounded-full glass border border-white/10 flex items-center justify-center text-white/50 hover:text-white hover:border-white/50 hover:bg-white/10 transition-all active:scale-95 shadow-xl backdrop-blur-xl"
                         aria-label="Previous Project"
                       >
                         <Icons.ChevronLeft />
@@ -621,7 +621,7 @@ const About = React.memo(({ active, assetsAllowed, onScrollProgress, onNavigateN
                     <div className="absolute -right-4 sm:-right-12 md:-right-20 top-1/2 -translate-y-1/2 z-[100] pointer-events-auto">
                       <button
                         onClick={() => handleNavigate((expIndex + 1) % experiences.length)}
-                        className="w-8 h-8 sm:w-12 sm:h-12 rounded-full glass border border-white/10 flex items-center justify-center text-white/50 hover:text-white hover:border-primary/50 hover:bg-primary/10 transition-all active:scale-95 shadow-xl backdrop-blur-xl"
+                        className="w-8 h-8 sm:w-12 sm:h-12 rounded-full glass border border-white/10 flex items-center justify-center text-white/50 hover:text-white hover:border-white/50 hover:bg-white/10 transition-all active:scale-95 shadow-xl backdrop-blur-xl"
                         aria-label="Next Project"
                       >
                         <Icons.ChevronRight />
@@ -636,7 +636,7 @@ const About = React.memo(({ active, assetsAllowed, onScrollProgress, onNavigateN
                             {/* Industrial HUD Background Pattern */}
                             <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden opacity-20">
                               <div className="absolute inset-0" style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(255,255,255,0.05) 1px, transparent 0)', backgroundSize: '32px 32px' }}></div>
-                              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary/20 to-transparent animate-[scan_8s_linear_infinite]"></div>
+                              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-[scan_8s_linear_infinite]"></div>
                               <div className="absolute top-10 left-10 text-[8px] font-mono text-slate-700 uppercase tracking-[0.4em]">Coord_X: 00.{i + 1} <br /> Coord_Y: 00.A7</div>
                               <div className="absolute bottom-10 right-10 text-[8px] font-mono text-slate-700 uppercase tracking-[0.4em]">Sector_7G <br /> Node: LVL_0{i}</div>
                             </div>
@@ -645,11 +645,11 @@ const About = React.memo(({ active, assetsAllowed, onScrollProgress, onNavigateN
 
                               {/* Left Text Content */}
                               <div className="flex-1 flex flex-col justify-center h-full w-full">
-                                <div className="text-primary font-bold tracking-[0.2em] text-[10px] md:text-sm mb-3 uppercase flex items-center gap-2">
-                                  <div className="w-2 h-2 rounded-full bg-primary animate-pulse shrink-0"></div>
+                                <div className="text-zinc-400 font-bold tracking-[0.2em] text-[10px] md:text-sm mb-3 uppercase flex items-center gap-2">
+                                  <div className="w-2 h-2 rounded-full bg-white animate-pulse shrink-0"></div>
                                   <span>{exp.date}</span>
                                   {exp.date.includes('Present') && (
-                                    <span className="ml-2 md:ml-4 px-2 py-0.5 rounded border border-primary/40 text-[8px] font-black text-primary animate-pulse inline-block shrink-0">
+                                    <span className="ml-2 md:ml-4 px-2 py-0.5 rounded border border-white/40 text-[8px] font-black text-white animate-pulse inline-block shrink-0">
                                       [ ACTIVE ]
                                     </span>
                                   )}
@@ -662,7 +662,7 @@ const About = React.memo(({ active, assetsAllowed, onScrollProgress, onNavigateN
                                 {exp.achievements.length > 0 ? (
                                   <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-3 pt-2">
                                     {exp.achievements.map((ach, j) => (
-                                      <div key={j} className="flex items-start gap-3"><div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 shrink-0"></div><div className="text-slate-300 text-[11px] md:text-sm leading-relaxed"><span className="text-white font-bold italic uppercase">{ach.rank}</span> — {ach.name}</div></div>
+                                      <div key={j} className="flex items-start gap-3"><div className="w-1.5 h-1.5 rounded-full bg-white mt-1.5 shrink-0"></div><div className="text-slate-300 text-[11px] md:text-sm leading-relaxed"><span className="text-white font-bold italic uppercase">{ach.rank}</span> — {ach.name}</div></div>
                                     ))}
                                   </div>
                                 ) : (<p className="text-slate-300 text-xs sm:text-sm md:text-lg font-light leading-relaxed italic max-w-2xl line-clamp-4 md:line-clamp-none">"{exp.description}"</p>)}
@@ -702,7 +702,7 @@ const About = React.memo(({ active, assetsAllowed, onScrollProgress, onNavigateN
               </h2>
 
               <div className="flex items-center gap-6">
-                <div className="w-12 h-12 rounded-full border border-primary/30 flex items-center justify-center animate-pulse">
+                <div className="w-12 h-12 rounded-full border border-white/30 flex items-center justify-center animate-pulse">
                   <div className="w-2 h-2 rounded-full bg-green-500 shadow-glow shadow-green-500/50"></div>
                 </div>
                 <div className="flex flex-col">
@@ -723,7 +723,7 @@ const About = React.memo(({ active, assetsAllowed, onScrollProgress, onNavigateN
               </div>
               <div className="flex flex-col gap-4">
                 <h4 className="text-white/60 font-mono text-[10px] font-bold tracking-widest uppercase animate-glitch-heavy inline-block w-fit">Published Info</h4>
-                <p className="text-primary font-mono text-[9px] uppercase tracking-widest font-bold text-glow">MARCH 10TH {currentYear}</p>
+                <p className="text-zinc-400 font-mono text-[9px] uppercase tracking-widest font-bold text-glow">MARCH 10TH {currentYear}</p>
                 <p className="text-slate-600 font-mono text-[9px] uppercase tracking-tighter">ALL RIGHTS RESERVED — Faiq_a.m</p>
               </div>
               <div className="flex flex-col items-start md:items-end justify-end">
@@ -735,7 +735,7 @@ const About = React.memo(({ active, assetsAllowed, onScrollProgress, onNavigateN
                   </div>
                   <div className="w-32 h-[2px] bg-white/10 rounded-full overflow-hidden mt-1">
                     <div
-                      className="h-full bg-primary shadow-[0_0_10px_var(--color-primary)] transition-all duration-75"
+                      className="h-full bg-white shadow-[0_0_10px_rgba(255,255,255,0.6)] transition-all duration-75"
                       style={{ width: `${footerProgress * 100}%` }}
                     ></div>
                   </div>

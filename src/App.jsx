@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, Suspense, lazy } from 'react';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
 import PageTransition from './components/PageTransition';
+import Preloader from './components/Preloader';
 import { Analytics } from "@vercel/analytics/react"
 import { SpeedInsights } from "@vercel/speed-insights/react"
 
@@ -48,6 +49,9 @@ function App() {
 
   return (
     <div className="h-screen w-screen bg-black overflow-hidden relative">
+      {/* Multilingual Preloader Screen */}
+      <Preloader onComplete={() => setLoadStage(prev => (prev === 0 ? 1 : prev))} />
+
       {/* Fixed UI Elements */}
       <Navbar currentPage={currentPage} setCurrentPage={setCurrentPage} />
 

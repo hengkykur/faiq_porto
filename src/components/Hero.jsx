@@ -489,11 +489,10 @@ const Hero = React.memo(({ active, onReady, onNavigateNext }) => {
     }
   };
 
-  // Trigger onReady shortly after mount since there is no video to wait for anymore
+  // Trigger onReady on mount
   useEffect(() => {
     if (onReady) {
-      const timer = setTimeout(() => onReady(), 500);
-      return () => clearTimeout(timer);
+      onReady();
     }
   }, [onReady]);
 
