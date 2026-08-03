@@ -31,15 +31,27 @@ function addRot(base, delta) {
 
 export function AvatarModel(props) {
   const group = useRef();
+  const bodyRef = useRef();       // root torso — drives full-body bob & sway
   const headRef = useRef();
   const chestRef = useRef();
+  const shoulderRRef = useRef();  // right shoulder — raised during wave
   const armLeftRef = useRef();
   const armRightRef = useRef();
   const forearmLRef = useRef();
   const forearmRRef = useRef();
   const thighLRef = useRef();
   const thighRRef = useRef();
+  const isWavingRef = useRef(false);   // wave triggered by click
+  const waveStartRef = useRef(0);      // timestamp when wave started
   const { nodes, materials } = useGLTF('/Untitled.glb');
+
+  // Click handler — triggers the wave animation
+  const handleClick = () => {
+    if (!isWavingRef.current) {
+      isWavingRef.current = true;
+      waveStartRef.current = null; // will be set on first useFrame tick
+    }
+  };
 
   useFrame((state) => {
     const t = state.clock.getElapsedTime();
@@ -52,31 +64,83 @@ export function AvatarModel(props) {
       headRef.current.rotation.x += (targetX - headRef.current.rotation.x) * 0.08;
     }
 
-    // 2. Chest micro-twist
-    if (chestRef.current) {
-      chestRef.current.rotation.y = addRot([-0.043, 0.034, 0.048], POSE.chest)[1] + Math.sin(t * 1.1) * 0.03;
+    // 2. Root body bob + side lean (whole body rhythmic idle)
+    if (bodyRef.current) {
+      bodyRef.current.position.y = Math.sin(t * 1.4) * 0.04;          // gentle vertical bob
+      bodyRef.current.rotation.z = Math.sin(t * 0.7) * 0.035;         // side-to-side lean
+      bodyRef.current.rotation.y = Math.sin(t * 0.5) * 0.06;          // slow Y twist
     }
 
-    // 3. Upper arm swing (only X rotation, stay in natural pose)
+    // 3. Chest twist (upper torso counter-rotates against body sway)
+    if (chestRef.current) {
+      chestRef.current.rotation.y = addRot([-0.043, 0.034, 0.048], POSE.chest)[1] - Math.sin(t * 0.7) * 0.08;
+      chestRef.current.rotation.x = addRot([-0.043, 0.034, 0.048], POSE.chest)[0] + Math.cos(t * 1.1) * 0.03;
+      chestRef.current.rotation.z = addRot([-0.043, 0.034, 0.048], POSE.chest)[2] - Math.sin(t * 0.7) * 0.04;
+    }
+
+    // 4. Wave animation (triggered on click) — overrides right arm idle
+    if (isWavingRef.current) {
+      // init timestamp on first frame
+      if (waveStartRef.current === null) waveStartRef.current = t;
+      const wt = t - waveStartRef.current;
+      const WAVE_DURATION = 3.2; // seconds
+
+      if (wt > WAVE_DURATION) {
+        // done — return to idle (let idle animation take over next frame)
+        isWavingRef.current = false;
+        waveStartRef.current = null;
+      } else {
+        const raiseT = Math.min(wt / 0.5, 1.0);
+        const lowerT = wt > WAVE_DURATION - 0.6 ? Math.max(0, (WAVE_DURATION - wt) / 0.6) : 1.0;
+        const blend = raiseT * lowerT;
+
+        // Keep shoulder at idle Z (no change) — only drive via upper arm
+        if (shoulderRRef.current) {
+          shoulderRRef.current.rotation.z = addRot([-0.049, -0.042, 2.012], POSE.shoulderR)[2];
+        }
+
+        // Raise upper arm: +X lifts arm upward in world space (local-X ≈ [−0.32, +0.95, 0])
+        if (armRightRef.current) {
+          const baseX = addRot([-0.116, 0.047, 0.909], POSE.upperArmR)[0];
+          armRightRef.current.rotation.x = baseX + 1.4 * blend;
+        }
+
+        // Wave forearm rapidly (dadah motion)
+        if (forearmRRef.current && wt > 0.4 && wt < WAVE_DURATION - 0.4) {
+          forearmRRef.current.rotation.x = addRot([-0.031, -0.002, 0.191], POSE.forearmR)[0] + Math.sin(wt * 8) * 0.5 * blend;
+        }
+
+        // Head nods once
+        if (headRef.current && wt < 0.8) {
+          headRef.current.rotation.x += (Math.sin(wt * 5) * 0.1 - headRef.current.rotation.x) * 0.12;
+        }
+
+        return;
+      }
+    }
+
+    // 4b. Idle upper arm pendulum — alternating natural walk-idle swing
     if (armLeftRef.current) {
-      armLeftRef.current.rotation.x = addRot([-0.019, 0.007, -0.903], POSE.upperArmL)[0] + Math.sin(t * 1.2) * 0.03;
+      armLeftRef.current.rotation.x = addRot([-0.019, 0.007, -0.903], POSE.upperArmL)[0] + Math.sin(t * 1.4) * 0.12;
     }
     if (armRightRef.current) {
-      armRightRef.current.rotation.x = addRot([-0.116, 0.047, 0.909], POSE.upperArmR)[0] + Math.cos(t * 1.2) * 0.03;
-    }
-    if (forearmLRef.current) {
-      forearmLRef.current.rotation.x = addRot([-0.039, 0.011, -0.284], POSE.forearmL)[0] + Math.sin(t * 1.4) * 0.03;
-    }
-    if (forearmRRef.current) {
-      forearmRRef.current.rotation.x = addRot([-0.031, -0.002, 0.191], POSE.forearmR)[0] + Math.cos(t * 1.4) * 0.03;
+      armRightRef.current.rotation.x = addRot([-0.116, 0.047, 0.909], POSE.upperArmR)[0] - Math.sin(t * 1.4) * 0.12;
     }
 
-    // 4. Subtle hip flex
+    // 5. Forearm follows upper arm with slight lag
+    if (forearmLRef.current) {
+      forearmLRef.current.rotation.x = addRot([-0.039, 0.011, -0.284], POSE.forearmL)[0] + Math.sin(t * 1.4 - 0.4) * 0.09;
+    }
+    if (forearmRRef.current) {
+      forearmRRef.current.rotation.x = addRot([-0.031, -0.002, 0.191], POSE.forearmR)[0] - Math.sin(t * 1.4 - 0.4) * 0.09;
+    }
+
+    // 6. Legs stay grounded
     if (thighLRef.current) {
-      thighLRef.current.rotation.x = addRot([-0.252, 0.47, -3.121], POSE.thighL)[0] + Math.sin(t * 1.1) * 0.02;
+      thighLRef.current.rotation.x = addRot([-0.252, 0.47, -3.121], POSE.thighL)[0];
     }
     if (thighRRef.current) {
-      thighRRef.current.rotation.x = addRot([-3.118, -0.65, 0.089], POSE.thighR)[0] - Math.sin(t * 1.1) * 0.02;
+      thighRRef.current.rotation.x = addRot([-3.118, -0.65, 0.089], POSE.thighR)[0];
     }
   });
 
@@ -96,11 +160,11 @@ export function AvatarModel(props) {
   const getMat = (name, fallbackName) => materials[name] || materials[fallbackName] || null;
 
   return (
-    <group ref={group} {...props} dispose={null} scale={0.78}>
+    <group ref={group} {...props} dispose={null} scale={0.78} onClick={handleClick} style={{ cursor: 'pointer' }}>
       <Center>
         <group position={[0.228, 3.058, -0.007]} rotation={[0, 0.256, 0]} scale={0.627}>
-          {/* ===== perut (torso / root) ===== */}
-          <group position={[0.028, -0.12, -0.091]} rotation={[0.061, -0.037, -0.024]}>
+          {/* ===== perut (torso / root) — ref for full-body bob & sway ===== */}
+          <group ref={bodyRef} position={[0.028, -0.12, -0.091]} rotation={[0.061, -0.037, -0.024]}>
 
             {/* ---- perut.001 (chest) ---- */}
             <group
@@ -163,6 +227,7 @@ export function AvatarModel(props) {
 
               {/* ---- pundak.kan -> lengan.a.kan -> lengan.b.kan (right arm) ---- */}
               <group
+                ref={shoulderRRef}
                 position={[-0.065, 2.972, 0.001]}
                 rotation={addRot([-0.049, -0.042, 2.012], POSE.shoulderR)}
               >
