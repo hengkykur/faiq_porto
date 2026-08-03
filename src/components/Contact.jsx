@@ -1,4 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, Suspense } from 'react';
+import { Canvas } from '@react-three/fiber';
+import { Environment, ContactShadows } from '@react-three/drei';
+import { AvatarModel } from './AvatarModel';
 
 const Contact = ({ active, assetsAllowed }) => {
   const currentYear = new Date().getFullYear();
@@ -113,47 +116,29 @@ const Contact = ({ active, assetsAllowed }) => {
         {/* Background Aura */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/10 blur-[120px] rounded-full pointer-events-none" />
 
-        {/* Robot — centered, in front of text */}
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none" style={{ zIndex: 15 }}>
+        {/* 3D Blender Avatar Model — centered in front of text */}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-auto" style={{ zIndex: 15 }}>
           {(active || assetsAllowed) && (
-            <div className="relative" style={{ width: isMobile ? '380px' : '600px', height: isMobile ? '500px' : '750px' }}>
-              {/* Layer 1: Original character — always visible */}
-              <img
-                src="https://rpnuh6fycqz4knnh.public.blob.vercel-storage.com/Gemini_Generated_Image_5582qq5582qq5582-removebg-preview.png"
-                alt="Robot Art Base"
-                className="absolute inset-0"
-                style={{
-                  width: '100%',
-                  height: '100%',
-                  objectFit: 'contain',
-                  objectPosition: 'center',
-                  opacity: 1,
-                  filter: 'contrast(1.05) brightness(0.9)',
-                  clipPath: 'inset(0px 0px 6% 0px)',
-                  animation: 'robotFloat 6s ease-in-out infinite',
-                }}
-              />
+            <div className="relative w-full h-full max-w-4xl max-h-[850px] flex items-center justify-center">
+              <Canvas
+                camera={{ position: [0, 0.4, 8.2], fov: 40 }}
+                gl={{ alpha: true, antialias: true }}
+                style={{ width: '100%', height: '100%', pointerEvents: 'auto' }}
+              >
+                {/* Balanced Key Light (Top Right Front) */}
+                <directionalLight position={[5, 8, 6]} intensity={1.5} color="#ffffff" castShadow />
+                {/* Soft Fill Light (Left Front) */}
+                <directionalLight position={[-5, 4, 3]} intensity={0.5} color="#a0b8d0" />
+                {/* Subtle Rim Light (Top Back) */}
+                <directionalLight position={[0, 6, -5]} intensity={0.6} color="#ffffff" />
+                {/* Soft Ambient Light */}
+                <ambientLight intensity={0.5} />
 
-              {/* Layer 2: New Gemini image — fluid mask reveal on cursor */}
-              <img
-                ref={spotlightRef}
-                src="https://rpnuh6fycqz4knnh.public.blob.vercel-storage.com/Gemini_Generated_Image_umsmlqumsmlqumsm-removebg-preview.png"
-                alt="Robot Art Revealed"
-                className="absolute inset-0"
-                style={{
-                  width: '100%',
-                  height: '100%',
-                  objectFit: 'contain',
-                  objectPosition: 'center',
-                  opacity: 0,
-                  filter: 'contrast(1.05) brightness(1.1) drop-shadow(0 0 25px rgba(99, 102, 241, 0.3))',
-                  WebkitMaskImage: 'radial-gradient(ellipse 170px 130px at 50% 50%, black 0%, transparent 75%)',
-                  maskImage: 'radial-gradient(ellipse 170px 130px at 50% 50%, black 0%, transparent 75%)',
-                  animation: 'robotFloat 6s ease-in-out infinite',
-                  transition: 'opacity 0.3s ease',
-                  willChange: 'mask-image, -webkit-mask-image',
-                }}
-              />
+                <Suspense fallback={null}>
+                  <AvatarModel />
+                  <ContactShadows position={[0, -2.8, 0]} opacity={0.5} scale={8} blur={2.5} far={4} />
+                </Suspense>
+              </Canvas>
             </div>
           )}
         </div>
